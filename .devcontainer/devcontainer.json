@@ -1,0 +1,10 @@
+{
+  "name": "C Web Server",
+  "build": {
+    "context": "..",
+    "dockerfile": "../Dockerfile"
+  },
+  "overrideCommand": true,
+  "forwardPorts": [8080],
+  "postCreateCommand": "make"
+}

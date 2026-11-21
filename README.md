@@ -21,6 +21,31 @@ C와 POSIX 소켓으로 HTTP 요청을 받고, 지정한 파일 루트의 정적
 문자열 포인터는 요청 구조체의 버퍼를 가리킨다. 파싱된 요청 구조체를 다른 주소로
 단순 복사하지 않는다. 헤더 포인터 목록만 필요에 따라 늘리며, 중복 항목도 보존한다.
 
+## Docker 실행
+
+Docker가 실행 중이면 저장소 루트에서 실행한다. 별도 GCC 설치나 파일 준비 없이 기본 페이지를 확인할 수 있다.
+
+```sh
+docker build -t week13-web-server .
+docker run --rm --name week13-web-server -p 127.0.0.1:8080:8080 week13-web-server
+```
+
+브라우저에서 http://localhost:8080/을 연다. 기본 파일 루트는 이미지에 포함된 `/app/public`이다.
+종료는 다른 터미널에서 `docker stop week13-web-server`를 실행한다.
+Windows PowerShell에서 요청을 확인하려면 `curl.exe -i http://localhost:8080/`을 사용한다.
+
+자신의 public 폴더를 쓰려면 다음처럼 읽기 전용으로 연결한다.
+
+```sh
+docker run --rm --name week13-web-server --mount "type=bind,source=$PWD/public,target=/app/public,readonly" -p 127.0.0.1:8080:8080 week13-web-server
+```
+
+기반 GCC/Linux 이미지는 digest로 고정한다. 같은 아키텍처에서는 동일한 기반 이미지와 빌드 명령을 사용한다.
+호스트 커널·CPU 아키텍처와 실행 중 변경하는 파일까지 동일해지는 것은 아니다.
+
+VS Code에서는 Dev Containers 확장을 설치하고 `Dev Containers: Reopen in Container`를 선택한다.
+컨테이너 터미널에서 `./server 8080 ./public`으로 실행한다. 서버는 자동 실행하지 않는다.
+
 ## Linux에서 직접 실행
 
 ```sh
@@ -50,6 +75,11 @@ make
 ## 테스트
 
 Linux에서는 `make test`, `make sanitize`로 파서 단위 검사를 실행한다.
+Docker에서도 실행할 수 있다.
+
+```sh
+docker run --rm week13-web-server make test sanitize
+```
 
 서버가 localhost:8080에서 실행 중이면 별도 터미널에서 실제 TCP 동작을 검사한다.
 
