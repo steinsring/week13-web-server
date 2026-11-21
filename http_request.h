@@ -15,7 +15,8 @@ typedef enum {
     HTTP_PARSE_COMPLETE = 1,
     HTTP_PARSE_INVALID = -1,
     HTTP_PARSE_TOO_LARGE = -2,
-    HTTP_PARSE_NO_MEMORY = -3
+    HTTP_PARSE_NO_MEMORY = -3,
+    HTTP_PARSE_UNSUPPORTED_VERSION = -4
 } HttpParseResult;
 
 /* 요청 하나가 자기 버퍼와 헤더 목록을 소유한다.

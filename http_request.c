@@ -81,13 +81,17 @@ static HttpParseResult parse_request_line(HttpRequest *request, char *line)
     *first_space = '\0';
     *second_space = '\0';
 
-    if (!valid_token(line) || *target == '\0' || strcmp(version, "HTTP/1.1") != 0)
+    if (!valid_token(line) || *target == '\0' || strlen(version) != 8 ||
+        memcmp(version, "HTTP/", 5) != 0 || version[5] < '0' || version[5] > '9' ||
+        version[6] != '.' || version[7] < '0' || version[7] > '9')
         return HTTP_PARSE_INVALID;
     /* 공백·탭·제어 문자는 거절한다. %20 같은 표기는 원문을 유지한다. */
     for (const unsigned char *p = (const unsigned char *)target; *p; ++p) {
         if (*p <= 0x20 || *p == 0x7f)
             return HTTP_PARSE_INVALID;
     }
+    if (strcmp(version, "HTTP/1.1") != 0)
+        return HTTP_PARSE_UNSUPPORTED_VERSION;
     request->method = line;
     request->version = version;
     request->path = target;

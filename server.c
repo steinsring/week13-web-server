@@ -1,5 +1,8 @@
-﻿#include "http_request.h"
+#define _POSIX_C_SOURCE 200809L
+#include "http_request.h"
 #include "http_response.h"
+#include "request_io.h"
+#include "static_files.h"
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -13,11 +16,11 @@
 static int read_port(int argc, char **argv)
 {
     long port = 8080;
-    if (argc > 2) {
-        fprintf(stderr, "Usage: %s [port]\n", argv[0]);
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s port root\n", argv[0]);
         return -1;
     }
-    if (argc == 2) {
+    if (argc == 3) {
         char *end;
         errno = 0;
         port = strtol(argv[1], &end, 10);
@@ -62,34 +65,15 @@ static int create_listener(int port)
     return server;
 }
 
-/* 소켓 수신은 서버 담당, 바이트의 의미를 해석하는 일은 파서 담당이다. */
-static int receive_request(int client, HttpRequest *request)
-{
-    /* 한 번 recv할 임시 공간으로 4096을 선택했다. 요청의 크기 제한은 아니다.
-     * 요청 전체 헤더 한도는 파서의 8192바이트이며, 조각 크기와 별개다.
-     */
-    char chunk[4096];
-    for (;;) {
-        ssize_t received = recv(client, chunk, sizeof(chunk), 0);
-        if (received < 0 && errno == EINTR)
-            continue;
-        if (received <= 0)
-            return -1;
-        HttpParseResult result = http_request_feed(request, chunk, (size_t)received);
-        if (result == HTTP_PARSE_COMPLETE)
-            return 0;
-        if (result != HTTP_PARSE_INCOMPLETE)
-            return -1;
-        /* 한 줄이 덜 왔다면 다음 조각을 받는다. recv는 여기서 잠들 수 있다. */
-    }
-}
-
-static void serve_client(int client)
+static void serve_client(int client, const struct timespec *accepted, int root)
 {
     /* 이 요청만의 버퍼·포인터 목록. 다른 요청과 공유하지 않는다. */
     HttpRequest request;
     http_request_init(&request);
-    if (receive_request(client, &request) == 0 && http_send_hello(client) < 0)
+    int status = accepted ? http_receive_request(client, &request, accepted) : 500;
+    int sent = status == 200 ? static_files_serve(client, root, &request) :
+               (status != 0 ? http_send_status(client, status) : 0);
+    if (sent < 0)
         perror("send");
     /* 성공·파싱 실패·수신 실패·송신 실패 모두 같은 정리 경로를 거친다. */
     http_request_destroy(&request);
@@ -106,9 +90,10 @@ int main(int argc, char **argv)
         perror("signal");
         return EXIT_FAILURE;
     }
+    int root = static_root_open(argv[2]);
+    if (root < 0) { perror("root"); return EXIT_FAILURE; }
     int server = create_listener(port);
-    if (server < 0)
-        return EXIT_FAILURE;
+    if (server < 0) { close(root); return EXIT_FAILURE; }
     printf("Listening on port %d\n", port);
     fflush(stdout);
 
@@ -120,8 +105,11 @@ int main(int argc, char **argv)
                 continue;
             perror("accept");
             close(server);
+            close(root);
             return EXIT_FAILURE;
         }
-        serve_client(client);
+        struct timespec accepted;
+        int timed = clock_gettime(CLOCK_MONOTONIC, &accepted) == 0;
+        serve_client(client, timed ? &accepted : NULL, root);
     }
 }

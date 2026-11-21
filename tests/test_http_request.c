@@ -172,7 +172,6 @@ int main(void)
         "GET  / HTTP/1.1\r\nHost: localhost\r\n\r\n",
         "GET / HTTP/1.1 extra\r\nHost: localhost\r\n\r\n",
         "GET\t/ HTTP/1.1\r\nHost: localhost\r\n\r\n",
-        "GET / HTTP/1.0\r\nHost: localhost\r\n\r\n",
         "G(ET / HTTP/1.1\r\nHost: localhost\r\n\r\n",
         "GET / HTTP/1.1\r\n\r\n",
         "GET / HTTP/1.1\r\nHost: localhost\r\nhost: localhost\r\n\r\n",
@@ -195,6 +194,8 @@ int main(void)
     for (size_t i = 0; i < sizeof(invalid) / sizeof(invalid[0]); ++i)
         expect(invalid[i], HTTP_PARSE_INVALID);
     expect("GET / HTTP/1.1\r\nHost:localhost\r\n\r\n", HTTP_PARSE_COMPLETE);
+    expect("GET / HTTP/1.0\r\n", HTTP_PARSE_UNSUPPORTED_VERSION);
+    expect("GET / HTTP/abc\r\n", HTTP_PARSE_INVALID);
     expect("GET / HTTP/1.1\r\nHost: [::1]:8080\r\n\r\n", HTTP_PARSE_COMPLETE);
     expect("GET / HTTP/1.1\r\nHost: [2001:db8::1]\r\n\r\n", HTTP_PARSE_COMPLETE);
     expect("GET / HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n", HTTP_PARSE_COMPLETE);
