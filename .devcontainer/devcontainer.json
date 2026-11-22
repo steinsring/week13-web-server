@@ -5,6 +5,15 @@
     "dockerfile": "../Dockerfile"
   },
   "overrideCommand": true,
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-vscode.cpptools"],
+      "settings": {
+        "C_Cpp.default.compilerPath": "/usr/local/bin/gcc",
+        "C_Cpp.default.cStandard": "c11"
+      }
+    }
+  },
   "forwardPorts": [8080],
   "postCreateCommand": "make"
 }

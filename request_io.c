@@ -21,6 +21,10 @@ static int remaining_ms(const struct timespec *accepted)
     return rounded + (milliseconds > rounded); /* poll의 밀리초 단위로 올림 */
 }
 
+
+/* 남은 시간 계산 → poll 대기 → recv 수신 → 파서 전달을 반복한다.
+ * 완료·오류 시 HTTP 상태 코드를 반환한다. 0이면 응답 없이 연결을 정리한다.
+ * recv 한 번이 요청 전체와 일치하지 않으므로 미완성 요청은 이어서 받는다. */
 static int receive_until_deadline(int client, HttpRequest *request,
                                   const struct timespec *accepted)
 {
@@ -31,6 +35,7 @@ static int receive_until_deadline(int client, HttpRequest *request,
             return 500;
         if (remaining == 0)
             return 408;
+
         struct pollfd fd = {client, POLLIN, 0};
         int ready = poll(&fd, 1, remaining);
         if (ready < 0) {
@@ -42,6 +47,7 @@ static int receive_until_deadline(int client, HttpRequest *request,
             continue; /* 단조 시계로 실제 기한을 다시 확인 */
         if (fd.revents & (POLLNVAL | POLLERR))
             return 0;
+
         ssize_t count = recv(client, chunk, sizeof(chunk), 0);
         if (count < 0) {
             if (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK)
@@ -56,6 +62,7 @@ static int receive_until_deadline(int client, HttpRequest *request,
             return 500;
         if (remaining == 0)
             return 408;
+
         switch (http_request_feed(request, chunk, (size_t)count)) {
         case HTTP_PARSE_INCOMPLETE: break;
         case HTTP_PARSE_COMPLETE: return strcmp(request->method, "GET") == 0 ? 200 : 501;
@@ -67,6 +74,9 @@ static int receive_until_deadline(int client, HttpRequest *request,
     }
 }
 
+
+/* 수신 중에만 논블로킹을 켠다. poll 이후 recv가 무기한 잠드는 것을 막는다.
+ * 수신이 끝나면 원래 설정을 복원한다. 현재 연결 하나만 감시하며 동시 처리는 아니다. */
 int http_receive_request(int client, HttpRequest *request, const struct timespec *accepted)
 {
     int flags = fcntl(client, F_GETFL);

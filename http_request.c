@@ -104,6 +104,8 @@ static HttpParseResult parse_request_line(HttpRequest *request, char *line)
     return HTTP_PARSE_INCOMPLETE;
 }
 
+
+/* 문자열은 요청 버퍼에 두고 이름·값 포인터만 목록에 추가한다. 중복 헤더도 유지한다. */
 static HttpParseResult append_header(HttpRequest *request, char *name, char *value)
 {
     if (request->header_count == request->header_capacity) {
@@ -121,6 +123,8 @@ static HttpParseResult append_header(HttpRequest *request, char *name, char *val
     return HTTP_PARSE_INCOMPLETE;
 }
 
+
+/* 헤더 한 줄을 이름: 값으로 나누고 값 양끝 공백·탭만 제거한다. */
 static HttpParseResult parse_header(HttpRequest *request, char *line)
 {
     char *colon = strchr(line, ':');
@@ -207,6 +211,8 @@ static int valid_host(const char *value)
     return 1;
 }
 
+
+/* 빈 줄은 헤더 종료다. HTTP/1.1의 Host가 정확히 하나인지 최종 확인한다. */
 static HttpParseResult finish_headers(const HttpRequest *request)
 {
     size_t cursor = 0;
@@ -217,6 +223,10 @@ static HttpParseResult finish_headers(const HttpRequest *request)
     return HTTP_PARSE_COMPLETE;
 }
 
+
+/* 조각 데이터를 버퍼 뒤에 붙이며 CRLF로 끝난 줄부터 해석한다.
+ * 첫 줄 → 요청 라인, 이후 줄 → 헤더, 빈 줄 → 완료. 본문 처리는 아직 없다.
+ * 저장한 포인터가 버퍼 내부를 가리키므로 파싱한 요청 구조체를 복사·이동하면 안 된다. */
 HttpParseResult http_request_feed(HttpRequest *request, const char *data, size_t length)
 {
     if (request->result != HTTP_PARSE_INCOMPLETE)

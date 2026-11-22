@@ -3,6 +3,11 @@
 #include "http_response.h"
 #include "request_io.h"
 #include "static_files.h"
+#include "concurrency.h"
+#include <stdint.h>
+#include <pthread.h>
+#include <fcntl.h>
+#include <sys/resource.h>
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -12,24 +17,16 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-/* 포트를 생략하면 8080. 입력했다면 올바른 숫자인지 검사한다. */
-static int read_port(int argc, char **argv)
+
+/* 이번 단계에서는 다섯 인자를 모두 요구한다. 예시 수치는 기본값이 아니다. */
+static int read_number(const char *text, size_t maximum, size_t *out)
 {
-    long port = 8080;
-    if (argc != 3) {
-        fprintf(stderr, "Usage: %s port root\n", argv[0]);
-        return -1;
-    }
-    if (argc == 3) {
-        char *end;
-        errno = 0;
-        port = strtol(argv[1], &end, 10);
-        if (errno != 0 || *argv[1] == '\0' || *end != '\0' || port < 1 || port > 65535) {
-            fprintf(stderr, "Port must be between 1 and 65535\n");
-            return -1;
-        }
-    }
-    return (int)port;
+    if (!*text) return -1;
+    for (const char *p=text; *p; ++p) if (*p<'0'||*p>'9') return -1;
+    errno=0; char *end;
+    unsigned long long value=strtoull(text,&end,10);
+    if(errno||*end||value==0||value>maximum)return -1;
+    *out=(size_t)value;return 0;
 }
 
 /* socket → bind → listen 순서로 연결을 받을 소켓을 준비한다. */
@@ -65,51 +62,31 @@ static int create_listener(int port)
     return server;
 }
 
-static void serve_client(int client, const struct timespec *accepted, int root)
-{
-    /* 이 요청만의 버퍼·포인터 목록. 다른 요청과 공유하지 않는다. */
-    HttpRequest request;
-    http_request_init(&request);
-    int status = accepted ? http_receive_request(client, &request, accepted) : 500;
-    int sent = status == 200 ? static_files_serve(client, root, &request) :
-               (status != 0 ? http_send_status(client, status) : 0);
-    if (sent < 0)
-        perror("send");
-    /* 성공·파싱 실패·수신 실패·송신 실패 모두 같은 정리 경로를 거친다. */
-    http_request_destroy(&request);
-    close(client);
-}
 
-int main(int argc, char **argv)
+/* 이벤트 루프만 소켓을 다루고, pthread 작업 풀은 파일 I/O만 수행한다. */
+int main(int argc,char **argv)
 {
-    int port = read_port(argc, argv);
-    if (port < 0)
-        return EXIT_FAILURE;
-    /* 끊긴 연결에 써도 SIGPIPE로 서버 전체가 종료되지 않게 한다. */
-    if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
-        perror("signal");
+    size_t port,workers,queue_limit,connection_limit;
+    if(argc!=6 || read_number(argv[1],65535,&port) ||
+       read_number(argv[3],SIZE_MAX/sizeof(pthread_t),&workers) ||
+       read_number(argv[4],SIZE_MAX,&queue_limit) ||
+       read_number(argv[5],UINT32_MAX-2,&connection_limit)) {
+        fprintf(stderr,"Usage: %s port root workers queue_limit connection_limit\n",argv[0]);
         return EXIT_FAILURE;
     }
-    int root = static_root_open(argv[2]);
-    if (root < 0) { perror("root"); return EXIT_FAILURE; }
-    int server = create_listener(port);
-    if (server < 0) { close(root); return EXIT_FAILURE; }
-    printf("Listening on port %d\n", port);
-    fflush(stdout);
-
-    for (;;) {
-        /* 연결이 없으면 잠든다. client는 이번 연결의 통신용 새 소켓이다. */
-        int client = accept(server, NULL, NULL);
-        if (client < 0) {
-            if (errno == EINTR)
-                continue;
-            perror("accept");
-            close(server);
-            close(root);
-            return EXIT_FAILURE;
-        }
-        struct timespec accepted;
-        int timed = clock_gettime(CLOCK_MONOTONIC, &accepted) == 0;
-        serve_client(client, timed ? &accepted : NULL, root);
+    struct rlimit fds;
+    if(getrlimit(RLIMIT_NOFILE,&fds)<0 || workers>(SIZE_MAX-connection_limit-16)/4 ||
+       connection_limit+workers*4+16>fds.rlim_cur) {
+        fprintf(stderr,"Insufficient file descriptor limit\n");return EXIT_FAILURE;
     }
+    if(signal(SIGPIPE,SIG_IGN)==SIG_ERR)return EXIT_FAILURE;
+    int root=static_root_open(argv[2]);
+    if(root<0){perror("root");return EXIT_FAILURE;}
+    int listener=create_listener((int)port);
+    if(listener<0){close(root);return EXIT_FAILURE;}
+    int flags=fcntl(listener,F_GETFL);
+    if(flags<0||fcntl(listener,F_SETFL,flags|O_NONBLOCK)<0){close(listener);close(root);return EXIT_FAILURE;}
+    int result=concurrent_server_run(listener,root,workers,queue_limit,connection_limit);
+    close(listener);close(root);
+    return result<0?EXIT_FAILURE:EXIT_SUCCESS;
 }

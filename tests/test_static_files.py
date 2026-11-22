@@ -1,6 +1,6 @@
 """Linux에서 임시 파일 루트와 서버를 만들어 검증한다."""
 import os, pathlib, socket, subprocess, tempfile, time, unittest
-SERVER = str(pathlib.Path(__file__).resolve().parents[1] / 'server')
+SERVER = os.environ.get('TEST_SERVER', str(pathlib.Path(__file__).resolve().parents[1] / 'server'))
 
 class StaticFilesTests(unittest.TestCase):
     @classmethod
@@ -29,7 +29,7 @@ class StaticFilesTests(unittest.TestCase):
         for ext in ('html','htm','CSS','js','txt','png','jpg','jpeg','gif','svg','ico'):
             (cls.root/('sample.'+ext)).write_bytes(b'abc\x00def')
         s=socket.socket(); s.bind(('127.0.0.1',0)); cls.port=s.getsockname()[1]; s.close()
-        cls.proc=subprocess.Popen([SERVER,str(cls.port),str(cls.root)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        cls.proc=subprocess.Popen([SERVER,str(cls.port),str(cls.root),'4','64','100'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         if cls.proc.stdout.readline()!=f'Listening on port {cls.port}\n'.encode():
             raise RuntimeError(cls.proc.stderr.read().decode())
     @classmethod
@@ -102,7 +102,7 @@ class StaticFilesTests(unittest.TestCase):
         self.assertEqual(len(list(pathlib.Path(f'/proc/{self.proc.pid}/fd').iterdir())),before)
     def test_bad_startup(self):
         for root in (self.base/'absent',self.root/'index.html',self.root/'dirlink',self.root/'blocked'):
-            result=subprocess.run([SERVER,'18090',str(root)],capture_output=True,timeout=3)
+            result=subprocess.run([SERVER,'18090',str(root),'4','64','100'],capture_output=True,timeout=3)
             self.assertNotEqual(result.returncode,0)
         self.assertFalse((self.base/'absent').exists())
 

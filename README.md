@@ -1,23 +1,24 @@
-# C 웹 서버 · HTTP 요청 파싱
+# C 웹 서버 · 동시 정적 파일 서빙
 
 C와 POSIX 소켓으로 HTTP 요청을 받고, 지정한 파일 루트의 정적 파일을 응답한다.
-응답 후 연결을 닫고 다음 연결을 기다린다.
+여러 연결을 동시에 처리하고, 각 요청의 응답이 끝나면 해당 연결을 닫는다.
 
 ## 코드 읽는 순서
 
 | 파일 | 역할 |
 | --- | --- |
-| `server.c` | `main()` → 포트 검사 → 리스닝 소켓 준비 → 연결 수락 → `serve_client()` |
+| `server.c` | `main()` → 필수 인자·자원 검사 → 리스닝 소켓 준비 → 이벤트 루프 |
+| `concurrency.c/.h` | epoll 연결 관리·시간 제한·송신, pthread 파일 작업 큐와 종료 |
 | `http_request.h` | 요청 구조체와 파서의 공개 함수 선언 |
 | `http_request.c` | 조각 누적 → 요청 줄 → 헤더 → Host 검사, 요청 메모리 정리 |
-| `request_io.c/.h` | 총 10초 수신 제한과 파싱 결과→HTTP 상태 코드 연결 |
+| `request_io.c/.h` | 이전 순차 수신 API와 해당 회귀 검사 |
 | `static_files.c/.h` | 루트·경로 검사, 인코딩 해제, 파일 탐색·MIME·기본 페이지 |
-| `http_response.c/.h` | `http_send_file()`·`http_send_redirect()`·`http_send_status()`로 파일·이동·오류 응답 전송 |
+| `http_response.c/.h` | 상태명·응답 헤더 생성, 이전 동기 전송 API |
 
-`serve_client()`는 요청별 구조체를 만들고, `http_receive_request()`는 받은 조각을
-`http_request_feed()`에 전달한다. 수신 성공 시 `static_files_serve()`로 파일을 보내고, 수신 실패 시 상태 코드로 오류 응답을 보낸다. 이후
-성공·실패 모두 `http_request_destroy()`와 `close(client)`로 정리한다. 정적 파일 모듈이 요청별 파일·디렉터리 FD도 정리한다.
-
+이벤트 루프가 `accept()` → `recv()` → `http_request_feed()`를 수행한다.
+파일 작업은 스레드가 `static_files_prepare()`로 준비하고 한 조각씩 읽는다.
+이벤트 루프만 `send()`를 호출하며, 조각을 모두 보낸 뒤 다음 읽기를 요청한다.
+연결 종료 시 요청과 파일을 정리한다. 실행 중 파일 작업이 있으면 완료까지 메모리와 파일 FD를 유지한다.
 문자열 포인터는 요청 구조체의 버퍼를 가리킨다. 파싱된 요청 구조체를 다른 주소로
 단순 복사하지 않는다. 헤더 포인터 목록만 필요에 따라 늘리며, 중복 항목도 보존한다.
 
@@ -31,7 +32,7 @@ docker run --rm --name week13-web-server -p 127.0.0.1:8080:8080 week13-web-serve
 ```
 
 브라우저에서 http://localhost:8080/을 연다. 기본 파일 루트는 이미지에 포함된 `/app/public`이다.
-종료는 다른 터미널에서 `docker stop week13-web-server`를 실행한다.
+종료는 다른 터미널에서 `docker stop --timeout 15 week13-web-server`를 실행한다.
 Windows PowerShell에서 요청을 확인하려면 `curl.exe -i http://localhost:8080/`을 사용한다.
 
 자신의 public 폴더를 쓰려면 다음처럼 읽기 전용으로 연결한다.
@@ -44,16 +45,16 @@ docker run --rm --name week13-web-server --mount "type=bind,source=$PWD/public,t
 호스트 커널·CPU 아키텍처와 실행 중 변경하는 파일까지 동일해지는 것은 아니다.
 
 VS Code에서는 Dev Containers 확장을 설치하고 `Dev Containers: Reopen in Container`를 선택한다.
-컨테이너 터미널에서 `./server 8080 ./public`으로 실행한다. 서버는 자동 실행하지 않는다.
+컨테이너 터미널에서 `./server 8080 ./public 4 64 100`으로 실행한다. 서버는 자동 실행하지 않는다.
 
 ## Linux에서 직접 실행
 
 ```sh
 make
-./server 8080 ./public
+./server 8080 ./public 4 64 100
 ```
 
-포트와 정적 파일 루트는 필수 인자다. public 폴더와 index.html은 실행 전에 직접 준비한다. 직접 실행 시 Ctrl+C로 종료한다.
+포트·정적 파일 루트·작업 스레드 수·대기 작업 수 상한·유지 연결 수 상한은 모두 필수 인자다. 4·64·100은 실행 예시이며 서버 기본값이 아니다. Linux epoll을 사용하므로 macOS에서는 Docker Linux로 실행한다. public 폴더와 index.html은 실행 전에 직접 준비한다. 직접 실행 시 Ctrl+C로 종료한다.
 
 ## 이번 단계의 범위
 
@@ -62,11 +63,15 @@ make
 - 메서드 이름은 저장하며 현재 GET만 지원한다. 그 밖의 메서드는 501이다.
 - 헤더의 순서·이름 대소문자를 보존한다. 이름 조회는 대소문자를 무시한다.
 - `Host`가 정확히 한 줄인지와 값 형식을 검사한다.
-- GET 성공은 정적 파일의 HTTP 200, 파일 접근 오류와 기존 오류는 400·403·404·431·500·408·501·505로 응답 후 연결 종료. 본문에는 상태명만 보낸다.
-- 요청 헤더는 최대 8192바이트다. 초과하거나 수신 중 연결이 끊기면 연결을 닫는다.
+- GET 성공은 정적 파일의 HTTP 200, 파일 접근 오류와 기존 오류는 400·403·404·431·500·408·501·503·505로 응답 후 연결 종료. 본문에는 상태명만 보낸다.
+- 요청 헤더는 최대 8192바이트다. 초과 시 431을 시도하고, 수신 중 연결이 끊기면 닫는다.
 - POST 본문, 쿼리 내부 해석, 전체 URI 문법 검증은 아직 구현하지 않았다.
 - `Content-Length`·`Transfer-Encoding`은 값과 중복·상호관계를 검사하지 않고 문자열로만 저장한다. 완전한 HTTP/1.1 구현은 아니다.
-- 연결은 하나씩 처리한다. 연결 수락부터 헤더 수신까지 총 10초이며, 조각 데이터가 와도 기한은 늘어나지 않는다. 송신 타임아웃과 동시 처리는 아직 없다.
+- epoll 이벤트 루프가 소켓을 관리하고 고정 개수의 pthread가 파일 작업을 처리한다.
+- 첫 파일 작업의 대기열이 꽉 차면 503이다. 후속 읽기는 연결별로 기다리고 빈자리가 나면 오래 기다린 순서로 제출한다.
+- 연결 상한이면 accept 감시를 잠시 중단한다. 실행 중 작업이 남은 닫힌 연결도 정리될 때까지 슬롯을 유지한다.
+- 헤더 수신 총 10초, 송신 무진행 10초, 파일 작업 대기 10초를 각각 적용한다. 실행 중 파일 I/O 시간은 대기 시간에서 제외한다.
+- SIGINT·SIGTERM은 새 연결 수락을 멈추고 최대 10초 마무리한다. 기한이 지나면 프로세스를 종료해 남은 스레드와 자원을 OS가 회수한다.
 
 [요구사항](docs/project-spec.md) · [설계](docs/design-spec.md)
 [파싱 요구사항](docs/http-parser-requirements.md) · [파싱 설계](docs/http-parser-design.md)
@@ -88,10 +93,19 @@ python tests/test_server.py
 ```
 
 다른 포트라면 `SERVER_TEST_PORT` 환경 변수로 지정한다.
-확인한 결과는 파서 97개 검사, AddressSanitizer·UndefinedBehaviorSanitizer 및 누수 검사,
-실제 TCP 기능 테스트 12개 통과다(할당 실패 서버를 함께 설정한 경우). 배열 할당 실패·확장 실패도 파서 검사에 포함한다.
-응답 7종과 부분 송신·EINTR·송신 실패·기한 및 소켓 플래그 복원 검사도 통과했다. sanitizer 검사는 파서·응답·수신 모듈 범위이며, 전체 서버 부하 테스트는 실행하지 않았다.
+단위 검사는 파서 97개, 정적 파일 2400개와 응답·동시 상태 검사를 포함하며 ASan·UBSan·누수 검사도 통과했다.
+기존 오류 TCP 12개, 정적 파일 TCP 15개와 동시 TCP 10개를 통과했다. 동시 검사는 느린 수신·송신, 큐 포화,
+작업 대기 제한과 실행 시간 제외, 연결 상한·재개, 단절·FD 재사용, 정상·기한 종료를 포함한다.
+동시 서버 ASan·UBSan·누수 검사는 병렬 요청·단절·큐 포화·정상 종료 4개 시나리오를 통과했다.
+TSan은 런타임의 `unexpected memory mapping` 오류로 시작하지 못해 경합 검증을 완료하지 못했다.
+강제 프로세스 종료 경로는 정상 종료 시의 누수 검사와 구분한다. 처리량 부하 측정은 실행하지 않았다.
 
+동시 TCP 검사는 테스트 전용 파일 열기 지연 래퍼로 실행한다.
+
+```sh
+cc -std=c11 -Wall -Wextra -Wpedantic -O1 -g -pthread -I. concurrency.c static_files.c server.c http_request.c http_response.c request_io.c tests/slow_file.c -Wl,--wrap=openat -o /tmp/server-concurrency-test
+TEST_SERVER=/tmp/server-concurrency-test python3 tests/test_concurrency.py
+```
 실제 TCP 테스트의 기본 포트는 8080이다. 500 할당 실패 검사는 SERVER_ALLOC_FAIL_PORT 환경 변수로 테스트용 서버 포트를 지정해야 실행되며, 지정하지 않으면 해당 검사만 건너뛴다.
 
 ## 정적 파일 서빙
@@ -107,3 +121,5 @@ python tests/test_server.py
 
 기존 TCP 오류 테스트는 index.html 내용이 정확히 hello world(줄바꿈 없음)인 서버를 대상으로 한다.
 [정적 파일 요구사항](docs/static-files-requirements.md) · [정적 파일 설계](docs/static-files-design.md)
+
+[동시 처리 요구사항](docs/concurrency-requirements.md) · [동시 처리 설계](docs/concurrency-design.md)

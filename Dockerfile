@@ -5,4 +5,4 @@ COPY tests/ ./tests/
 COPY public/ ./public/
 RUN make
 EXPOSE 8080
-CMD ["./server", "8080", "/app/public"]
+CMD ["./server", "8080", "/app/public", "4", "64", "100"]

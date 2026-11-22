@@ -6,3 +6,5 @@ __pycache__/
 /tests/test_http_response_asan
 /tests/test_static_files
 /tests/test_static_files_asan
+/tests/test_concurrency_state
+/tests/test_concurrency_state_asan

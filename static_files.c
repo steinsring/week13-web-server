@@ -18,6 +18,8 @@ static int error_status(int error)
 }
 
 /* 링크는 열기 전과 실제 open 모두에서 거절한다. FIFO 열기도 대기하지 않는다. */
+/* 부모 디렉터리 FD에서 항목 하나를 연다. 예: public FD + docs → docs FD.
+ * 검사한 항목과 실제 연 항목이 같은지도 확인한다. */
 static int open_child(int parent, const char *name, int *status)
 {
     struct stat before, after;
@@ -40,6 +42,9 @@ static int open_child(int parent, const char *name, int *status)
 /* 디렉터리 FD 스택으로 실제 경로를 순서대로 확인한다.
  * a/../b에서도 a를 건너뛰지 않는다. 루트 위로 올라갈 수 없다.
  */
+/* 경로를 / 단위로 나누어 open_child를 차례로 호출한다.
+ * docs/page.html: root → docs FD → page.html FD. 중간 FD는 닫고 최종 FD만 반환한다.
+ * 클라이언트는 루트 위로 갈 수 없다. 서버의 루트 설정에는 ../public 등을 허용한다. */
 static int walk(int root, char *path, int *status, int configuring_root)
 {
     size_t capacity = strlen(path) + 2, depth = 0;
@@ -76,6 +81,8 @@ fail:
     return -1;
 }
 
+/* 서버 시작 시 기준 디렉터리를 열고 사용 가능 여부를 검사한다.
+ * 반환 FD는 main이 유지하며, 요청마다 이 위치에서 파일을 찾는다. */
 int static_root_open(const char *path)
 {
     if (!path || !*path) { errno = EINVAL; return -1; }
@@ -103,6 +110,7 @@ static int hex(unsigned char c)
     return -1;
 }
 
+/* 파일을 찾기 전에 %20 등을 한 번만 푼다. 잘못된 인코딩·제어 문자는 거절한다. */
 static char *decode_path(const char *raw, int *status)
 {
     if (!raw || raw[0] != '/') { *status = 400; return NULL; }
@@ -124,6 +132,7 @@ static char *decode_path(const char *raw, int *status)
     return decoded;
 }
 
+/* 확장자로 Content-Type을 고른다. 모르는 확장자는 일반 바이너리로 전송한다. */
 const char *static_mime_type(const char *name)
 {
     const char *ext = strrchr(name, '.');
@@ -141,34 +150,32 @@ const char *static_mime_type(const char *name)
     return "application/octet-stream";
 }
 
-int static_files_serve(int client, int root, const HttpRequest *request)
+/* 파일 작업 전용: 디코딩·안전한 탐색·기본 페이지·메타정보를 준비한다.
+ * 소켓 송신은 하지 않는다. 성공 시 파일 FD 소유권을 호출자에게 넘긴다. */
+void static_files_prepare(int root, const HttpRequest *request, StaticFileResult *out)
 {
-    int status = 500, fd = -1, result;
+    memset(out, 0, sizeof(*out)); out->fd = -1; out->status = 500;
+    int status = 500, fd = -1;
     char *decoded = decode_path(request->path, &status);
-    if (!decoded) return http_send_status(client, status);
+    if (!decoded) { out->status = status; return; }
     size_t length = strlen(decoded);
     int trailing_slash = length && decoded[length-1] == '/';
     const char *mime = static_mime_type(decoded);
     char *copy = strdup(decoded);
-    if (!copy) { free(decoded); return http_send_status(client, 500); }
-    fd = walk(root, copy, &status, 0);
-    free(copy);
-    if (fd < 0) { free(decoded); return http_send_status(client, status); }
+    if (!copy) { free(decoded); return; }
+    fd = walk(root, copy, &status, 0); free(copy);
+    if (fd < 0) goto error;
     struct stat st;
     if (fstat(fd, &st) < 0) { status = 500; goto error; }
     if (S_ISDIR(st.st_mode)) {
         if (!trailing_slash) {
-            /* Location은 디코딩 전 경로를 사용한다. //로 시작하는 외부 이동은 막는다. */
             const char *raw = request->path;
             while (raw[0] == '/' && raw[1] == '/') ++raw;
             if (strchr(raw, '\\')) { status = 400; goto error; }
-            size_t size = strlen(raw) + (request->query ? strlen(request->query) : 0) + 4;
-            char *location = malloc(size);
-            if (!location) { status = 500; goto error; }
-            snprintf(location, size, "%s/%s%s", raw, request->query ? "?" : "",
-                     request->query ? request->query : "");
-            result = http_send_redirect(client, location);
-            free(location); close(fd); free(decoded); return result;
+            int n = snprintf(out->location, sizeof(out->location), "%s/%s%s", raw,
+                       request->query ? "?" : "", request->query ? request->query : "");
+            status = n < 0 || (size_t)n >= sizeof(out->location) ? 500 : 301;
+            goto error;
         }
         int index = open_child(fd, "index.html", &status);
         close(fd); fd = index;
@@ -178,10 +185,19 @@ int static_files_serve(int client, int root, const HttpRequest *request)
         mime = static_mime_type("index.html");
     } else if (trailing_slash) { status = 404; goto error; }
     if (!S_ISREG(st.st_mode)) { status = 403; goto error; }
-    result = http_send_file(client, fd, st.st_size, mime);
-    close(fd); free(decoded); return result;
+    out->status = 200; out->fd = fd; out->size = st.st_size; out->mime = mime;
+    free(decoded); return;
 error:
     if (fd >= 0) close(fd);
-    free(decoded);
-    return http_send_status(client, status);
+    free(decoded); out->status = status;
+}
+
+int static_files_serve(int client, int root, const HttpRequest *request)
+{
+    StaticFileResult result;
+    static_files_prepare(root, request, &result);
+    if (result.status == 301) return http_send_redirect(client, result.location);
+    if (result.status != 200) return http_send_status(client, result.status);
+    int sent = http_send_file(client, result.fd, result.size, result.mime);
+    close(result.fd); return sent;
 }
