@@ -5,7 +5,7 @@ class Running:
     def __init__(self,root,workers=2,queue=16,limit=40,delay=0):
         s=socket.socket();s.bind(('127.0.0.1',0));self.port=s.getsockname()[1];s.close()
         env=dict(os.environ,TEST_OPEN_DELAY_MS=str(delay))
-        self.proc=subprocess.Popen([BINARY,str(self.port),str(root),str(workers),str(queue),str(limit),'1048576','30'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=env)
+        self.proc=subprocess.Popen([BINARY,str(self.port),str(root),str(workers),str(queue),str(limit),'1048576','30','10','1'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=env)
         line=self.proc.stdout.readline()
         if not line.startswith(b'Listening'):
             _,err=self.proc.communicate(timeout=3)
@@ -99,5 +99,5 @@ class ConcurrencyTests(unittest.TestCase):
         self.assertEqual(s.request(),(200,b'index'));a.close()
     def test_invalid_cli(self):
         for values in ([],['8080',str(self.root),'0','1','1'],['8080',str(self.root),'1','0','1'],['8080',str(self.root),'1','1','0'],['8080',str(self.root),'1x','1','1']):
-            self.assertNotEqual(subprocess.run([BINARY,*values],capture_output=True,timeout=3).returncode,0)
+            self.assertNotEqual(subprocess.run([BINARY,*values,'1048576','30','10','1'],capture_output=True,timeout=3).returncode,0)
 if __name__=='__main__':unittest.main(verbosity=2)

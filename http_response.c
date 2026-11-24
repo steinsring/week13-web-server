@@ -109,13 +109,20 @@ int http_send_file(int client, int fd, off_t size, const char *mime)
 int http_format_header(char *out, size_t capacity, int status, const char *mime,
                        off_t length, const char *location)
 {
+    return http_format_header_policy(out, capacity, status, mime, length, location, 1);
+}
+
+int http_format_header_policy(char *out, size_t capacity, int status, const char *mime,
+                              off_t length, const char *location, int close_connection)
+{
     const char *reason = http_status_reason(status);
     if (!reason) return -1;
+    const char *connection = close_connection ? "Connection: close\r\n" : "";
     int n;
     if (location)
-        n = snprintf(out, capacity, "HTTP/1.1 %d %s\r\nLocation: %s\r\nContent-Length: 0\r\nConnection: close\r\n\r\n", status, reason, location);
+        n = snprintf(out, capacity, "HTTP/1.1 %d %s\r\nLocation: %s\r\nContent-Length: 0\r\n%s\r\n", status, reason, location, connection);
     else
-        n = snprintf(out, capacity, "HTTP/1.1 %d %s\r\nContent-Type: %s\r\nContent-Length: %jd\r\nConnection: close\r\n\r\n", status, reason, mime, (intmax_t)length);
+        n = snprintf(out, capacity, "HTTP/1.1 %d %s\r\nContent-Type: %s\r\nContent-Length: %jd\r\n%s\r\n", status, reason, mime, (intmax_t)length, connection);
     return n < 0 || (size_t)n >= capacity ? -1 : n;
 }
 const char *http_status_reason(int status)
@@ -141,6 +148,11 @@ const char *http_status_reason(int status)
 /* 204에는 본문뿐 아니라 Content-Length도 넣지 않는다. */
 int http_format_no_content(char *out, size_t capacity)
 {
-    int n = snprintf(out, capacity, "HTTP/1.1 204 No Content\r\nConnection: close\r\n\r\n");
+    return http_format_no_content_policy(out, capacity, 1);
+}
+int http_format_no_content_policy(char *out, size_t capacity, int close_connection)
+{
+    int n = snprintf(out, capacity, "HTTP/1.1 204 No Content\r\n%s\r\n",
+                     close_connection ? "Connection: close\r\n" : "");
     return n < 0 || (size_t)n >= capacity ? -1 : n;
 }

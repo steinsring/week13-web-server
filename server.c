@@ -17,7 +17,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-/* 일곱 인자를 모두 요구한다. 예시 수치는 기본값이 아니다. */
+/* 아홉 인자를 모두 요구한다. 예시 수치는 기본값이 아니다. */
 static int read_number(const char* text, size_t maximum, size_t* out)
 {
     if (!*text)
@@ -75,19 +75,23 @@ typedef struct {
     size_t connection_limit;
     size_t body_limit;
     size_t body_timeout;
+    size_t idle_timeout;
+    size_t max_requests;
 } ServerConfig;
 
 static int read_config(int argc, char** argv, ServerConfig* config)
 {
     /* 초를 밀리초로 바꾼 뒤 현재 시각에 더할 여유까지 남겨 둔다. */
-    if (argc != 8
+    if (argc != 10
         || read_number(argv[1], 65535, &config->port)
         || read_number(argv[3], SIZE_MAX / sizeof(pthread_t), &config->workers)
         || read_number(argv[4], SIZE_MAX, &config->queue_limit)
         || read_number(argv[5], UINT32_MAX - 2, &config->connection_limit)
         || read_number(argv[6], SIZE_MAX, &config->body_limit)
-        || read_number(argv[7], INT64_MAX / 2000, &config->body_timeout)) {
-        fprintf(stderr, "Usage: %s port root workers queue_limit connection_limit body_limit body_timeout_seconds\n", argv[0]);
+        || read_number(argv[7], INT64_MAX / 2000, &config->body_timeout)
+        || read_number(argv[8], INT64_MAX / 2000, &config->idle_timeout)
+        || read_number(argv[9], UINT64_MAX, &config->max_requests)) {
+        fprintf(stderr, "Usage: %s port root workers queue_limit connection_limit body_limit body_timeout_seconds idle_timeout_seconds max_requests\n", argv[0]);
         return -1;
     }
     config->root = argv[2];
@@ -136,7 +140,8 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
     int result = concurrent_server_run(listener, root, config.workers,
-        config.queue_limit, config.connection_limit, config.body_limit, config.body_timeout);
+        config.queue_limit, config.connection_limit, config.body_limit, config.body_timeout,
+        config.idle_timeout, config.max_requests);
     close(listener);
     close(root);
     return result < 0 ? EXIT_FAILURE : EXIT_SUCCESS;

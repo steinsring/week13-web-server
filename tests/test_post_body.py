@@ -37,7 +37,7 @@ class PostBodyTests(unittest.TestCase):
             probe.bind(('127.0.0.1', 0))
             self.port = probe.getsockname()[1]
         self.proc = subprocess.Popen(
-            [BINARY, str(self.port), str(root), '2', '16', '100', '65536', '2'],
+            [BINARY, str(self.port), str(root), '2', '16', '100', '65536', '2', '10', '1'],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if not self.proc.stdout.readline().startswith(b'Listening'):
             _, err = self.proc.communicate(timeout=3)
@@ -171,7 +171,7 @@ class PostBodyTests(unittest.TestCase):
     def test_invalid_new_cli_values(self):
         base = [BINARY, '8080', self.tmp.name, '1', '1', '1']
         for suffix in ([], ['65536'], ['0', '2'], ['65536', '0'], ['65536', '-1'], ['65536', '999999999999999999999']):
-            self.assertNotEqual(subprocess.run(base + suffix, capture_output=True, timeout=3).returncode, 0)
+            self.assertNotEqual(subprocess.run(base + suffix + ['10', '1'], capture_output=True, timeout=3).returncode, 0)
 
 
 if __name__ == '__main__':

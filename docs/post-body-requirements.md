@@ -1,5 +1,7 @@
 # POST 본문 수신 요구사항 명세
 
+다음 6단계는 [keep-alive 요구사항](keep-alive-requirements.md)이다. 해당 단계를 적용하면 연결당 한 요청 후 종료하던 정책을 조건부 재사용으로 대체한다.
+
 이번 5단계는 **POST 본문을 끝까지 받아 요청별 메모리에 보관하는 기능**이다. 구현했으며 검증 범위는 아래와 설계 문서에 기록한다.
 구현 방법은 [설계 명세](post-body-design.md), 이전 단계는 [동시 처리 요구사항](concurrency-requirements.md)에 정리한다.
 

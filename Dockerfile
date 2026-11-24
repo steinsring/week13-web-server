@@ -6,4 +6,4 @@ COPY tests/ ./tests/
 COPY public/ ./public/
 RUN make && chmod +x start.sh
 EXPOSE 8080
-CMD ["./server", "8080", "/app/public", "4", "64", "100", "1048576", "30"]
+CMD ["./server", "8080", "/app/public", "4", "64", "100", "1048576", "30", "10", "100"]

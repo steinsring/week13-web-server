@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
 #include <sys/socket.h>
@@ -26,6 +27,7 @@
 typedef struct Connection Connection;
 typedef struct Job Job;
 typedef enum { RECEIVING,
+    KEEP_ALIVE_IDLE,
     BODY_RECEIVING,
     WAITING,
     RETRYING,
@@ -45,6 +47,8 @@ struct Job {
     char bytes[CHUNK_SIZE];
     size_t length;
     int64_t queued_at;
+    uint64_t request_number;
+    uint32_t generation;
 };
 struct Connection {
     int socket, closed;
@@ -55,6 +59,10 @@ struct Connection {
     int64_t body_deadline, interim_deadline;
     size_t interim_sent;
     int interim_pending;
+    int request_complete, close_after_response;
+    uint64_t completed_requests;
+    char pending[4096]; /* 한 recv의 잔여 데이터만 유지한다. 응답 중에는 읽지 않는다. */
+    size_t pending_length;
     Job job; /* 연결당 하나: 완료 결과 슬롯도 미리 확보된다. */
     char header[HTTP_HEADER_LIMIT + 1024];
     size_t header_length, header_sent, chunk_sent;
@@ -74,12 +82,14 @@ typedef struct {
     int64_t shutdown_at, accept_retry_at;
     size_t limit, objects;
     size_t body_limit, body_timeout;
+    size_t idle_timeout, max_requests;
     Connection** slots;
     uint32_t* generations;
     Pool pool;
 } Loop;
 static volatile sig_atomic_t stop_requested;
 static volatile sig_atomic_t signal_wake = -1;
+static int mark_shutdown_response(Connection* connection);
 
 static int64_t now_ms(void)
 {
@@ -301,6 +311,44 @@ static void close_connection(Loop* loop, Connection* connection)
     if (state == IDLE)
         release_connection(loop, connection);
 }
+
+/* Connection의 여러 줄과 쉼표 목록 중 close 하나만 있어도 종료가 우선이다. */
+static int client_requests_close(const HttpRequest* request)
+{
+    size_t cursor = 0;
+    const HttpHeader* header;
+    while ((header = http_request_next_header(request, "Connection", &cursor))) {
+        const char* p = header->value;
+        while (*p) {
+            while (*p == ' ' || *p == '\t' || *p == ',')
+                ++p;
+            const char* start = p;
+            while (*p && *p != ',')
+                ++p;
+            const char* end = p;
+            while (end > start && (end[-1] == ' ' || end[-1] == '\t'))
+                --end;
+            if (end - start == 5 && !strncasecmp(start, "close", 5))
+                return 1;
+        }
+    }
+    return 0;
+}
+
+static int response_must_close(Loop* loop, Connection* connection)
+{
+    return connection->close_after_response || loop->stopping || stop_requested
+        || connection->completed_requests + 1 >= loop->max_requests;
+}
+
+/* 현재 요청 경계를 넘은 바이트는 아직 파싱하지 않고 다음 차례까지 보관한다. */
+static void save_pending(Connection* connection, const char* data, size_t length)
+{
+    if (length)
+        memcpy(connection->pending, data, length);
+    connection->pending_length = length;
+}
+
 static void error_response(Loop* loop, Connection* connection, int status)
 {
     if (connection->closed)
@@ -309,6 +357,8 @@ static void error_response(Loop* loop, Connection* connection, int status)
         close_connection(loop, connection);
         return;
     }
+    if (!connection->request_complete || (status != 403 && status != 404))
+        connection->close_after_response = 1;
     /* 100을 일부 보냈으면 끝까지 보낸 뒤 최종 오류를 붙인다.
      * 한 바이트도 보내지 않았다면 임시 응답은 취소할 수 있다. */
     if (!connection->interim_sent)
@@ -321,7 +371,8 @@ static void error_response(Loop* loop, Connection* connection, int status)
     connection->job.length = strlen(body);
     memcpy(connection->job.bytes, body, connection->job.length);
     connection->job.remaining = 0;
-    int n = http_format_header(connection->header, sizeof(connection->header), status, "text/plain; charset=utf-8", (off_t)connection->job.length, NULL);
+    int n = http_format_header_policy(connection->header, sizeof(connection->header), status,
+        "text/plain; charset=utf-8", (off_t)connection->job.length, NULL, response_must_close(loop, connection));
     if (n < 0) {
         close_connection(loop, connection);
         return;
@@ -335,6 +386,8 @@ static void error_response(Loop* loop, Connection* connection, int status)
 }
 static void schedule_read(Loop* loop, Connection* connection, int first)
 {
+    connection->job.request_number = connection->completed_requests + 1;
+    connection->job.generation = connection->generation;
     connection->job.first = first;
     connection->job.queued_at = now_ms();
     connection->deadline = connection->job.queued_at + 10000;
@@ -388,13 +441,20 @@ static void completed_jobs(Loop* loop)
             release_connection(loop, connection);
             continue;
         }
+        /* 소켓 세대와 요청 순번을 모두 확인해 늦은 결과의 적용 대상을 제한한다. */
+        if (job->generation != connection->generation
+            || job->request_number != connection->completed_requests + 1) {
+            close_connection(loop, connection);
+            continue;
+        }
         if (job->status != 200 && job->status != 301) {
             error_response(loop, connection, job->status);
             continue;
         }
         connection->chunk_sent = 0;
         if (job->first) {
-            int n = http_format_header(connection->header, sizeof(connection->header), job->status, job->mime, job->total, job->status == 301 ? job->location : NULL);
+            int n = http_format_header_policy(connection->header, sizeof(connection->header), job->status,
+                job->mime, job->total, job->status == 301 ? job->location : NULL, response_must_close(loop, connection));
             if (n < 0) {
                 error_response(loop, connection, 500);
                 continue;
@@ -424,10 +484,11 @@ static int parse_status(HttpParseResult result)
         return 500;
     }
 }
-/* POST는 파일 작업 없이 최종 응답만 준비한다. 본문은 연결 정리까지 보관한다. */
+/* POST는 파일 작업 없이 최종 응답만 준비한다. 본문은 이번 요청 정리까지 보관한다. */
 static void complete_post(Loop* loop, Connection* connection)
 {
-    int n = http_format_no_content(connection->header, sizeof(connection->header));
+    connection->request_complete = 1;
+    int n = http_format_no_content_policy(connection->header, sizeof(connection->header), response_must_close(loop, connection));
     if (n < 0) {
         error_response(loop, connection, 500);
         return;
@@ -473,7 +534,10 @@ static void finish_request_headers(Loop* loop, Connection* connection, const cha
         error_response(loop, connection, status);
         return;
     }
+    connection->close_after_response = client_requests_close(&connection->request);
     if (!strcmp(connection->request.method, "GET")) {
+        connection->request_complete = 1;
+        save_pending(connection, data, length);
         retry_waiters(loop);
         schedule_read(loop, connection, 1);
         return;
@@ -485,11 +549,13 @@ static void finish_request_headers(Loop* loop, Connection* connection, const cha
     }
     connection->body_deadline = completed_at + (int64_t)loop->body_timeout * 1000;
     connection->phase = BODY_RECEIVING;
+    size_t consumed = length < body_length ? length : body_length;
+    save_pending(connection, data + consumed, length - consumed);
     if (body_length == 0) {
         complete_post(loop, connection);
         return;
     }
-    if (!receive_body_bytes(loop, connection, data, length))
+    if (!receive_body_bytes(loop, connection, data, consumed))
         return;
     if (expect_continue) {
         connection->interim_pending = 1;
@@ -499,17 +565,51 @@ static void finish_request_headers(Loop* loop, Connection* connection, const cha
         close_connection(loop, connection);
 }
 
+/* 헤더/본문 경계까지만 소비한다. 다음 요청은 응답 완료 전까지 파싱하지 않는다. */
+static int consume_received(Loop* loop, Connection* connection, const char* data, size_t length)
+{
+    if (connection->phase == BODY_RECEIVING) {
+        size_t remaining = connection->body.length - connection->body.received;
+        size_t consumed = length < remaining ? length : remaining;
+        save_pending(connection, data + consumed, length - consumed);
+        return receive_body_bytes(loop, connection, data, consumed);
+    }
+    if (now_ms() >= connection->deadline) {
+        error_response(loop, connection, 408);
+        return 0;
+    }
+    size_t consumed;
+    HttpParseResult result = http_request_feed_bytes(&connection->request, data, length, &consumed);
+    if (result == HTTP_PARSE_INCOMPLETE)
+        return 1;
+    if (result != HTTP_PARSE_COMPLETE) {
+        error_response(loop, connection, parse_status(result));
+        return 0;
+    }
+    finish_request_headers(loop, connection, data + consumed, length - consumed);
+    return 0;
+}
+
 static void receive_connection(Loop* loop, Connection* connection)
 {
     char data[4096];
-    /* LT epoll은 읽을 바이트가 남으면 다시 알려준다. 한 연결의 수신량을 제한한다. */
+    /* LT epoll로 남은 데이터는 다시 통지된다. 한 연결의 수신량을 유한하게 제한한다. */
     for (unsigned turn = 0; turn < 16; ++turn) {
         int64_t deadline = connection->phase == BODY_RECEIVING ? connection->body_deadline : connection->deadline;
         if (now_ms() >= deadline) {
-            error_response(loop, connection, 408);
+            if (connection->phase == KEEP_ALIVE_IDLE)
+                close_connection(loop, connection);
+            else
+                error_response(loop, connection, 408);
             return;
         }
-        ssize_t n = recv(connection->socket, data, sizeof(data), 0);
+        ssize_t n;
+        if (connection->pending_length) {
+            n = (ssize_t)connection->pending_length;
+            memcpy(data, connection->pending, (size_t)n);
+            connection->pending_length = 0;
+        } else
+            n = recv(connection->socket, data, sizeof(data), 0);
         if (n < 0) {
             if (errno == EINTR)
                 continue;
@@ -525,25 +625,16 @@ static void receive_connection(Loop* loop, Connection* connection)
                 close_connection(loop, connection);
             return;
         }
-        if (connection->phase == BODY_RECEIVING) {
-            if (!receive_body_bytes(loop, connection, data, (size_t)n))
+        if (connection->phase == KEEP_ALIVE_IDLE) {
+            if (now_ms() >= connection->deadline) {
+                close_connection(loop, connection);
                 return;
-            continue;
+            }
+            connection->phase = RECEIVING;
+            connection->deadline = now_ms() + 10000;
         }
-        if (now_ms() >= connection->deadline) {
-            error_response(loop, connection, 408);
+        if (!consume_received(loop, connection, data, (size_t)n))
             return;
-        }
-        size_t consumed;
-        HttpParseResult result = http_request_feed_bytes(&connection->request, data, (size_t)n, &consumed);
-        if (result == HTTP_PARSE_INCOMPLETE)
-            continue;
-        if (result != HTTP_PARSE_COMPLETE) {
-            error_response(loop, connection, parse_status(result));
-            return;
-        }
-        finish_request_headers(loop, connection, data + consumed, (size_t)n - consumed);
-        return;
     }
 }
 
@@ -586,8 +677,51 @@ static void send_body_continue(Loop* loop, Connection* connection)
         close_connection(loop, connection);
 }
 
+/* 요청 소유 자원만 정리한다. 소켓·세대·횟수·잔여 데이터는 연결이 소유한다. */
+static void reset_request(Connection* connection)
+{
+    if (connection->job.fd >= 0)
+        close(connection->job.fd);
+    http_request_destroy(&connection->request);
+    http_body_destroy(&connection->body);
+    http_request_init(&connection->request);
+    memset(&connection->job, 0, sizeof(connection->job));
+    connection->job.fd = -1;
+    connection->job.connection = connection;
+    connection->header_length = connection->header_sent = connection->chunk_sent = 0;
+    connection->bytes_sent = 0;
+    connection->interim_pending = 0;
+    connection->interim_sent = 0;
+    connection->request_complete = connection->close_after_response = 0;
+    connection->deadline = connection->body_deadline = connection->interim_deadline = 0;
+}
+
+static void finish_response(Loop* loop, Connection* connection)
+{
+    int close = response_must_close(loop, connection);
+    ++connection->completed_requests;
+    if (close) {
+        close_connection(loop, connection);
+        return;
+    }
+    reset_request(connection);
+    int buffered = connection->pending_length != 0;
+    connection->phase = buffered ? RECEIVING : KEEP_ALIVE_IDLE;
+    connection->deadline = now_ms() + (buffered ? 10000 : (int64_t)loop->idle_timeout * 1000);
+    if (interest(loop, connection, EPOLLIN) < 0) {
+        close_connection(loop, connection);
+        return;
+    }
+    if (buffered)
+        receive_connection(loop, connection);
+}
+
 static void send_connection(Loop* loop, Connection* connection)
 {
+    if (stop_requested && mark_shutdown_response(connection) < 0) {
+        close_connection(loop, connection);
+        return;
+    }
     if (connection->interim_pending) {
         if (send_continue(loop, connection) != 1)
             return;
@@ -622,7 +756,7 @@ static void send_connection(Loop* loop, Connection* connection)
         retry_waiters(loop);
         schedule_read(loop, connection, 0);
     } else
-        close_connection(loop, connection);
+        finish_response(loop, connection);
 }
 static void monitor_listener(Loop* loop)
 {
@@ -733,6 +867,8 @@ static void expire_connections(Loop* loop)
             continue;
         if (connection->phase == RECEIVING)
             error_response(loop, connection, 408);
+        else if (connection->phase == KEEP_ALIVE_IDLE)
+            close_connection(loop, connection);
         else if (connection->phase == SENDING)
             close_connection(loop, connection);
         else if (connection->phase == RETRYING)
@@ -762,11 +898,15 @@ static void dispatch_event(Loop* loop, const struct epoll_event* event)
     if (!connection || connection->generation != gen || connection->closed)
         return;
     uint32_t e = event->events;
+    if (stop_requested && connection->phase == KEEP_ALIVE_IDLE) {
+        close_connection(loop, connection);
+        return;
+    }
     if (e & (EPOLLERR | EPOLLHUP)) {
         close_connection(loop, connection);
         return;
     }
-    if ((connection->phase == RECEIVING || connection->phase == BODY_RECEIVING) && (e & (EPOLLIN | EPOLLRDHUP)))
+    if ((connection->phase == RECEIVING || connection->phase == BODY_RECEIVING || connection->phase == KEEP_ALIVE_IDLE) && (e & (EPOLLIN | EPOLLRDHUP)))
         receive_connection(loop, connection);
     else if (connection->phase == BODY_RECEIVING && (e & EPOLLOUT))
         send_body_continue(loop, connection);
@@ -784,13 +924,44 @@ static void force_shutdown(Loop* loop)
     _exit(EXIT_SUCCESS);
 }
 
+/* 아직 헤더를 한 바이트도 보내지 않았을 때만 종료 표시를 덧붙일 수 있다. */
+static int mark_shutdown_response(Connection* connection)
+{
+    connection->close_after_response = 1;
+    if (connection->header_sent || !connection->header_length
+        || strstr(connection->header, "Connection: close\r\n"))
+        return 0;
+    static const char close_header[] = "Connection: close\r\n";
+    size_t n = sizeof(close_header) - 1;
+    if (connection->header_length < 2 || connection->header_length + n >= sizeof(connection->header))
+        return -1;
+    size_t insertion = connection->header_length - 2;
+    memmove(connection->header + insertion + n, connection->header + insertion, 3);
+    memcpy(connection->header + insertion, close_header, n);
+    connection->header_length += n;
+    return 0;
+}
+
+static void begin_shutdown(Loop* loop)
+{
+    loop->stopping = 1;
+    loop->shutdown_at = now_ms() + 10000;
+    monitor_listener(loop);
+    for (size_t i = 0; i < loop->limit; ++i) {
+        Connection* connection = loop->slots[i];
+        if (!connection || connection->closed)
+            continue;
+        if (connection->phase == KEEP_ALIVE_IDLE)
+            close_connection(loop, connection);
+        else if (mark_shutdown_response(connection) < 0)
+            close_connection(loop, connection);
+    }
+}
+
 static void update_loop_state(Loop* loop)
 {
-    if (stop_requested && !loop->stopping) {
-        loop->stopping = 1;
-        loop->shutdown_at = now_ms() + 10000;
-        monitor_listener(loop);
-    }
+    if (stop_requested && !loop->stopping)
+        begin_shutdown(loop);
     completed_jobs(loop);
     expire_connections(loop);
     retry_waiters(loop);
@@ -858,9 +1029,10 @@ static void stop_pool(Pool* pool)
     pthread_mutex_destroy(&pool->mutex);
 }
 
-int concurrent_server_run(int listener, int root, size_t workers, size_t queue_limit, size_t limit, size_t body_limit, size_t body_timeout)
+int concurrent_server_run(int listener, int root, size_t workers, size_t queue_limit, size_t limit,
+    size_t body_limit, size_t body_timeout, size_t idle_timeout, size_t max_requests)
 {
-    Loop loop = { .listener = listener, .body_limit = body_limit, .body_timeout = body_timeout };
+    Loop loop = { .listener = listener, .body_limit = body_limit, .body_timeout = body_timeout, .idle_timeout = idle_timeout, .max_requests = max_requests };
     int run_result = -1;
     sigset_t termination, previous_mask;
     sigemptyset(&termination);

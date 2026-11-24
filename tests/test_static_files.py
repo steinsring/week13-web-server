@@ -29,7 +29,7 @@ class StaticFilesTests(unittest.TestCase):
         for ext in ('html','htm','CSS','js','txt','png','jpg','jpeg','gif','svg','ico'):
             (cls.root/('sample.'+ext)).write_bytes(b'abc\x00def')
         s=socket.socket(); s.bind(('127.0.0.1',0)); cls.port=s.getsockname()[1]; s.close()
-        cls.proc=subprocess.Popen([SERVER,str(cls.port),str(cls.root),'4','64','100','1048576','30'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        cls.proc=subprocess.Popen([SERVER,str(cls.port),str(cls.root),'4','64','100','1048576','30','10','1'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         if cls.proc.stdout.readline()!=f'Listening on port {cls.port}\n'.encode():
             raise RuntimeError(cls.proc.stderr.read().decode())
     @classmethod
@@ -107,7 +107,7 @@ class StaticFilesTests(unittest.TestCase):
         self.assertEqual(len(list(pathlib.Path(f'/proc/{self.proc.pid}/fd').iterdir())),before)
     def test_bad_startup(self):
         for root in (self.base/'absent',self.root/'index.html',self.root/'dirlink',self.root/'blocked'):
-            result=subprocess.run([SERVER,'18090',str(root),'4','64','100','1048576','30'],capture_output=True,timeout=3)
+            result=subprocess.run([SERVER,'18090',str(root),'4','64','100','1048576','30','10','1'],capture_output=True,timeout=3)
             self.assertNotEqual(result.returncode,0)
         self.assertFalse((self.base/'absent').exists())
 

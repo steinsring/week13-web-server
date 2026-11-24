@@ -1,7 +1,7 @@
 # C 웹 서버 · 동시 정적 파일 서빙
 
 C와 POSIX 소켓으로 HTTP 요청을 받고, 지정한 파일 루트의 정적 파일을 응답한다.
-여러 연결을 동시에 처리하고, 각 요청의 응답이 끝나면 해당 연결을 닫는다.
+여러 연결을 동시에 처리하며 HTTP/1.1 연결을 재사용해 요청을 순서대로 처리한다.
 
 ## 코드 읽는 순서
 
@@ -46,16 +46,16 @@ docker run --rm --name week13-web-server --mount "type=bind,source=$PWD/public,t
 호스트 커널·CPU 아키텍처와 실행 중 변경하는 파일까지 동일해지는 것은 아니다.
 
 VS Code에서는 Dev Containers 확장을 설치하고 `Dev Containers: Reopen in Container`를 선택한다.
-컨테이너 터미널에서 `./server 8080 ./public 4 64 100 1048576 30`으로 실행한다. 서버는 자동 실행하지 않는다.
+컨테이너 터미널에서 `./server 8080 ./public 4 64 100 1048576 30 10 100`으로 실행한다. 서버는 자동 실행하지 않는다.
 
 ## Linux에서 직접 실행
 
 ```sh
 make
-./server 8080 ./public 4 64 100 1048576 30
+./server 8080 ./public 4 64 100 1048576 30 10 100
 ```
 
-포트·정적 파일 루트·작업 스레드 수·대기 작업 수 상한·유지 연결 수 상한·본문 최대 바이트·본문 총수신 초는 모두 필수 인자다. 위 숫자는 실행 예시이며 서버 기본값이 아니다. Linux epoll을 사용하므로 macOS에서는 Docker Linux로 실행한다. public 폴더와 index.html은 실행 전에 직접 준비한다. 직접 실행 시 Ctrl+C로 종료한다.
+포트·정적 파일 루트·작업 스레드 수·대기 작업 수 상한·유지 연결 수 상한·본문 최대 바이트·본문 총수신 초·keep-alive idle 초·최대 요청 수는 모두 필수 인자다. 위 숫자는 실행 예시이며 서버 기본값이 아니다. Linux epoll을 사용하므로 macOS에서는 Docker Linux로 실행한다. public 폴더와 index.html은 실행 전에 직접 준비한다. 직접 실행 시 Ctrl+C로 종료한다.
 
 ## 이번 단계의 범위
 
@@ -64,7 +64,7 @@ make
 - GET은 정적 파일, POST는 본문 수신 완료 후 204로 응답한다. 그 밖의 메서드는 501이다.
 - 헤더의 순서·이름 대소문자를 보존한다. 이름 조회는 대소문자를 무시한다.
 - `Host`가 정확히 한 줄인지와 값 형식을 검사한다.
-- GET 성공은 정적 파일의 HTTP 200, 파일 접근 오류와 기존 오류는 400·403·404·431·500·408·501·503·505로 응답 후 연결 종료. 본문에는 상태명만 보낸다.
+- GET 성공은 정적 파일의 HTTP 200, 파일 접근 오류와 기존 오류는 400·403·404·431·500·408·501·503·505로 응답한다. 완전 수신한 403·404는 재사용하고 나머지 오류는 닫는다. 본문에는 상태명만 보낸다.
 - 요청 헤더는 최대 8192바이트다. 초과 시 431을 시도하고, 수신 중 연결이 끊기면 닫는다.
 - POST 본문은 길이와 원문 바이트로 보관한다. JSON·폼·쿼리 내용 해석과 전체 URI 문법 검증은 추가하지 않았다.
 - Content-Length를 검증하고 길이만큼만 받는다. 중복 CL·CL+TE는 400, 유효 chunked 전송은 미지원 501이다. GET의 양수 CL은 400이다.
@@ -127,9 +127,9 @@ TEST_SERVER=/tmp/server-concurrency-test python3 tests/test_concurrency.py
 
 ## POST 본문 수신
 
-`sh ./start.sh`로도 실행할 수 있다. 스크립트의 PORT·ROOT·WORKERS·QUEUE_LIMIT·CONNECTION_LIMIT·BODY_LIMIT·BODY_TIMEOUT을 수정하면 일곱 인자로 전달한다. 공백이 있는 ROOT도 한 인자로 전달한다. Docker 이미지에서는 실행 권한을 설정하므로 `./start.sh`도 사용할 수 있다.
+`sh ./start.sh`로도 실행할 수 있다. 스크립트의 PORT·ROOT·WORKERS·QUEUE_LIMIT·CONNECTION_LIMIT·BODY_LIMIT·BODY_TIMEOUT·KEEP_ALIVE_TIMEOUT·KEEP_ALIVE_MAX_REQUESTS를 수정하면 아홉 인자로 전달한다. 공백이 있는 ROOT도 한 인자로 전달한다. Docker 이미지에서는 실행 권한을 설정하므로 `./start.sh`도 사용할 수 있다.
 
-모든 POST 경로는 본문 완료 후 `204 No Content`로 응답하고 연결을 닫는다. 응답 본문·Content-Length·Transfer-Encoding은 없다. 본문 선언 길이를 넘는 데이터는 저장하거나 다음 요청으로 처리하지 않는다.
+모든 POST 경로는 본문 완료 후 `204 No Content`로 응답한다. 응답 본문·Content-Length·Transfer-Encoding은 없다. 본문 선언 길이 뒤의 데이터는 다음 요청으로 보관하며 현재 응답 뒤에 처리한다.
 본문 총기한은 헤더 완료부터 시작하고 수신 조각이나 100 Continue로 늘어나지 않는다. 크기 초과는 413, 미달 EOF는 400, 기한 초과는 408, 본문 할당 실패는 500이다.
 Expect: 100-continue는 사전 검사를 마치고 필요할 때만 보낸다. 그 밖의 기대 값은 417이다. 임시 응답과 최종 응답의 부분 송신 상태는 별도로 관리한다.
 
@@ -138,3 +138,20 @@ python3 tests/test_post_body.py
 ```
 
 [POST 요구사항](docs/post-body-requirements.md) · [POST 설계](docs/post-body-design.md)
+
+## Keep-alive
+
+HTTP/1.1은 기본 유지한다. Connection 헤더의 어느 쉼표 토큰에든 close가 있으면 종료를 우선한다. 유지 응답에는 Connection: close를 넣지 않는다. 204와 100에는 길이 헤더를 넣지 않는다.
+
+현재 최종 응답을 끝까지 보낸 뒤에만 다음 요청을 시작한다. 한 recv의 잔여 데이터는 연결별 4096바이트 버퍼에 보관하고 응답 중 추가 읽기를 멈춘다. 이전 요청의 헤더·본문·파일은 정리하면서 소켓·횟수·잔여 데이터는 유지한다.
+
+다음 요청이 없으면 설정한 idle 기한 뒤 응답 없이 닫는다. 첫 바이트를 읽으면 별도의 헤더 10초 기한을 시작한다. N번째 최종 응답은 close이며 100은 횟수에 넣지 않는다. start.sh의 초기 idle 10초·최대 100회는 수정 가능한 설정이다. 종료 시 idle 연결은 바로 닫고, 진행 중 요청만 기존 유예 내에 마무리한다.
+
+```sh
+python3 tests/test_keep_alive.py
+```
+
+기존 EOF 기반 TCP 검사는 최대 요청 수를 1로 설정해 이전 프로토콜 응답을 검사한다. 새 keep-alive 검사는 기본 유지와 응답 경계로 다음 요청을 구분한다.
+[Keep-alive 요구사항](docs/keep-alive-requirements.md) · [설계](docs/keep-alive-design.md)
+
+이번 keep-alive 단계 검증: 단위 및 sanitizer 검사, 새 TCP 13개와 기존 오류 12개·정적 15개·동시 10개가 통과했다. 전체 서버 ASan·UBSan·누수 검사에서는 keep-alive 13개와 POST 13개가 통과했다. Docker 이미지의 start.sh와 curl 연결 재사용도 확인했다.
