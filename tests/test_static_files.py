@@ -29,7 +29,7 @@ class StaticFilesTests(unittest.TestCase):
         for ext in ('html','htm','CSS','js','txt','png','jpg','jpeg','gif','svg','ico'):
             (cls.root/('sample.'+ext)).write_bytes(b'abc\x00def')
         s=socket.socket(); s.bind(('127.0.0.1',0)); cls.port=s.getsockname()[1]; s.close()
-        cls.proc=subprocess.Popen([SERVER,str(cls.port),str(cls.root),'4','64','100'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        cls.proc=subprocess.Popen([SERVER,str(cls.port),str(cls.root),'4','64','100','1048576','30'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         if cls.proc.stdout.readline()!=f'Listening on port {cls.port}\n'.encode():
             raise RuntimeError(cls.proc.stderr.read().decode())
     @classmethod
@@ -49,7 +49,11 @@ class StaticFilesTests(unittest.TestCase):
         head,body=data.split(b'\r\n\r\n',1)
         lines=head.decode().split('\r\n')
         code=int(lines[0].split()[1]); headers=dict(line.split(': ',1) for line in lines[1:])
-        self.assertEqual(int(headers['Content-Length']),len(body))
+        if code == 204:
+            self.assertNotIn('Content-Length', headers)
+            self.assertEqual(body, b'')
+        else:
+            self.assertEqual(int(headers['Content-Length']),len(body))
         self.assertEqual(headers['Connection'],'close')
         return code,headers,body
     def test_index(self):
@@ -92,8 +96,9 @@ class StaticFilesTests(unittest.TestCase):
     def test_nonregular_and_permissions(self):
         for path in ('/fifo','/socket','/denied','/blocked/'):
             self.assertEqual(self.request(path)[0],403,path)
-    def test_methods_unchanged(self):
-        self.assertEqual(self.request('/', 'POST')[0],501)
+    def test_method_policy(self):
+        self.assertEqual(self.request('/', 'POST')[0],204)
+        self.assertEqual(self.request('/', 'PUT')[0],501)
     def test_cleanup_and_recovery(self):
         before=len(list(pathlib.Path(f'/proc/{self.proc.pid}/fd').iterdir()))
         for _ in range(50):
@@ -102,7 +107,7 @@ class StaticFilesTests(unittest.TestCase):
         self.assertEqual(len(list(pathlib.Path(f'/proc/{self.proc.pid}/fd').iterdir())),before)
     def test_bad_startup(self):
         for root in (self.base/'absent',self.root/'index.html',self.root/'dirlink',self.root/'blocked'):
-            result=subprocess.run([SERVER,'18090',str(root),'4','64','100'],capture_output=True,timeout=3)
+            result=subprocess.run([SERVER,'18090',str(root),'4','64','100','1048576','30'],capture_output=True,timeout=3)
             self.assertNotEqual(result.returncode,0)
         self.assertFalse((self.base/'absent').exists())
 

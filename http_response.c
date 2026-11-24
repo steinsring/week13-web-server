@@ -34,6 +34,8 @@ int http_send_status(int client, int status)
     case 431: reason = "Request Header Fields Too Large"; break;
     case 500: reason = "Internal Server Error"; break;
     case 408: reason = "Request Timeout"; break;
+    case 413: reason = "Content Too Large"; break;
+    case 417: reason = "Expectation Failed"; break;
     case 501: reason = "Not Implemented"; break;
     case 503: reason = "Service Unavailable"; break;
     case 505: reason = "HTTP Version Not Supported"; break;
@@ -125,6 +127,8 @@ const char *http_status_reason(int status)
     case 403: return "Forbidden";
     case 404: return "Not Found";
     case 408: return "Request Timeout";
+    case 413: return "Content Too Large";
+    case 417: return "Expectation Failed";
     case 431: return "Request Header Fields Too Large";
     case 500: return "Internal Server Error";
     case 501: return "Not Implemented";
@@ -132,4 +136,11 @@ const char *http_status_reason(int status)
     case 505: return "HTTP Version Not Supported";
     default: return NULL;
     }
+}
+
+/* 204에는 본문뿐 아니라 Content-Length도 넣지 않는다. */
+int http_format_no_content(char *out, size_t capacity)
+{
+    int n = snprintf(out, capacity, "HTTP/1.1 204 No Content\r\nConnection: close\r\n\r\n");
+    return n < 0 || (size_t)n >= capacity ? -1 : n;
 }

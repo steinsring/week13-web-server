@@ -42,9 +42,12 @@ void http_request_init(HttpRequest *request);
 void http_request_destroy(HttpRequest *request);
 
 /* 받은 조각을 공급한다. 완성 전 INCOMPLETE, 헤더 끝 COMPLETE.
- * 헤더 뒤 본문은 이번 단계에서 처리하지 않는다.
+ * 이 파서는 헤더까지만 처리한다. 본문은 별도 수신기가 처리한다.
  */
 HttpParseResult http_request_feed(HttpRequest *request, const char *data, size_t length);
+/* consumed는 이번 조각 중 헤더가 소비한 길이다. 남은 바이트는 본문이다. */
+HttpParseResult http_request_feed_bytes(HttpRequest *request, const char *data,
+                                        size_t length, size_t *consumed);
 
 /* cursor를 0으로 시작해 반복 호출하면 같은 이름의 헤더를 순서대로 찾는다.
  * 이름은 대소문자를 무시한다. 더 없으면 NULL.

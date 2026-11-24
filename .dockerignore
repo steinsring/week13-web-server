@@ -10,3 +10,5 @@ tests/test_static_files_asan
 **/__pycache__
 tests/test_concurrency_state
 tests/test_concurrency_state_asan
+tests/test_http_body
+tests/test_http_body_asan

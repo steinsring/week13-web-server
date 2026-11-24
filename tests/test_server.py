@@ -63,8 +63,10 @@ class ServerTests(unittest.TestCase):
                 self.check_status(request, 400)
 
     def test_method_policy(self):
-        for method in (b"POST", b"get", b"CUSTOM"):
+        for method in (b"get", b"CUSTOM"):
             self.check_status(method + b" / HTTP/1.1\r\nHost: localhost\r\n\r\n", 501)
+        self.assertEqual(exchange(b"POST / HTTP/1.1\r\nHost: localhost\r\n\r\n"),
+                         b"HTTP/1.1 204 No Content\r\nConnection: close\r\n\r\n")
 
     def test_unsupported_version_without_waiting_for_headers(self):
         for version in (b"HTTP/1.0", b"HTTP/2.0", b"HTTP/9.9"):
@@ -104,10 +106,10 @@ class ServerTests(unittest.TestCase):
                 connection.sendall(NORMAL)
         self.assertEqual(exchange(NORMAL), EXPECTED)
 
-    def test_stored_headers_not_body_validation(self):
+    def test_conflicting_body_headers(self):
         request = (b"GET / HTTP/1.1\r\nHost: [::1]:8080\r\n"
                    b"Content-Length: abc\r\nTransfer-Encoding: anything\r\n\r\n")
-        self.assertEqual(exchange(request), EXPECTED)
+        self.assertEqual(exchange(request), expected(400))
 
     def test_timeout_idle(self):
         with socket.create_connection(("127.0.0.1", PORT), timeout=14) as connection:

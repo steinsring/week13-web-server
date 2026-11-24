@@ -1,12 +1,12 @@
 #define _POSIX_C_SOURCE 200809L
+#include "concurrency.h"
 #include "http_request.h"
 #include "http_response.h"
 #include "request_io.h"
 #include "static_files.h"
-#include "concurrency.h"
-#include <stdint.h>
-#include <pthread.h>
 #include <fcntl.h>
+#include <pthread.h>
+#include <stdint.h>
 #include <sys/resource.h>
 
 #include <arpa/inet.h>
@@ -17,16 +17,21 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-
-/* 이번 단계에서는 다섯 인자를 모두 요구한다. 예시 수치는 기본값이 아니다. */
-static int read_number(const char *text, size_t maximum, size_t *out)
+/* 일곱 인자를 모두 요구한다. 예시 수치는 기본값이 아니다. */
+static int read_number(const char* text, size_t maximum, size_t* out)
 {
-    if (!*text) return -1;
-    for (const char *p=text; *p; ++p) if (*p<'0'||*p>'9') return -1;
-    errno=0; char *end;
-    unsigned long long value=strtoull(text,&end,10);
-    if(errno||*end||value==0||value>maximum)return -1;
-    *out=(size_t)value;return 0;
+    if (!*text)
+        return -1;
+    for (const char* p = text; *p; ++p)
+        if (*p < '0' || *p > '9')
+            return -1;
+    errno = 0;
+    char* end;
+    unsigned long long value = strtoull(text, &end, 10);
+    if (errno || *end || value == 0 || value > maximum)
+        return -1;
+    *out = (size_t)value;
+    return 0;
 }
 
 /* socket → bind → listen 순서로 연결을 받을 소켓을 준비한다. */
@@ -44,11 +49,11 @@ static int create_listener(int port)
         close(server);
         return -1;
     }
-    struct sockaddr_in address = {0};
+    struct sockaddr_in address = { 0 };
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = htonl(INADDR_ANY);
     address.sin_port = htons((unsigned short)port);
-    if (bind(server, (struct sockaddr *)&address, sizeof(address)) < 0) {
+    if (bind(server, (struct sockaddr*)&address, sizeof(address)) < 0) {
         perror("bind");
         close(server);
         return -1;
@@ -62,31 +67,77 @@ static int create_listener(int port)
     return server;
 }
 
+typedef struct {
+    size_t port;
+    const char* root;
+    size_t workers;
+    size_t queue_limit;
+    size_t connection_limit;
+    size_t body_limit;
+    size_t body_timeout;
+} ServerConfig;
 
-/* 이벤트 루프만 소켓을 다루고, pthread 작업 풀은 파일 I/O만 수행한다. */
-int main(int argc,char **argv)
+static int read_config(int argc, char** argv, ServerConfig* config)
 {
-    size_t port,workers,queue_limit,connection_limit;
-    if(argc!=6 || read_number(argv[1],65535,&port) ||
-       read_number(argv[3],SIZE_MAX/sizeof(pthread_t),&workers) ||
-       read_number(argv[4],SIZE_MAX,&queue_limit) ||
-       read_number(argv[5],UINT32_MAX-2,&connection_limit)) {
-        fprintf(stderr,"Usage: %s port root workers queue_limit connection_limit\n",argv[0]);
+    /* 초를 밀리초로 바꾼 뒤 현재 시각에 더할 여유까지 남겨 둔다. */
+    if (argc != 8
+        || read_number(argv[1], 65535, &config->port)
+        || read_number(argv[3], SIZE_MAX / sizeof(pthread_t), &config->workers)
+        || read_number(argv[4], SIZE_MAX, &config->queue_limit)
+        || read_number(argv[5], UINT32_MAX - 2, &config->connection_limit)
+        || read_number(argv[6], SIZE_MAX, &config->body_limit)
+        || read_number(argv[7], INT64_MAX / 2000, &config->body_timeout)) {
+        fprintf(stderr, "Usage: %s port root workers queue_limit connection_limit body_limit body_timeout_seconds\n", argv[0]);
+        return -1;
+    }
+    config->root = argv[2];
+    return 0;
+}
+
+static int check_fd_limit(const ServerConfig* config)
+{
+    struct rlimit fds;
+    if (getrlimit(RLIMIT_NOFILE, &fds) < 0 || config->workers > (SIZE_MAX - config->connection_limit - 16) / 4 || config->connection_limit + config->workers * 4 + 16 > fds.rlim_cur) {
+        fprintf(stderr, "Insufficient file descriptor limit\n");
+        return -1;
+    }
+    return 0;
+}
+
+static int create_nonblocking_listener(int port)
+{
+    int listener = create_listener(port);
+    if (listener < 0)
+        return -1;
+    int flags = fcntl(listener, F_GETFL);
+    if (flags < 0 || fcntl(listener, F_SETFL, flags | O_NONBLOCK) < 0) {
+        close(listener);
+        return -1;
+    }
+    return listener;
+}
+
+/* 설정 검사 → 루트와 소켓 준비 → 이벤트 루프 실행 → 서버 자원 정리. */
+int main(int argc, char** argv)
+{
+    ServerConfig config;
+    if (read_config(argc, argv, &config) < 0 || check_fd_limit(&config) < 0)
+        return EXIT_FAILURE;
+    if (signal(SIGPIPE, SIG_IGN) == SIG_ERR)
+        return EXIT_FAILURE;
+    int root = static_root_open(config.root);
+    if (root < 0) {
+        perror("root");
         return EXIT_FAILURE;
     }
-    struct rlimit fds;
-    if(getrlimit(RLIMIT_NOFILE,&fds)<0 || workers>(SIZE_MAX-connection_limit-16)/4 ||
-       connection_limit+workers*4+16>fds.rlim_cur) {
-        fprintf(stderr,"Insufficient file descriptor limit\n");return EXIT_FAILURE;
+    int listener = create_nonblocking_listener((int)config.port);
+    if (listener < 0) {
+        close(root);
+        return EXIT_FAILURE;
     }
-    if(signal(SIGPIPE,SIG_IGN)==SIG_ERR)return EXIT_FAILURE;
-    int root=static_root_open(argv[2]);
-    if(root<0){perror("root");return EXIT_FAILURE;}
-    int listener=create_listener((int)port);
-    if(listener<0){close(root);return EXIT_FAILURE;}
-    int flags=fcntl(listener,F_GETFL);
-    if(flags<0||fcntl(listener,F_SETFL,flags|O_NONBLOCK)<0){close(listener);close(root);return EXIT_FAILURE;}
-    int result=concurrent_server_run(listener,root,workers,queue_limit,connection_limit);
-    close(listener);close(root);
-    return result<0?EXIT_FAILURE:EXIT_SUCCESS;
+    int result = concurrent_server_run(listener, root, config.workers,
+        config.queue_limit, config.connection_limit, config.body_limit, config.body_timeout);
+    close(listener);
+    close(root);
+    return result < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
 }

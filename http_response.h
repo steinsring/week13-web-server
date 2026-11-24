@@ -1,6 +1,7 @@
 #ifndef HTTP_RESPONSE_H
 #define HTTP_RESPONSE_H
 #include <sys/types.h>
+int http_format_no_content(char *out, size_t capacity);
 #include <stddef.h>
 
 /* client 소켓에 고정 HTTP 응답 전체를 보낸다. 성공 0, 실패 -1. */

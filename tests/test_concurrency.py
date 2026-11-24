@@ -5,7 +5,7 @@ class Running:
     def __init__(self,root,workers=2,queue=16,limit=40,delay=0):
         s=socket.socket();s.bind(('127.0.0.1',0));self.port=s.getsockname()[1];s.close()
         env=dict(os.environ,TEST_OPEN_DELAY_MS=str(delay))
-        self.proc=subprocess.Popen([BINARY,str(self.port),str(root),str(workers),str(queue),str(limit)],stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=env)
+        self.proc=subprocess.Popen([BINARY,str(self.port),str(root),str(workers),str(queue),str(limit),'1048576','30'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=env)
         line=self.proc.stdout.readline()
         if not line.startswith(b'Listening'):
             _,err=self.proc.communicate(timeout=3)

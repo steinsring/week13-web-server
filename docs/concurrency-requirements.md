@@ -3,6 +3,8 @@
 여러 클라이언트의 연결을 유지하며 요청을 처리한다. 이번 범위를 구현했으며 아래 검증 결과를 기록한다.
 구현 방법은 [설계 명세](concurrency-design.md), 이전 단계는 [정적 파일 요구사항](static-files-requirements.md)에 정리한다.
 
+다음 5단계는 [POST 본문 수신 요구사항](post-body-requirements.md)이며, 이 단계를 적용하면 GET 전용 처리에 POST 수신을 추가한다. keep-alive는 그 다음 6단계다.
+
 ## 범위와 기술 조건
 
 C와 pthread, Linux의 epoll을 결합한다. 외부 HTTP·이벤트 루프 라이브러리는 사용하지 않는다. Docker Linux에서 개발·검증하며, epoll 사용으로 이번 구현은 macOS에서 그대로 빌드할 수 없다. 다른 OS용 이벤트 처리 구현은 이번 범위가 아니다.

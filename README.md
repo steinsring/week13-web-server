@@ -9,6 +9,7 @@ C와 POSIX 소켓으로 HTTP 요청을 받고, 지정한 파일 루트의 정적
 | --- | --- |
 | `server.c` | `main()` → 필수 인자·자원 검사 → 리스닝 소켓 준비 → 이벤트 루프 |
 | `concurrency.c/.h` | epoll 연결 관리·시간 제한·송신, pthread 파일 작업 큐와 종료 |
+| `http_body.c/.h` | CL·TE·Expect 검증, 본문 메모리 확보·길이 기반 복사·해제 |
 | `http_request.h` | 요청 구조체와 파서의 공개 함수 선언 |
 | `http_request.c` | 조각 누적 → 요청 줄 → 헤더 → Host 검사, 요청 메모리 정리 |
 | `request_io.c/.h` | 이전 순차 수신 API와 해당 회귀 검사 |
@@ -45,28 +46,28 @@ docker run --rm --name week13-web-server --mount "type=bind,source=$PWD/public,t
 호스트 커널·CPU 아키텍처와 실행 중 변경하는 파일까지 동일해지는 것은 아니다.
 
 VS Code에서는 Dev Containers 확장을 설치하고 `Dev Containers: Reopen in Container`를 선택한다.
-컨테이너 터미널에서 `./server 8080 ./public 4 64 100`으로 실행한다. 서버는 자동 실행하지 않는다.
+컨테이너 터미널에서 `./server 8080 ./public 4 64 100 1048576 30`으로 실행한다. 서버는 자동 실행하지 않는다.
 
 ## Linux에서 직접 실행
 
 ```sh
 make
-./server 8080 ./public 4 64 100
+./server 8080 ./public 4 64 100 1048576 30
 ```
 
-포트·정적 파일 루트·작업 스레드 수·대기 작업 수 상한·유지 연결 수 상한은 모두 필수 인자다. 4·64·100은 실행 예시이며 서버 기본값이 아니다. Linux epoll을 사용하므로 macOS에서는 Docker Linux로 실행한다. public 폴더와 index.html은 실행 전에 직접 준비한다. 직접 실행 시 Ctrl+C로 종료한다.
+포트·정적 파일 루트·작업 스레드 수·대기 작업 수 상한·유지 연결 수 상한·본문 최대 바이트·본문 총수신 초는 모두 필수 인자다. 위 숫자는 실행 예시이며 서버 기본값이 아니다. Linux epoll을 사용하므로 macOS에서는 Docker Linux로 실행한다. public 폴더와 index.html은 실행 전에 직접 준비한다. 직접 실행 시 Ctrl+C로 종료한다.
 
 ## 이번 단계의 범위
 
 - HTTP/1.1 요청 줄과 모든 헤더를 줄 단위로 파싱한다.
 - 경로와 쿼리는 첫 `?`로 분리하고 인코딩은 원문 그대로 저장한다.
-- 메서드 이름은 저장하며 현재 GET만 지원한다. 그 밖의 메서드는 501이다.
+- GET은 정적 파일, POST는 본문 수신 완료 후 204로 응답한다. 그 밖의 메서드는 501이다.
 - 헤더의 순서·이름 대소문자를 보존한다. 이름 조회는 대소문자를 무시한다.
 - `Host`가 정확히 한 줄인지와 값 형식을 검사한다.
 - GET 성공은 정적 파일의 HTTP 200, 파일 접근 오류와 기존 오류는 400·403·404·431·500·408·501·503·505로 응답 후 연결 종료. 본문에는 상태명만 보낸다.
 - 요청 헤더는 최대 8192바이트다. 초과 시 431을 시도하고, 수신 중 연결이 끊기면 닫는다.
-- POST 본문, 쿼리 내부 해석, 전체 URI 문법 검증은 아직 구현하지 않았다.
-- `Content-Length`·`Transfer-Encoding`은 값과 중복·상호관계를 검사하지 않고 문자열로만 저장한다. 완전한 HTTP/1.1 구현은 아니다.
+- POST 본문은 길이와 원문 바이트로 보관한다. JSON·폼·쿼리 내용 해석과 전체 URI 문법 검증은 추가하지 않았다.
+- Content-Length를 검증하고 길이만큼만 받는다. 중복 CL·CL+TE는 400, 유효 chunked 전송은 미지원 501이다. GET의 양수 CL은 400이다.
 - epoll 이벤트 루프가 소켓을 관리하고 고정 개수의 pthread가 파일 작업을 처리한다.
 - 첫 파일 작업의 대기열이 꽉 차면 503이다. 후속 읽기는 연결별로 기다리고 빈자리가 나면 오래 기다린 순서로 제출한다.
 - 연결 상한이면 accept 감시를 잠시 중단한다. 실행 중 작업이 남은 닫힌 연결도 정리될 때까지 슬롯을 유지한다.
@@ -103,7 +104,7 @@ TSan은 런타임의 `unexpected memory mapping` 오류로 시작하지 못해 �
 동시 TCP 검사는 테스트 전용 파일 열기 지연 래퍼로 실행한다.
 
 ```sh
-cc -std=c11 -Wall -Wextra -Wpedantic -O1 -g -pthread -I. concurrency.c static_files.c server.c http_request.c http_response.c request_io.c tests/slow_file.c -Wl,--wrap=openat -o /tmp/server-concurrency-test
+cc -std=c11 -Wall -Wextra -Wpedantic -O1 -g -pthread -I. http_body.c concurrency.c static_files.c server.c http_request.c http_response.c request_io.c tests/slow_file.c -Wl,--wrap=openat -o /tmp/server-concurrency-test
 TEST_SERVER=/tmp/server-concurrency-test python3 tests/test_concurrency.py
 ```
 실제 TCP 테스트의 기본 포트는 8080이다. 500 할당 실패 검사는 SERVER_ALLOC_FAIL_PORT 환경 변수로 테스트용 서버 포트를 지정해야 실행되며, 지정하지 않으면 해당 검사만 건너뛴다.
@@ -123,3 +124,17 @@ TEST_SERVER=/tmp/server-concurrency-test python3 tests/test_concurrency.py
 [정적 파일 요구사항](docs/static-files-requirements.md) · [정적 파일 설계](docs/static-files-design.md)
 
 [동시 처리 요구사항](docs/concurrency-requirements.md) · [동시 처리 설계](docs/concurrency-design.md)
+
+## POST 본문 수신
+
+`sh ./start.sh`로도 실행할 수 있다. 스크립트의 PORT·ROOT·WORKERS·QUEUE_LIMIT·CONNECTION_LIMIT·BODY_LIMIT·BODY_TIMEOUT을 수정하면 일곱 인자로 전달한다. 공백이 있는 ROOT도 한 인자로 전달한다. Docker 이미지에서는 실행 권한을 설정하므로 `./start.sh`도 사용할 수 있다.
+
+모든 POST 경로는 본문 완료 후 `204 No Content`로 응답하고 연결을 닫는다. 응답 본문·Content-Length·Transfer-Encoding은 없다. 본문 선언 길이를 넘는 데이터는 저장하거나 다음 요청으로 처리하지 않는다.
+본문 총기한은 헤더 완료부터 시작하고 수신 조각이나 100 Continue로 늘어나지 않는다. 크기 초과는 413, 미달 EOF는 400, 기한 초과는 408, 본문 할당 실패는 500이다.
+Expect: 100-continue는 사전 검사를 마치고 필요할 때만 보낸다. 그 밖의 기대 값은 417이다. 임시 응답과 최종 응답의 부분 송신 상태는 별도로 관리한다.
+
+```sh
+python3 tests/test_post_body.py
+```
+
+[POST 요구사항](docs/post-body-requirements.md) · [POST 설계](docs/post-body-design.md)

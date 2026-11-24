@@ -1,0 +1,2 @@
+# Keep the Linux launch script executable after a Windows checkout.
+*.sh text eol=lf
