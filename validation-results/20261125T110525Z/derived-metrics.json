@@ -1,0 +1,2202 @@
+[
+  {
+    "id": "capacity-backend1-c1",
+    "scenario": "proxy",
+    "concurrency": 1,
+    "rps": 1583.4,
+    "p50_ms_interval": "{\"lower_ms\": 0.4, \"upper_ms\": 0.5}",
+    "p95_ms_interval": "{\"lower_ms\": 1.1, \"upper_ms\": 1.2}",
+    "p99_ms_interval": "{\"lower_ms\": 2.2, \"upper_ms\": 2.3}",
+    "issued": 15835,
+    "incomplete_at_cutoff": 1,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 2.2, \"upper_ms\": 2.3}",
+    "reuse_rate": 0.0,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 0.0,
+        "rss_kib_max": 1748,
+        "fd_max": 7,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 54.11994306568144,
+        "rss_kib_max": 23188,
+        "fd_max": 9,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.10869491818792477,
+        "rss_kib_max": 22784,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 72.0090856186071,
+        "rss_kib_max": 36288,
+        "fd_max": 15,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 1
+    }
+  },
+  {
+    "id": "capacity-backend1-c100",
+    "scenario": "proxy",
+    "concurrency": 100,
+    "rps": 3261.2,
+    "p50_ms_interval": "{\"lower_ms\": 28.6, \"upper_ms\": 28.7}",
+    "p95_ms_interval": "{\"lower_ms\": 47.4, \"upper_ms\": 47.5}",
+    "p99_ms_interval": "{\"lower_ms\": 77.1, \"upper_ms\": 77.2}",
+    "issued": 32712,
+    "incomplete_at_cutoff": 100,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 77.1, \"upper_ms\": 77.2}",
+    "reuse_rate": 0.0,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 0.0,
+        "rss_kib_max": 1748,
+        "fd_max": 7,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 64.71806200620303,
+        "rss_kib_max": 24648,
+        "fd_max": 86,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.0,
+        "rss_kib_max": 22784,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 98.08496505141169,
+        "rss_kib_max": 41052,
+        "fd_max": 104,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 78
+    }
+  },
+  {
+    "id": "capacity-backend2-c1",
+    "scenario": "proxy",
+    "concurrency": 1,
+    "rps": 1183.1,
+    "p50_ms_interval": "{\"lower_ms\": 0.6, \"upper_ms\": 0.7}",
+    "p95_ms_interval": "{\"lower_ms\": 1.5, \"upper_ms\": 1.6}",
+    "p99_ms_interval": "{\"lower_ms\": 2.8, \"upper_ms\": 2.9}",
+    "issued": 11832,
+    "incomplete_at_cutoff": 1,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 2.8, \"upper_ms\": 2.9}",
+    "reuse_rate": 0.0,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 0.0,
+        "rss_kib_max": 1748,
+        "fd_max": 7,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.21245080469061398,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 53.81381445009392,
+        "rss_kib_max": 23036,
+        "fd_max": 9,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 74.65980530545778,
+        "rss_kib_max": 36964,
+        "fd_max": 15,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 1
+    }
+  },
+  {
+    "id": "capacity-backend2-c100",
+    "scenario": "proxy",
+    "concurrency": 100,
+    "rps": 2782.6,
+    "p50_ms_interval": "{\"lower_ms\": 31.6, \"upper_ms\": 31.7}",
+    "p95_ms_interval": "{\"lower_ms\": 59.6, \"upper_ms\": 59.7}",
+    "p99_ms_interval": "{\"lower_ms\": 94.7, \"upper_ms\": 94.8}",
+    "issued": 27926,
+    "incomplete_at_cutoff": 100,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 94.7, \"upper_ms\": 94.8}",
+    "reuse_rate": 0.0,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 0.0,
+        "rss_kib_max": 1748,
+        "fd_max": 7,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.0,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 64.43795435199394,
+        "rss_kib_max": 24336,
+        "fd_max": 91,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 96.91511979659761,
+        "rss_kib_max": 39068,
+        "fd_max": 99,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 83
+    }
+  },
+  {
+    "id": "static-c001-r1",
+    "scenario": "static",
+    "concurrency": 1,
+    "rps": 20.6,
+    "p50_ms_interval": "{\"lower_ms\": 45.4, \"upper_ms\": 45.5}",
+    "p95_ms_interval": "{\"lower_ms\": 75.9, \"upper_ms\": 76.0}",
+    "p99_ms_interval": "{\"lower_ms\": 106.0, \"upper_ms\": 106.1}",
+    "issued": 619,
+    "incomplete_at_cutoff": 1,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 106.0, \"upper_ms\": 106.1}",
+    "reuse_rate": 0.9903069466882067,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 18.283093745257997,
+        "rss_kib_max": 1836,
+        "fd_max": 9,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.034244748164642465,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.03489667879428491,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 7.501725052691562,
+        "rss_kib_max": 41836,
+        "fd_max": 15,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 1
+    }
+  },
+  {
+    "id": "static-c001-r2",
+    "scenario": "static",
+    "concurrency": 1,
+    "rps": 20.8,
+    "p50_ms_interval": "{\"lower_ms\": 44.9, \"upper_ms\": 45.0}",
+    "p95_ms_interval": "{\"lower_ms\": 82.7, \"upper_ms\": 82.8}",
+    "p99_ms_interval": "{\"lower_ms\": 108.0, \"upper_ms\": 108.1}",
+    "issued": 625,
+    "incomplete_at_cutoff": 1,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 108.0, \"upper_ms\": 108.1}",
+    "reuse_rate": 0.9888,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 18.497026514137275,
+        "rss_kib_max": 1936,
+        "fd_max": 9,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.034181368641144,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.03416654739542996,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 5.255557705428581,
+        "rss_kib_max": 41840,
+        "fd_max": 15,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 1
+    }
+  },
+  {
+    "id": "static-c001-r3",
+    "scenario": "static",
+    "concurrency": 1,
+    "rps": 19.633333333333333,
+    "p50_ms_interval": "{\"lower_ms\": 45.7, \"upper_ms\": 45.8}",
+    "p95_ms_interval": "{\"lower_ms\": 91.2, \"upper_ms\": 91.3}",
+    "p99_ms_interval": "{\"lower_ms\": 119.1, \"upper_ms\": 119.2}",
+    "issued": 590,
+    "incomplete_at_cutoff": 1,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 119.1, \"upper_ms\": 119.2}",
+    "reuse_rate": 0.9898305084745763,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 19.533384888553098,
+        "rss_kib_max": 1936,
+        "fd_max": 10,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.0,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.0341235355214346,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 5.336663330279686,
+        "rss_kib_max": 41840,
+        "fd_max": 15,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 1
+    }
+  },
+  {
+    "id": "static-c010-r1",
+    "scenario": "static",
+    "concurrency": 10,
+    "rps": 119.66666666666667,
+    "p50_ms_interval": "{\"lower_ms\": 63.6, \"upper_ms\": 63.7}",
+    "p95_ms_interval": "{\"lower_ms\": 155.8, \"upper_ms\": 155.9}",
+    "p99_ms_interval": "{\"lower_ms\": 205.9, \"upper_ms\": 206.0}",
+    "issued": 3600,
+    "incomplete_at_cutoff": 10,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 205.9, \"upper_ms\": 206.0}",
+    "reuse_rate": 0.9888888888888889,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 53.25265663891823,
+        "rss_kib_max": 2184,
+        "fd_max": 25,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.03416790608123296,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.0,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 31.806802671749026,
+        "rss_kib_max": 41840,
+        "fd_max": 24,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 10
+    }
+  },
+  {
+    "id": "static-c010-r2",
+    "scenario": "static",
+    "concurrency": 10,
+    "rps": 115.9,
+    "p50_ms_interval": "{\"lower_ms\": 63.7, \"upper_ms\": 63.8}",
+    "p95_ms_interval": "{\"lower_ms\": 156.8, \"upper_ms\": 156.9}",
+    "p99_ms_interval": "{\"lower_ms\": 236.0, \"upper_ms\": 236.1}",
+    "issued": 3487,
+    "incomplete_at_cutoff": 10,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 236.0, \"upper_ms\": 236.1}",
+    "reuse_rate": 0.9885288213363923,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 52.439592589798295,
+        "rss_kib_max": 2184,
+        "fd_max": 25,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.033901108288096615,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.03418051587094053,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 32.017145813695265,
+        "rss_kib_max": 41840,
+        "fd_max": 24,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 10
+    }
+  },
+  {
+    "id": "static-c010-r3",
+    "scenario": "static",
+    "concurrency": 10,
+    "rps": 115.8,
+    "p50_ms_interval": "{\"lower_ms\": 64.0, \"upper_ms\": 64.1}",
+    "p95_ms_interval": "{\"lower_ms\": 164.4, \"upper_ms\": 164.5}",
+    "p99_ms_interval": "{\"lower_ms\": 235.1, \"upper_ms\": 235.2}",
+    "issued": 3484,
+    "incomplete_at_cutoff": 10,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 235.1, \"upper_ms\": 235.2}",
+    "reuse_rate": 0.9896670493685419,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 53.30973471654586,
+        "rss_kib_max": 2184,
+        "fd_max": 25,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.06778646272170746,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.034078850360919566,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 32.59107836396041,
+        "rss_kib_max": 41840,
+        "fd_max": 24,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 10
+    }
+  },
+  {
+    "id": "static-c050-r1",
+    "scenario": "static",
+    "concurrency": 50,
+    "rps": 129.16666666666666,
+    "p50_ms_interval": "{\"lower_ms\": 309.0, \"upper_ms\": 309.1}",
+    "p95_ms_interval": "{\"lower_ms\": 785.3, \"upper_ms\": 785.4}",
+    "p99_ms_interval": "{\"lower_ms\": 961.2, \"upper_ms\": 961.3}",
+    "issued": 3925,
+    "incomplete_at_cutoff": 50,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 961.2, \"upper_ms\": 961.3}",
+    "reuse_rate": 0.999235668789809,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 52.14879234667421,
+        "rss_kib_max": 3632,
+        "fd_max": 106,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.033790336506324146,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.03386303161771458,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 36.5688953417975,
+        "rss_kib_max": 44460,
+        "fd_max": 64,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 50
+    }
+  },
+  {
+    "id": "static-c050-r2",
+    "scenario": "static",
+    "concurrency": 50,
+    "rps": 118.7,
+    "p50_ms_interval": "{\"lower_ms\": 306.8, \"upper_ms\": 306.9}",
+    "p95_ms_interval": "{\"lower_ms\": 955.2, \"upper_ms\": 955.3}",
+    "p99_ms_interval": "{\"lower_ms\": 1028.7, \"upper_ms\": 1028.8}",
+    "issued": 3611,
+    "incomplete_at_cutoff": 50,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 1028.7, \"upper_ms\": 1028.8}",
+    "reuse_rate": 0.9997230684021047,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 52.103950835671256,
+        "rss_kib_max": 3684,
+        "fd_max": 105,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.06772183363637925,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.06829791284774017,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 38.77589338814659,
+        "rss_kib_max": 44464,
+        "fd_max": 64,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 50
+    }
+  },
+  {
+    "id": "static-c050-r3",
+    "scenario": "static",
+    "concurrency": 50,
+    "rps": 125.5,
+    "p50_ms_interval": "{\"lower_ms\": 191.2, \"upper_ms\": 191.3}",
+    "p95_ms_interval": "{\"lower_ms\": 855.5, \"upper_ms\": 855.6}",
+    "p99_ms_interval": "{\"lower_ms\": 969.0, \"upper_ms\": 969.1}",
+    "issued": 3815,
+    "incomplete_at_cutoff": 50,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 969.0, \"upper_ms\": 969.1}",
+    "reuse_rate": 0.998951507208388,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 52.48603148028328,
+        "rss_kib_max": 3684,
+        "fd_max": 107,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.03402002595026145,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.034056483291364965,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 37.24396979989761,
+        "rss_kib_max": 45352,
+        "fd_max": 64,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 50
+    }
+  },
+  {
+    "id": "static-c100-r1",
+    "scenario": "static",
+    "concurrency": 100,
+    "rps": 127.8,
+    "p50_ms_interval": "{\"lower_ms\": 39.7, \"upper_ms\": 39.8}",
+    "p95_ms_interval": "{\"lower_ms\": 1210.5, \"upper_ms\": 1210.6}",
+    "p99_ms_interval": "{\"lower_ms\": 1405.9, \"upper_ms\": 1406.0}",
+    "issued": 16652,
+    "incomplete_at_cutoff": 99,
+    "errors": "{\"http_503\": 12743}",
+    "verdict": "FAIL",
+    "warmup_errors": "{\"http_503\": 2160}",
+    "success_p99_ms_interval": "{\"lower_ms\": 1579.5, \"upper_ms\": 1579.6}",
+    "reuse_rate": 0.30007674597083656,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 51.84328163692599,
+        "rss_kib_max": 5624,
+        "fd_max": 194,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.0352090622055449,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.0,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 67.46060977282815,
+        "rss_kib_max": 52052,
+        "fd_max": 114,
+        "threads_max": 1
+      },
+      "listen_pending_max": 2,
+      "established_max": 97
+    }
+  },
+  {
+    "id": "static-c100-r2",
+    "scenario": "static",
+    "concurrency": 100,
+    "rps": 121.26666666666667,
+    "p50_ms_interval": "{\"lower_ms\": 42.7, \"upper_ms\": 42.8}",
+    "p95_ms_interval": "{\"lower_ms\": 1268.0, \"upper_ms\": 1268.1}",
+    "p99_ms_interval": "{\"lower_ms\": 1544.7, \"upper_ms\": 1544.8}",
+    "issued": 14952,
+    "incomplete_at_cutoff": 100,
+    "errors": "{\"http_503\": 11233}",
+    "verdict": "FAIL",
+    "warmup_errors": "{\"http_503\": 1256}",
+    "success_p99_ms_interval": "{\"lower_ms\": 1875.6, \"upper_ms\": 1875.7}",
+    "reuse_rate": 0.29819844044097876,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 53.79498339744857,
+        "rss_kib_max": 5624,
+        "fd_max": 200,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.03478251353554274,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.03567001199095872,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 65.72492711384908,
+        "rss_kib_max": 53948,
+        "fd_max": 114,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 100
+    }
+  },
+  {
+    "id": "static-c100-r3",
+    "scenario": "static",
+    "concurrency": 100,
+    "rps": 127.63333333333334,
+    "p50_ms_interval": "{\"lower_ms\": 41.0, \"upper_ms\": 41.1}",
+    "p95_ms_interval": "{\"lower_ms\": 1179.1, \"upper_ms\": 1179.2}",
+    "p99_ms_interval": "{\"lower_ms\": 1477.6, \"upper_ms\": 1477.7}",
+    "issued": 16677,
+    "incomplete_at_cutoff": 100,
+    "errors": "{\"http_503\": 12772}",
+    "verdict": "FAIL",
+    "warmup_errors": "{\"http_503\": 1453}",
+    "success_p99_ms_interval": "{\"lower_ms\": 1596.5, \"upper_ms\": 1596.6}",
+    "reuse_rate": 0.3057618437900128,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 52.426854724118904,
+        "rss_kib_max": 5592,
+        "fd_max": 187,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.035785900273905005,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.035946771120061574,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 67.25441255191299,
+        "rss_kib_max": 54104,
+        "fd_max": 113,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 95
+    }
+  },
+  {
+    "id": "static-c200-r1",
+    "scenario": "static",
+    "concurrency": 200,
+    "rps": 130.93333333333334,
+    "p50_ms_interval": "{\"lower_ms\": 93.3, \"upper_ms\": 93.4}",
+    "p95_ms_interval": "{\"lower_ms\": 1220.2, \"upper_ms\": 1220.3}",
+    "p99_ms_interval": "{\"lower_ms\": 2034.4, \"upper_ms\": 2034.5}",
+    "issued": 20613,
+    "incomplete_at_cutoff": 200,
+    "errors": "{\"http_503\": 16531}",
+    "verdict": "PASS",
+    "warmup_errors": "{\"http_503\": 3419}",
+    "success_p99_ms_interval": "{\"lower_ms\": 2352.3, \"upper_ms\": 2352.4}",
+    "reuse_rate": 0.2871141597256247,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 51.21462429493331,
+        "rss_kib_max": 5588,
+        "fd_max": 188,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.034768007793993035,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.06624753682265591,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 66.31057767647266,
+        "rss_kib_max": 59620,
+        "fd_max": 214,
+        "threads_max": 1
+      },
+      "listen_pending_max": 17,
+      "established_max": 117
+    }
+  },
+  {
+    "id": "static-c200-r2",
+    "scenario": "static",
+    "concurrency": 200,
+    "rps": 127.0,
+    "p50_ms_interval": "{\"lower_ms\": 95.1, \"upper_ms\": 95.2}",
+    "p95_ms_interval": "{\"lower_ms\": 1251.2, \"upper_ms\": 1251.3}",
+    "p99_ms_interval": "{\"lower_ms\": 1677.4, \"upper_ms\": 1677.5}",
+    "issued": 20359,
+    "incomplete_at_cutoff": 200,
+    "errors": "{\"http_503\": 16409}",
+    "verdict": "PASS",
+    "warmup_errors": "{\"http_503\": 2970}",
+    "success_p99_ms_interval": "{\"lower_ms\": 2288.1, \"upper_ms\": 2288.2}",
+    "reuse_rate": 0.249873417721519,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 51.96408110244422,
+        "rss_kib_max": 5592,
+        "fd_max": 201,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.03443554984962512,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.03463242905190414,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 66.30750478263764,
+        "rss_kib_max": 54632,
+        "fd_max": 214,
+        "threads_max": 1
+      },
+      "listen_pending_max": 17,
+      "established_max": 117
+    }
+  },
+  {
+    "id": "static-c200-r3",
+    "scenario": "static",
+    "concurrency": 200,
+    "rps": 128.26666666666668,
+    "p50_ms_interval": "{\"lower_ms\": 87.2, \"upper_ms\": 87.3}",
+    "p95_ms_interval": "{\"lower_ms\": 1282.1, \"upper_ms\": 1282.2}",
+    "p99_ms_interval": "{\"lower_ms\": 2206.2, \"upper_ms\": 2206.3}",
+    "issued": 20279,
+    "incomplete_at_cutoff": 200,
+    "errors": "{\"http_503\": 16290}",
+    "verdict": "PASS",
+    "warmup_errors": "{\"http_503\": 2835}",
+    "success_p99_ms_interval": "{\"lower_ms\": 2353.1, \"upper_ms\": 2353.2}",
+    "reuse_rate": 0.2958134870894961,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 53.99320132700013,
+        "rss_kib_max": 5592,
+        "fd_max": 206,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.10275913620127271,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.033858339316275514,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 67.36406068969906,
+        "rss_kib_max": 55512,
+        "fd_max": 214,
+        "threads_max": 1
+      },
+      "listen_pending_max": 17,
+      "established_max": 117
+    }
+  },
+  {
+    "id": "proxy-c001-r1",
+    "scenario": "proxy",
+    "concurrency": 1,
+    "rps": 22.666666666666668,
+    "p50_ms_interval": "{\"lower_ms\": 43.9, \"upper_ms\": 44.0}",
+    "p95_ms_interval": "{\"lower_ms\": 48.0, \"upper_ms\": 48.1}",
+    "p99_ms_interval": "{\"lower_ms\": 64.1, \"upper_ms\": 64.2}",
+    "issued": 681,
+    "incomplete_at_cutoff": 1,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 64.1, \"upper_ms\": 64.2}",
+    "reuse_rate": 0.9911894273127754,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 0.7278339964636288,
+        "rss_kib_max": 5592,
+        "fd_max": 8,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.8322605995801425,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.7967714706189666,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 3.6699126195269263,
+        "rss_kib_max": 50136,
+        "fd_max": 15,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 1
+    }
+  },
+  {
+    "id": "proxy-c001-r2",
+    "scenario": "proxy",
+    "concurrency": 1,
+    "rps": 22.733333333333334,
+    "p50_ms_interval": "{\"lower_ms\": 43.9, \"upper_ms\": 44.0}",
+    "p95_ms_interval": "{\"lower_ms\": 47.8, \"upper_ms\": 47.9}",
+    "p99_ms_interval": "{\"lower_ms\": 55.4, \"upper_ms\": 55.5}",
+    "issued": 683,
+    "incomplete_at_cutoff": 1,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 55.4, \"upper_ms\": 55.5}",
+    "reuse_rate": 0.9912152269399708,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 0.6448883391143105,
+        "rss_kib_max": 5592,
+        "fd_max": 9,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 1.531426181599711,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.7455064757530159,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 2.199053533470288,
+        "rss_kib_max": 50080,
+        "fd_max": 15,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 1
+    }
+  },
+  {
+    "id": "proxy-c001-r3",
+    "scenario": "proxy",
+    "concurrency": 1,
+    "rps": 22.966666666666665,
+    "p50_ms_interval": "{\"lower_ms\": 43.9, \"upper_ms\": 44.0}",
+    "p95_ms_interval": "{\"lower_ms\": 46.3, \"upper_ms\": 46.4}",
+    "p99_ms_interval": "{\"lower_ms\": 51.1, \"upper_ms\": 51.2}",
+    "issued": 690,
+    "incomplete_at_cutoff": 1,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 51.1, \"upper_ms\": 51.2}",
+    "reuse_rate": 0.9898550724637681,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 0.7122338985397879,
+        "rss_kib_max": 5592,
+        "fd_max": 9,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.8156308013208492,
+        "rss_kib_max": 24648,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.8489753939867913,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 1.7995818090079794,
+        "rss_kib_max": 50080,
+        "fd_max": 15,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 1
+    }
+  },
+  {
+    "id": "proxy-c010-r1",
+    "scenario": "proxy",
+    "concurrency": 10,
+    "rps": 226.03333333333333,
+    "p50_ms_interval": "{\"lower_ms\": 44.0, \"upper_ms\": 44.1}",
+    "p95_ms_interval": "{\"lower_ms\": 48.1, \"upper_ms\": 48.2}",
+    "p99_ms_interval": "{\"lower_ms\": 53.3, \"upper_ms\": 53.4}",
+    "issued": 6791,
+    "incomplete_at_cutoff": 10,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 53.3, \"upper_ms\": 53.4}",
+    "reuse_rate": 0.991164776910617,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 3.0798938256407906,
+        "rss_kib_max": 5592,
+        "fd_max": 26,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 3.757881197103945,
+        "rss_kib_max": 24648,
+        "fd_max": 9,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 3.9271540545554413,
+        "rss_kib_max": 24336,
+        "fd_max": 11,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 5.380519430022081,
+        "rss_kib_max": 50200,
+        "fd_max": 24,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 10
+    }
+  },
+  {
+    "id": "proxy-c010-r2",
+    "scenario": "proxy",
+    "concurrency": 10,
+    "rps": 224.83333333333334,
+    "p50_ms_interval": "{\"lower_ms\": 44.0, \"upper_ms\": 44.1}",
+    "p95_ms_interval": "{\"lower_ms\": 48.2, \"upper_ms\": 48.3}",
+    "p99_ms_interval": "{\"lower_ms\": 60.0, \"upper_ms\": 60.1}",
+    "issued": 6755,
+    "incomplete_at_cutoff": 10,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 60.0, \"upper_ms\": 60.1}",
+    "reuse_rate": 0.9911176905995559,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 2.6503119242275974,
+        "rss_kib_max": 5384,
+        "fd_max": 19,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 3.4558642858409643,
+        "rss_kib_max": 24648,
+        "fd_max": 9,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 4.160381568468684,
+        "rss_kib_max": 24336,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 5.66923296838194,
+        "rss_kib_max": 49948,
+        "fd_max": 24,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 10
+    }
+  },
+  {
+    "id": "proxy-c010-r3",
+    "scenario": "proxy",
+    "concurrency": 10,
+    "rps": 226.3,
+    "p50_ms_interval": "{\"lower_ms\": 44.0, \"upper_ms\": 44.1}",
+    "p95_ms_interval": "{\"lower_ms\": 48.1, \"upper_ms\": 48.2}",
+    "p99_ms_interval": "{\"lower_ms\": 55.9, \"upper_ms\": 56.0}",
+    "issued": 6799,
+    "incomplete_at_cutoff": 10,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 55.9, \"upper_ms\": 56.0}",
+    "reuse_rate": 0.9911751728195323,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 2.886878787298113,
+        "rss_kib_max": 5384,
+        "fd_max": 23,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 3.6928394760833605,
+        "rss_kib_max": 24648,
+        "fd_max": 9,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 3.8603860940469117,
+        "rss_kib_max": 24336,
+        "fd_max": 11,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 6.17411496464136,
+        "rss_kib_max": 49928,
+        "fd_max": 24,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 10
+    }
+  },
+  {
+    "id": "proxy-c050-r1",
+    "scenario": "proxy",
+    "concurrency": 50,
+    "rps": 1028.4666666666667,
+    "p50_ms_interval": "{\"lower_ms\": 46.8, \"upper_ms\": 46.9}",
+    "p95_ms_interval": "{\"lower_ms\": 63.6, \"upper_ms\": 63.7}",
+    "p99_ms_interval": "{\"lower_ms\": 97.3, \"upper_ms\": 97.4}",
+    "issued": 30904,
+    "incomplete_at_cutoff": 50,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 97.3, \"upper_ms\": 97.4}",
+    "reuse_rate": 0.990292518767797,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 12.774938830220053,
+        "rss_kib_max": 7044,
+        "fd_max": 75,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 15.36829461456465,
+        "rss_kib_max": 24652,
+        "fd_max": 12,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 14.938610595566768,
+        "rss_kib_max": 24336,
+        "fd_max": 10,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 18.790348234906176,
+        "rss_kib_max": 50508,
+        "fd_max": 64,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 50
+    }
+  },
+  {
+    "id": "proxy-c050-r2",
+    "scenario": "proxy",
+    "concurrency": 50,
+    "rps": 1059.6,
+    "p50_ms_interval": "{\"lower_ms\": 44.9, \"upper_ms\": 45.0}",
+    "p95_ms_interval": "{\"lower_ms\": 57.7, \"upper_ms\": 57.8}",
+    "p99_ms_interval": "{\"lower_ms\": 84.6, \"upper_ms\": 84.7}",
+    "issued": 31838,
+    "incomplete_at_cutoff": 50,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 84.6, \"upper_ms\": 84.7}",
+    "reuse_rate": 0.9905772975689427,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 12.693391166170088,
+        "rss_kib_max": 7624,
+        "fd_max": 75,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 15.006486064874778,
+        "rss_kib_max": 24652,
+        "fd_max": 16,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 14.970223540055404,
+        "rss_kib_max": 24340,
+        "fd_max": 17,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 18.275513427041545,
+        "rss_kib_max": 50524,
+        "fd_max": 64,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 50
+    }
+  },
+  {
+    "id": "proxy-c050-r3",
+    "scenario": "proxy",
+    "concurrency": 50,
+    "rps": 1065.2,
+    "p50_ms_interval": "{\"lower_ms\": 45.3, \"upper_ms\": 45.4}",
+    "p95_ms_interval": "{\"lower_ms\": 57.6, \"upper_ms\": 57.7}",
+    "p99_ms_interval": "{\"lower_ms\": 79.7, \"upper_ms\": 79.8}",
+    "issued": 32006,
+    "incomplete_at_cutoff": 50,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 79.7, \"upper_ms\": 79.8}",
+    "reuse_rate": 0.9890645503968006,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 11.990816992526034,
+        "rss_kib_max": 6480,
+        "fd_max": 92,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 13.42787683635611,
+        "rss_kib_max": 24652,
+        "fd_max": 17,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 13.869171110884775,
+        "rss_kib_max": 24340,
+        "fd_max": 27,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 17.149101599175125,
+        "rss_kib_max": 50512,
+        "fd_max": 64,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 50
+    }
+  },
+  {
+    "id": "proxy-c100-r1",
+    "scenario": "proxy",
+    "concurrency": 100,
+    "rps": 1732.1,
+    "p50_ms_interval": "{\"lower_ms\": 51.6, \"upper_ms\": 51.7}",
+    "p95_ms_interval": "{\"lower_ms\": 97.1, \"upper_ms\": 97.2}",
+    "p99_ms_interval": "{\"lower_ms\": 154.2, \"upper_ms\": 154.3}",
+    "issued": 52063,
+    "incomplete_at_cutoff": 100,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 154.2, \"upper_ms\": 154.3}",
+    "reuse_rate": 0.9884755008355262,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 28.776088001144664,
+        "rss_kib_max": 14460,
+        "fd_max": 165,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 28.493530503085747,
+        "rss_kib_max": 24664,
+        "fd_max": 81,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 27.48438970274251,
+        "rss_kib_max": 24340,
+        "fd_max": 25,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 30.07615685388638,
+        "rss_kib_max": 50712,
+        "fd_max": 114,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 100
+    }
+  },
+  {
+    "id": "proxy-c100-r2",
+    "scenario": "proxy",
+    "concurrency": 100,
+    "rps": 1837.3,
+    "p50_ms_interval": "{\"lower_ms\": 49.7, \"upper_ms\": 49.8}",
+    "p95_ms_interval": "{\"lower_ms\": 82.1, \"upper_ms\": 82.2}",
+    "p99_ms_interval": "{\"lower_ms\": 135.0, \"upper_ms\": 135.1}",
+    "issued": 55219,
+    "incomplete_at_cutoff": 100,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 135.0, \"upper_ms\": 135.1}",
+    "reuse_rate": 0.989134174831127,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 25.523992166828354,
+        "rss_kib_max": 12840,
+        "fd_max": 185,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 24.513798113030084,
+        "rss_kib_max": 24656,
+        "fd_max": 34,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 24.71052399217865,
+        "rss_kib_max": 24340,
+        "fd_max": 38,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 28.14856621765022,
+        "rss_kib_max": 50720,
+        "fd_max": 114,
+        "threads_max": 1
+      },
+      "listen_pending_max": 2,
+      "established_max": 100
+    }
+  },
+  {
+    "id": "proxy-c100-r3",
+    "scenario": "proxy",
+    "concurrency": 100,
+    "rps": 1928.7666666666667,
+    "p50_ms_interval": "{\"lower_ms\": 48.3, \"upper_ms\": 48.4}",
+    "p95_ms_interval": "{\"lower_ms\": 74.2, \"upper_ms\": 74.3}",
+    "p99_ms_interval": "{\"lower_ms\": 105.1, \"upper_ms\": 105.2}",
+    "issued": 57963,
+    "incomplete_at_cutoff": 100,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 105.1, \"upper_ms\": 105.2}",
+    "reuse_rate": 0.9898555975363594,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 24.61830633091634,
+        "rss_kib_max": 9144,
+        "fd_max": 146,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 23.903546624411327,
+        "rss_kib_max": 24660,
+        "fd_max": 27,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 23.463804219616964,
+        "rss_kib_max": 24348,
+        "fd_max": 26,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 26.011947691132143,
+        "rss_kib_max": 50588,
+        "fd_max": 114,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 100
+    }
+  },
+  {
+    "id": "proxy-c200-r1",
+    "scenario": "proxy",
+    "concurrency": 200,
+    "rps": 1697.6666666666667,
+    "p50_ms_interval": "{\"lower_ms\": 52.8, \"upper_ms\": 52.9}",
+    "p95_ms_interval": "{\"lower_ms\": 102.6, \"upper_ms\": 102.7}",
+    "p99_ms_interval": "{\"lower_ms\": 187.5, \"upper_ms\": 187.6}",
+    "issued": 51212,
+    "incomplete_at_cutoff": 200,
+    "errors": "{\"deadline_headers\": 74, \"deadline_connect\": 9}",
+    "verdict": "FAIL",
+    "warmup_errors": "{\"deadline_headers\": 83}",
+    "success_p99_ms_interval": "{\"lower_ms\": 166.2, \"upper_ms\": 166.3}",
+    "reuse_rate": 0.9870327993897788,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 29.8301409343561,
+        "rss_kib_max": 12868,
+        "fd_max": 202,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 29.206040882399634,
+        "rss_kib_max": 24656,
+        "fd_max": 52,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 29.514602792796534,
+        "rss_kib_max": 24348,
+        "fd_max": 57,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 32.212360899392095,
+        "rss_kib_max": 50128,
+        "fd_max": 214,
+        "threads_max": 1
+      },
+      "listen_pending_max": 17,
+      "established_max": 117
+    }
+  },
+  {
+    "id": "proxy-c200-r2",
+    "scenario": "proxy",
+    "concurrency": 200,
+    "rps": 1675.2666666666667,
+    "p50_ms_interval": "{\"lower_ms\": 52.6, \"upper_ms\": 52.7}",
+    "p95_ms_interval": "{\"lower_ms\": 107.7, \"upper_ms\": 107.8}",
+    "p99_ms_interval": "{\"lower_ms\": 194.2, \"upper_ms\": 194.3}",
+    "issued": 50540,
+    "incomplete_at_cutoff": 200,
+    "errors": "{\"deadline_connect\": 11, \"deadline_headers\": 71}",
+    "verdict": "FAIL",
+    "warmup_errors": "{\"deadline_headers\": 79}",
+    "success_p99_ms_interval": "{\"lower_ms\": 180.4, \"upper_ms\": 180.5}",
+    "reuse_rate": 0.9886242023068691,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 30.178405845164818,
+        "rss_kib_max": 11376,
+        "fd_max": 177,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 30.861689118880086,
+        "rss_kib_max": 24660,
+        "fd_max": 29,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 30.408803886060756,
+        "rss_kib_max": 24344,
+        "fd_max": 29,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 33.82609766352084,
+        "rss_kib_max": 50220,
+        "fd_max": 214,
+        "threads_max": 1
+      },
+      "listen_pending_max": 17,
+      "established_max": 117
+    }
+  },
+  {
+    "id": "proxy-c200-r3",
+    "scenario": "proxy",
+    "concurrency": 200,
+    "rps": 1750.8,
+    "p50_ms_interval": "{\"lower_ms\": 52.2, \"upper_ms\": 52.3}",
+    "p95_ms_interval": "{\"lower_ms\": 100.7, \"upper_ms\": 100.8}",
+    "p99_ms_interval": "{\"lower_ms\": 173.3, \"upper_ms\": 173.4}",
+    "issued": 52802,
+    "incomplete_at_cutoff": 200,
+    "errors": "{\"deadline_connect\": 8, \"deadline_headers\": 72}",
+    "verdict": "FAIL",
+    "warmup_errors": "{\"deadline_headers\": 82}",
+    "success_p99_ms_interval": "{\"lower_ms\": 164.5, \"upper_ms\": 164.6}",
+    "reuse_rate": 0.9872159629756079,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 29.9058351858685,
+        "rss_kib_max": 12784,
+        "fd_max": 184,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 28.27353287761783,
+        "rss_kib_max": 24660,
+        "fd_max": 31,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 28.242677983709058,
+        "rss_kib_max": 24344,
+        "fd_max": 32,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 31.711310615991884,
+        "rss_kib_max": 50268,
+        "fd_max": 214,
+        "threads_max": 1
+      },
+      "listen_pending_max": 17,
+      "established_max": 117
+    }
+  },
+  {
+    "id": "mixed-c001-r1",
+    "scenario": "mixed",
+    "concurrency": 1,
+    "rps": 18.866666666666667,
+    "p50_ms_interval": "{\"lower_ms\": 44.8, \"upper_ms\": 44.9}",
+    "p95_ms_interval": "{\"lower_ms\": 87.8, \"upper_ms\": 87.9}",
+    "p99_ms_interval": "{\"lower_ms\": 135.0, \"upper_ms\": 135.1}",
+    "issued": 567,
+    "incomplete_at_cutoff": 1,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 135.0, \"upper_ms\": 135.1}",
+    "reuse_rate": 0.9894179894179894,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 12.463156884169956,
+        "rss_kib_max": 6864,
+        "fd_max": 9,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.4522840420063822,
+        "rss_kib_max": 24656,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.4527701846859137,
+        "rss_kib_max": 24340,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 8.374128445915753,
+        "rss_kib_max": 50484,
+        "fd_max": 15,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 1
+    }
+  },
+  {
+    "id": "mixed-c001-r2",
+    "scenario": "mixed",
+    "concurrency": 1,
+    "rps": 22.233333333333334,
+    "p50_ms_interval": "{\"lower_ms\": 43.9, \"upper_ms\": 44.0}",
+    "p95_ms_interval": "{\"lower_ms\": 55.9, \"upper_ms\": 56.0}",
+    "p99_ms_interval": "{\"lower_ms\": 102.0, \"upper_ms\": 102.1}",
+    "issued": 668,
+    "incomplete_at_cutoff": 1,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 102.0, \"upper_ms\": 102.1}",
+    "reuse_rate": 0.9910179640718563,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 9.668947102316602,
+        "rss_kib_max": 6864,
+        "fd_max": 9,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.33937289213020927,
+        "rss_kib_max": 24656,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.3390113482734089,
+        "rss_kib_max": 24340,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 4.233236389546124,
+        "rss_kib_max": 50760,
+        "fd_max": 15,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 1
+    }
+  },
+  {
+    "id": "mixed-c001-r3",
+    "scenario": "mixed",
+    "concurrency": 1,
+    "rps": 22.566666666666666,
+    "p50_ms_interval": "{\"lower_ms\": 43.9, \"upper_ms\": 44.0}",
+    "p95_ms_interval": "{\"lower_ms\": 49.7, \"upper_ms\": 49.8}",
+    "p99_ms_interval": "{\"lower_ms\": 88.1, \"upper_ms\": 88.2}",
+    "issued": 678,
+    "incomplete_at_cutoff": 1,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 88.1, \"upper_ms\": 88.2}",
+    "reuse_rate": 0.9911504424778761,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 9.78393665744153,
+        "rss_kib_max": 6864,
+        "fd_max": 9,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 0.34207849284785724,
+        "rss_kib_max": 24656,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 0.3761968721121793,
+        "rss_kib_max": 24340,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 3.420760622230241,
+        "rss_kib_max": 50760,
+        "fd_max": 15,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 1
+    }
+  },
+  {
+    "id": "mixed-c010-r1",
+    "scenario": "mixed",
+    "concurrency": 10,
+    "rps": 142.0,
+    "p50_ms_interval": "{\"lower_ms\": 48.6, \"upper_ms\": 48.7}",
+    "p95_ms_interval": "{\"lower_ms\": 171.9, \"upper_ms\": 172.0}",
+    "p99_ms_interval": "{\"lower_ms\": 250.1, \"upper_ms\": 250.2}",
+    "issued": 4270,
+    "incomplete_at_cutoff": 10,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 250.1, \"upper_ms\": 250.2}",
+    "reuse_rate": 0.9894613583138173,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 54.61698702895474,
+        "rss_kib_max": 6864,
+        "fd_max": 25,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 3.896078481989205,
+        "rss_kib_max": 24656,
+        "fd_max": 9,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 3.7941752263793984,
+        "rss_kib_max": 24340,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 29.452718096560698,
+        "rss_kib_max": 50760,
+        "fd_max": 24,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 10
+    }
+  },
+  {
+    "id": "mixed-c010-r2",
+    "scenario": "mixed",
+    "concurrency": 10,
+    "rps": 154.73333333333332,
+    "p50_ms_interval": "{\"lower_ms\": 48.0, \"upper_ms\": 48.1}",
+    "p95_ms_interval": "{\"lower_ms\": 139.6, \"upper_ms\": 139.7}",
+    "p99_ms_interval": "{\"lower_ms\": 198.3, \"upper_ms\": 198.4}",
+    "issued": 4652,
+    "incomplete_at_cutoff": 10,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 198.3, \"upper_ms\": 198.4}",
+    "reuse_rate": 0.9892519346517626,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 55.074751093154504,
+        "rss_kib_max": 6864,
+        "fd_max": 25,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 3.5799570156269973,
+        "rss_kib_max": 24664,
+        "fd_max": 9,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 3.6457429473965606,
+        "rss_kib_max": 24340,
+        "fd_max": 9,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 28.968069599394834,
+        "rss_kib_max": 50760,
+        "fd_max": 24,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 10
+    }
+  },
+  {
+    "id": "mixed-c010-r3",
+    "scenario": "mixed",
+    "concurrency": 10,
+    "rps": 165.86666666666667,
+    "p50_ms_interval": "{\"lower_ms\": 47.7, \"upper_ms\": 47.8}",
+    "p95_ms_interval": "{\"lower_ms\": 120.1, \"upper_ms\": 120.2}",
+    "p99_ms_interval": "{\"lower_ms\": 147.4, \"upper_ms\": 147.5}",
+    "issued": 4986,
+    "incomplete_at_cutoff": 10,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 147.4, \"upper_ms\": 147.5}",
+    "reuse_rate": 0.9899719213798637,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 55.19843851311546,
+        "rss_kib_max": 6864,
+        "fd_max": 23,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 3.526701252674659,
+        "rss_kib_max": 24656,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 3.5282858875592775,
+        "rss_kib_max": 24340,
+        "fd_max": 8,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 27.819323865148025,
+        "rss_kib_max": 50760,
+        "fd_max": 24,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 10
+    }
+  },
+  {
+    "id": "mixed-c050-r1",
+    "scenario": "mixed",
+    "concurrency": 50,
+    "rps": 188.6,
+    "p50_ms_interval": "{\"lower_ms\": 56.5, \"upper_ms\": 56.6}",
+    "p95_ms_interval": "{\"lower_ms\": 1072.0, \"upper_ms\": 1072.1}",
+    "p99_ms_interval": "{\"lower_ms\": 1483.9, \"upper_ms\": 1484.0}",
+    "issued": 5708,
+    "incomplete_at_cutoff": 50,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 1483.9, \"upper_ms\": 1484.0}",
+    "reuse_rate": 0.991240364400841,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 52.100164261112106,
+        "rss_kib_max": 6864,
+        "fd_max": 104,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 5.438592168652982,
+        "rss_kib_max": 24656,
+        "fd_max": 9,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 5.531320873923142,
+        "rss_kib_max": 24340,
+        "fd_max": 9,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 42.75392334702946,
+        "rss_kib_max": 50760,
+        "fd_max": 64,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 50
+    }
+  },
+  {
+    "id": "mixed-c050-r2",
+    "scenario": "mixed",
+    "concurrency": 50,
+    "rps": 163.6,
+    "p50_ms_interval": "{\"lower_ms\": 59.0, \"upper_ms\": 59.1}",
+    "p95_ms_interval": "{\"lower_ms\": 1040.6, \"upper_ms\": 1040.7}",
+    "p99_ms_interval": "{\"lower_ms\": 2161.1, \"upper_ms\": 2161.2}",
+    "issued": 4958,
+    "incomplete_at_cutoff": 50,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 2161.1, \"upper_ms\": 2161.2}",
+    "reuse_rate": 0.9941508672851956,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 51.60128134677671,
+        "rss_kib_max": 6864,
+        "fd_max": 105,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 5.215335716178635,
+        "rss_kib_max": 24664,
+        "fd_max": 10,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 5.252588050065448,
+        "rss_kib_max": 24340,
+        "fd_max": 11,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 42.711139737227285,
+        "rss_kib_max": 50760,
+        "fd_max": 64,
+        "threads_max": 1
+      },
+      "listen_pending_max": 1,
+      "established_max": 50
+    }
+  },
+  {
+    "id": "mixed-c050-r3",
+    "scenario": "mixed",
+    "concurrency": 50,
+    "rps": 184.7,
+    "p50_ms_interval": "{\"lower_ms\": 58.5, \"upper_ms\": 58.6}",
+    "p95_ms_interval": "{\"lower_ms\": 966.0, \"upper_ms\": 966.1}",
+    "p99_ms_interval": "{\"lower_ms\": 1295.4, \"upper_ms\": 1295.5}",
+    "issued": 5591,
+    "incomplete_at_cutoff": 50,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 1295.4, \"upper_ms\": 1295.5}",
+    "reuse_rate": 0.991235914863173,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 51.0720621958272,
+        "rss_kib_max": 6864,
+        "fd_max": 106,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 5.546598572122232,
+        "rss_kib_max": 24656,
+        "fd_max": 10,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 5.484201850340059,
+        "rss_kib_max": 24340,
+        "fd_max": 9,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 42.573183291025295,
+        "rss_kib_max": 50760,
+        "fd_max": 64,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 50
+    }
+  },
+  {
+    "id": "mixed-c100-r1",
+    "scenario": "mixed",
+    "concurrency": 100,
+    "rps": 256.1,
+    "p50_ms_interval": "{\"lower_ms\": 68.1, \"upper_ms\": 68.2}",
+    "p95_ms_interval": "{\"lower_ms\": 1441.7, \"upper_ms\": 1441.8}",
+    "p99_ms_interval": "{\"lower_ms\": 2172.6, \"upper_ms\": 2172.7}",
+    "issued": 10754,
+    "incomplete_at_cutoff": 100,
+    "errors": "{\"http_503\": 2974}",
+    "verdict": "FAIL",
+    "warmup_errors": "{\"http_503\": 455}",
+    "success_p99_ms_interval": "{\"lower_ms\": 2240.1, \"upper_ms\": 2240.2}",
+    "reuse_rate": 0.7251928020565552,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 51.69263697166893,
+        "rss_kib_max": 6872,
+        "fd_max": 190,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 10.70768842868096,
+        "rss_kib_max": 24660,
+        "fd_max": 13,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 10.64986358406446,
+        "rss_kib_max": 24340,
+        "fd_max": 14,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 56.01886140624194,
+        "rss_kib_max": 61028,
+        "fd_max": 114,
+        "threads_max": 1
+      },
+      "listen_pending_max": 8,
+      "established_max": 100
+    }
+  },
+  {
+    "id": "mixed-c100-r2",
+    "scenario": "mixed",
+    "concurrency": 100,
+    "rps": 300.76666666666665,
+    "p50_ms_interval": "{\"lower_ms\": 64.7, \"upper_ms\": 64.8}",
+    "p95_ms_interval": "{\"lower_ms\": 1484.7, \"upper_ms\": 1484.8}",
+    "p99_ms_interval": "{\"lower_ms\": 2128.1, \"upper_ms\": 2128.2}",
+    "issued": 12355,
+    "incomplete_at_cutoff": 100,
+    "errors": "{\"http_503\": 3237}",
+    "verdict": "FAIL",
+    "warmup_errors": "{\"http_503\": 531}",
+    "success_p99_ms_interval": "{\"lower_ms\": 2196.5, \"upper_ms\": 2196.6}",
+    "reuse_rate": 0.7402939241061637,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 53.465767462690174,
+        "rss_kib_max": 6864,
+        "fd_max": 187,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 9.688428629260109,
+        "rss_kib_max": 24656,
+        "fd_max": 12,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 9.826538289005057,
+        "rss_kib_max": 24340,
+        "fd_max": 9,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 54.07855510692048,
+        "rss_kib_max": 57260,
+        "fd_max": 114,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 99
+    }
+  },
+  {
+    "id": "mixed-c100-r3",
+    "scenario": "mixed",
+    "concurrency": 100,
+    "rps": 296.8666666666667,
+    "p50_ms_interval": "{\"lower_ms\": 68.1, \"upper_ms\": 68.2}",
+    "p95_ms_interval": "{\"lower_ms\": 1483.1, \"upper_ms\": 1483.2}",
+    "p99_ms_interval": "{\"lower_ms\": 1967.3, \"upper_ms\": 1967.4}",
+    "issued": 11960,
+    "incomplete_at_cutoff": 100,
+    "errors": "{\"http_503\": 2959}",
+    "verdict": "FAIL",
+    "warmup_errors": "{\"http_503\": 434}",
+    "success_p99_ms_interval": "{\"lower_ms\": 2046.5, \"upper_ms\": 2046.6}",
+    "reuse_rate": 0.7588045772691923,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 51.909462323809215,
+        "rss_kib_max": 6864,
+        "fd_max": 190,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 9.393238816402965,
+        "rss_kib_max": 24660,
+        "fd_max": 10,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 9.690107184130905,
+        "rss_kib_max": 24340,
+        "fd_max": 10,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 55.71347095790274,
+        "rss_kib_max": 55132,
+        "fd_max": 114,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 100
+    }
+  },
+  {
+    "id": "mixed-c200-r1",
+    "scenario": "mixed",
+    "concurrency": 200,
+    "rps": 414.3,
+    "p50_ms_interval": "{\"lower_ms\": 75.8, \"upper_ms\": 75.9}",
+    "p95_ms_interval": "{\"lower_ms\": 1303.1, \"upper_ms\": 1303.2}",
+    "p99_ms_interval": "{\"lower_ms\": 2372.0, \"upper_ms\": 2372.1}",
+    "issued": 17868,
+    "incomplete_at_cutoff": 200,
+    "errors": "{\"http_503\": 5251}",
+    "verdict": "PASS",
+    "warmup_errors": "{\"http_503\": 864, \"deadline_headers\": 48}",
+    "success_p99_ms_interval": "{\"lower_ms\": 2300.6, \"upper_ms\": 2300.7}",
+    "reuse_rate": 0.749861298248395,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 52.331744521664625,
+        "rss_kib_max": 6864,
+        "fd_max": 190,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 11.036740592059541,
+        "rss_kib_max": 24656,
+        "fd_max": 10,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 10.752489575884638,
+        "rss_kib_max": 24340,
+        "fd_max": 9,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 55.278471117883925,
+        "rss_kib_max": 53684,
+        "fd_max": 214,
+        "threads_max": 1
+      },
+      "listen_pending_max": 17,
+      "established_max": 117
+    }
+  },
+  {
+    "id": "mixed-c200-r2",
+    "scenario": "mixed",
+    "concurrency": 200,
+    "rps": 353.3666666666667,
+    "p50_ms_interval": "{\"lower_ms\": 88.3, \"upper_ms\": 88.4}",
+    "p95_ms_interval": "{\"lower_ms\": 1705.5, \"upper_ms\": 1705.6}",
+    "p99_ms_interval": "{\"lower_ms\": 2991.7, \"upper_ms\": 2991.8}",
+    "issued": 15011,
+    "incomplete_at_cutoff": 200,
+    "errors": "{\"http_503\": 4219}",
+    "verdict": "PASS",
+    "warmup_errors": "{\"http_503\": 832, \"deadline_headers\": 13}",
+    "success_p99_ms_interval": "{\"lower_ms\": 2772.8, \"upper_ms\": 2772.9}",
+    "reuse_rate": 0.7592661230541141,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 52.07318099192645,
+        "rss_kib_max": 6864,
+        "fd_max": 191,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 10.12205242433321,
+        "rss_kib_max": 24656,
+        "fd_max": 11,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 10.61905189597187,
+        "rss_kib_max": 24344,
+        "fd_max": 11,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 54.48998981992368,
+        "rss_kib_max": 59348,
+        "fd_max": 214,
+        "threads_max": 1
+      },
+      "listen_pending_max": 17,
+      "established_max": 118
+    }
+  },
+  {
+    "id": "mixed-c200-r3",
+    "scenario": "mixed",
+    "concurrency": 200,
+    "rps": 392.1333333333333,
+    "p50_ms_interval": "{\"lower_ms\": 81.6, \"upper_ms\": 81.7}",
+    "p95_ms_interval": "{\"lower_ms\": 1372.8, \"upper_ms\": 1372.9}",
+    "p99_ms_interval": "{\"lower_ms\": 2823.4, \"upper_ms\": 2823.5}",
+    "issued": 16577,
+    "incomplete_at_cutoff": 200,
+    "errors": "{\"http_503\": 4637, \"deadline_connect\": 6}",
+    "verdict": "FAIL",
+    "warmup_errors": "{\"http_503\": 845, \"deadline_body\": 1, \"deadline_headers\": 34}",
+    "success_p99_ms_interval": "{\"lower_ms\": 2517.2, \"upper_ms\": 2517.3}",
+    "reuse_rate": 0.7650410591587062,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 52.432791860429916,
+        "rss_kib_max": 6864,
+        "fd_max": 191,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 10.528949804554385,
+        "rss_kib_max": 24656,
+        "fd_max": 10,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 10.491816639616234,
+        "rss_kib_max": 24340,
+        "fd_max": 9,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 55.793587009254004,
+        "rss_kib_max": 57260,
+        "fd_max": 214,
+        "threads_max": 1
+      },
+      "listen_pending_max": 17,
+      "established_max": 117
+    }
+  },
+  {
+    "id": "soak-mixed-c050",
+    "scenario": "mixed",
+    "concurrency": 50,
+    "rps": 220.44,
+    "p50_ms_interval": "{\"lower_ms\": 53.8, \"upper_ms\": 53.9}",
+    "p95_ms_interval": "{\"lower_ms\": 822.8, \"upper_ms\": 822.9}",
+    "p99_ms_interval": "{\"lower_ms\": 1163.0, \"upper_ms\": 1163.1}",
+    "issued": 132314,
+    "incomplete_at_cutoff": 50,
+    "errors": "{}",
+    "verdict": "PASS",
+    "warmup_errors": "{}",
+    "success_p99_ms_interval": "{\"lower_ms\": 1163.0, \"upper_ms\": 1163.1}",
+    "reuse_rate": 0.9900841936605348,
+    "resources": {
+      "server": {
+        "sampled_cpu_percent_one_core": 51.5095204539577,
+        "rss_kib_max": 6864,
+        "fd_max": 107,
+        "threads_max": 5
+      },
+      "backend1": {
+        "sampled_cpu_percent_one_core": 5.32628466503757,
+        "rss_kib_max": 24664,
+        "fd_max": 11,
+        "threads_max": 1
+      },
+      "backend2": {
+        "sampled_cpu_percent_one_core": 5.46460379016717,
+        "rss_kib_max": 24348,
+        "fd_max": 10,
+        "threads_max": 1
+      },
+      "generator": {
+        "sampled_cpu_percent_one_core": 41.61032817866291,
+        "rss_kib_max": 54528,
+        "fd_max": 64,
+        "threads_max": 1
+      },
+      "listen_pending_max": 0,
+      "established_max": 50
+    }
+  }
+]

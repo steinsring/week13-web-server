@@ -1,0 +1,18 @@
+test_close_tokens_across_headers (__main__.KeepAliveTests.test_close_tokens_across_headers) ... ok
+test_idle_counts_toward_connection_limit (__main__.KeepAliveTests.test_idle_counts_toward_connection_limit) ... ok
+test_idle_timeout_and_next_header_has_separate_deadline (__main__.KeepAliveTests.test_idle_timeout_and_next_header_has_separate_deadline) ... ok
+test_invalid_keep_alive_cli (__main__.KeepAliveTests.test_invalid_keep_alive_cli) ... ok
+test_invalid_request_closes_and_discards_next (__main__.KeepAliveTests.test_invalid_request_closes_and_discards_next) ... ok
+test_large_response_before_next_and_other_connection (__main__.KeepAliveTests.test_large_response_before_next_and_other_connection) ... ok
+test_many_pipelined_requests_exceed_receive_chunk (__main__.KeepAliveTests.test_many_pipelined_requests_exceed_receive_chunk) ... ok
+test_maximum_counts_100_once (__main__.KeepAliveTests.test_maximum_counts_100_once) ... ok
+test_pipeline_binary_post_and_partial_next_header (__main__.KeepAliveTests.test_pipeline_binary_post_and_partial_next_header) ... ok
+test_repeated_request_resources (__main__.KeepAliveTests.test_repeated_request_resources) ... ok
+test_reusable_403_404_and_redirect (__main__.KeepAliveTests.test_reusable_403_404_and_redirect) ... ok
+test_sequential_get_post_and_empty (__main__.KeepAliveTests.test_sequential_get_post_and_empty) ... ok
+test_shutdown_idle_and_no_buffered_next_request (__main__.KeepAliveTests.test_shutdown_idle_and_no_buffered_next_request) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 6.566s
+
+OK

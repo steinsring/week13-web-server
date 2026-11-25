@@ -1,0 +1,18 @@
+cc -std=c11 -Wall -Wextra -Wpedantic -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -I. -o tests/test_proxy_asan tests/test_proxy.c proxy_config.c http_request.c
+ASAN_OPTIONS=detect_leaks=1 ./tests/test_proxy_asan
+PASS: proxy every-split chunk/header validation, timer preservation, origins/IPv6 and Location boundaries
+cc -std=c11 -Wall -Wextra -Wpedantic -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -Dmalloc=test_body_malloc -I. -o tests/test_http_body_asan tests/test_http_body.c http_body.c http_request.c
+ASAN_OPTIONS=detect_leaks=1 ./tests/test_http_body_asan
+PASS: body validation, exact binary boundary at every split, bounded copy and allocation failure
+cc -std=c11 -Wall -Wextra -Wpedantic -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -Drealloc=test_realloc -I. -o tests/test_http_request_asan tests/test_http_request.c http_request.c
+ASAN_OPTIONS=detect_leaks=1 ./tests/test_http_request_asan
+PASS: 97 parser checks
+cc -std=c11 -Wall -Wextra -Wpedantic -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -Dsend=test_send -I. -o tests/test_http_response_asan tests/test_http_response.c http_response.c request_io.c http_request.c
+ASAN_OPTIONS=detect_leaks=1 ./tests/test_http_response_asan
+PASS: response formats, partial send, EINTR, send failure, deadline, file read failure and early EOF
+cc -std=c11 -Wall -Wextra -Wpedantic -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -I. -o tests/test_static_files_asan tests/test_static_files.c static_files.c http_response.c http_request.c
+ASAN_OPTIONS=detect_leaks=1 ./tests/test_static_files_asan
+PASS: 2400 static response/cleanup checks and MIME mapping
+cc -std=c11 -Wall -Wextra -Wpedantic -g -O1 -pthread -fsanitize=address,undefined -fno-omit-frame-pointer -I. -o tests/test_concurrency_state_asan tests/test_concurrency_state.c proxy.c proxy_config.c http_body.c static_files.c http_request.c http_response.c
+ASAN_OPTIONS=detect_leaks=1 ./tests/test_concurrency_state_asan
+PASS: queue/retry/deadline/lifetime and partial 100/EINTR/EAGAIN before final error

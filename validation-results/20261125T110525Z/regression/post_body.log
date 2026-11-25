@@ -1,0 +1,18 @@
+test_binary_and_body_at_limit (__main__.PostBodyTests.test_binary_and_body_at_limit) ... ok
+test_body_deadline_is_not_extended_by_progress (__main__.PostBodyTests.test_body_deadline_is_not_extended_by_progress) ... ok
+test_body_deadline_starts_after_headers (__main__.PostBodyTests.test_body_deadline_starts_after_headers) ... ok
+test_empty_and_arbitrary_paths (__main__.PostBodyTests.test_empty_and_arbitrary_paths) ... ok
+test_every_header_body_boundary (__main__.PostBodyTests.test_every_header_body_boundary) ... ok
+test_expect_continue_then_final (__main__.PostBodyTests.test_expect_continue_then_final) ... ok
+test_expect_errors_before_and_after_continue (__main__.PostBodyTests.test_expect_errors_before_and_after_continue) ... ok
+test_get_body_and_extra_request_not_executed (__main__.PostBodyTests.test_get_body_and_extra_request_not_executed) ... ok
+test_incomplete_half_close (__main__.PostBodyTests.test_incomplete_half_close) ... ok
+test_invalid_new_cli_values (__main__.PostBodyTests.test_invalid_new_cli_values) ... ok
+test_length_errors (__main__.PostBodyTests.test_length_errors) ... ok
+test_parallel_get_post_and_slow_body (__main__.PostBodyTests.test_parallel_get_post_and_slow_body) ... ok
+test_transfer_encoding (__main__.PostBodyTests.test_transfer_encoding) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 6.438s
+
+OK

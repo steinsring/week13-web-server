@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python",
+    "validation/report.py",
+    "validation-results\\20261125T110525Z"
+  ],
+  "returncode": 1,
+  "stdout": "validation-results\\20261125T110525Z\\REPORT.md\n",
+  "stderr": ""
+}

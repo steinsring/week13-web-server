@@ -1,0 +1,25 @@
+{
+  "command": [
+    "gcc",
+    "-std=c11",
+    "-Wall",
+    "-Wextra",
+    "-Wpedantic",
+    "-O2",
+    "-pthread",
+    "-I.",
+    "proxy.c",
+    "proxy_config.c",
+    "http_body.c",
+    "concurrency.c",
+    "static_files.c",
+    "server.c",
+    "http_request.c",
+    "http_response.c",
+    "request_io.c",
+    "-o",
+    "/tmp/ljm-validation-20261125T110525Z"
+  ],
+  "returncode": 0,
+  "output": ""
+}

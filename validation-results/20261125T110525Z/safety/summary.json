@@ -1,0 +1,154 @@
+[
+  {
+    "name": "build-asan",
+    "command": [
+      "gcc",
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-O1",
+      "-g",
+      "-pthread",
+      "-fno-omit-frame-pointer",
+      "-I.",
+      "-fsanitize=address,undefined",
+      "proxy.c",
+      "proxy_config.c",
+      "http_body.c",
+      "concurrency.c",
+      "static_files.c",
+      "server.c",
+      "http_request.c",
+      "http_response.c",
+      "request_io.c",
+      "-o",
+      "/tmp/validation-server-asan"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 6.264872789382935
+  },
+  {
+    "name": "unit-sanitizers",
+    "command": [
+      "make",
+      "sanitize"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 13.057363748550415
+  },
+  {
+    "name": "asan-proxy",
+    "command": [
+      "/usr/bin/python3",
+      "tests/test_proxy.py"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 18.26332378387451
+  },
+  {
+    "name": "asan-keep_alive",
+    "command": [
+      "/usr/bin/python3",
+      "tests/test_keep_alive.py"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 6.83247184753418
+  },
+  {
+    "name": "asan-post_body",
+    "command": [
+      "/usr/bin/python3",
+      "tests/test_post_body.py"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 6.733220100402832
+  },
+  {
+    "name": "build-delay-asan",
+    "command": [
+      "gcc",
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-O1",
+      "-g",
+      "-pthread",
+      "-fno-omit-frame-pointer",
+      "-I.",
+      "-fsanitize=address,undefined",
+      "proxy.c",
+      "proxy_config.c",
+      "http_body.c",
+      "concurrency.c",
+      "static_files.c",
+      "server.c",
+      "http_request.c",
+      "http_response.c",
+      "request_io.c",
+      "tests/slow_file.c",
+      "-Wl,--wrap=openat",
+      "-o",
+      "/tmp/validation-server-delay-asan"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 3.352703332901001
+  },
+  {
+    "name": "asan-concurrency",
+    "command": [
+      "/usr/bin/python3",
+      "tests/test_concurrency.py"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 50.82906126976013
+  },
+  {
+    "name": "asan-overload-and-recovery",
+    "returncode": 0,
+    "unexplained_stress_errors": {},
+    "recovery_errors": {}
+  },
+  {
+    "name": "build-tsan",
+    "command": [
+      "gcc",
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-O1",
+      "-g",
+      "-pthread",
+      "-fno-omit-frame-pointer",
+      "-I.",
+      "-fsanitize=thread",
+      "proxy.c",
+      "proxy_config.c",
+      "http_body.c",
+      "concurrency.c",
+      "static_files.c",
+      "server.c",
+      "http_request.c",
+      "http_response.c",
+      "request_io.c",
+      "-o",
+      "/tmp/validation-server-tsan"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 1.8878417015075684
+  },
+  {
+    "name": "tsan-attempt",
+    "command": [
+      "/usr/bin/python3",
+      "tests/test_keep_alive.py",
+      "KeepAliveTests.test_sequential_get_post_and_empty",
+      "KeepAliveTests.test_repeated_request_resources"
+    ],
+    "returncode": 1,
+    "elapsed_seconds": 0.21837592124938965,
+    "classification": "INCOMPLETE_ENVIRONMENT"
+  }
+]

@@ -1,0 +1,4020 @@
+diff --git a/.dockerignore b/.dockerignore
+index f38400b..0c0d3ec 100644
+--- a/.dockerignore
++++ b/.dockerignore
+@@ -8,9 +8,9 @@ tests/test_static_files
+ tests/test_static_files_asan
+ .devcontainer
+ **/__pycache__
+-tests/test_concurrency_state
+-tests/test_concurrency_state_asan
+-tests/test_http_body
+-tests/test_http_body_asan
+-tests/test_proxy
+-tests/test_proxy_asan
++tests/test_concurrency_state
++tests/test_concurrency_state_asan
++tests/test_http_body
++tests/test_http_body_asan
++tests/test_proxy
++tests/test_proxy_asan
+diff --git a/.gitignore b/.gitignore
+index 20bdd17..f50bd1e 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -4,11 +4,11 @@
+ __pycache__/
+ /tests/test_http_response
+ /tests/test_http_response_asan
+-/tests/test_static_files
++/tests/test_static_files
+ /tests/test_static_files_asan
+-/tests/test_concurrency_state
+-/tests/test_concurrency_state_asan
+-tests/test_http_body
+-tests/test_http_body_asan
+-/tests/test_proxy
+-/tests/test_proxy_asan
++/tests/test_concurrency_state
++/tests/test_concurrency_state_asan
++tests/test_http_body
++tests/test_http_body_asan
++/tests/test_proxy
++/tests/test_proxy_asan
+diff --git a/Dockerfile b/Dockerfile
+index b5aee5e..5fcbb48 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -1,9 +1,9 @@
+-FROM gcc:14-bookworm@sha256:5e927c284bf55a7dc796262e311a0703344f62f41f5621eb56843111b1d37e15
+-WORKDIR /app
+-COPY Makefile *.c *.h ./
+-COPY start.sh ./
+-COPY tests/ ./tests/
+-COPY public/ ./public/
+-RUN make && chmod +x start.sh
+-EXPOSE 8080
+-CMD ["./server", "8080", "/app/public", "4", "64", "100", "1048576", "30", "10", "100", "http://localhost:8080", "5", "10", "http://127.0.0.1:8001,http://127.0.0.1:8002"]
++FROM gcc:14-bookworm@sha256:5e927c284bf55a7dc796262e311a0703344f62f41f5621eb56843111b1d37e15
++WORKDIR /app
++COPY Makefile *.c *.h ./
++COPY start.sh ./
++COPY tests/ ./tests/
++COPY public/ ./public/
++RUN make && chmod +x start.sh
++EXPOSE 8080
++CMD ["./server", "8080", "/app/public", "4", "64", "100", "1048576", "30", "10", "100", "http://localhost:8080", "5", "10", "http://127.0.0.1:8001,http://127.0.0.1:8002"]
+diff --git a/LICENSE b/LICENSE
+index a038467..9ee96b9 100644
+--- a/LICENSE
++++ b/LICENSE
+@@ -1,21 +1,21 @@
+-MIT License
+-
+-Copyright (c) 2026 이종민
+-
+-Permission is hereby granted, free of charge, to any person obtaining a copy
+-of this software and associated documentation files (the "Software"), to deal
+-in the Software without restriction, including without limitation the rights
+-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+-copies of the Software, and to permit persons to whom the Software is
+-furnished to do so, subject to the following conditions:
+-
+-The above copyright notice and this permission notice shall be included in all
+-copies or substantial portions of the Software.
+-
+-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+-SOFTWARE.
++MIT License
++
++Copyright (c) 2026 이종민
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.
+diff --git a/Makefile b/Makefile
+index 3b3228d..ec411c5 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,22 +1,22 @@
+ PROXY_SOURCES = proxy.c proxy_config.c
+-CC = cc
+-CFLAGS = -std=c11 -Wall -Wextra -Wpedantic -O2
+-
+-.PHONY: all test sanitize clean
+-all: server
+-
+-server: proxy.c proxy_config.c proxy.h http_body.c http_body.h concurrency.c concurrency.h static_files.c static_files.h server.c http_request.c http_response.c request_io.c http_request.h http_response.h request_io.h
+-	$(CC) $(CFLAGS) -pthread -o $@ $(PROXY_SOURCES) http_body.c concurrency.c static_files.c server.c http_request.c http_response.c request_io.c
+-
+-tests/test_http_request: tests/test_http_request.c http_request.c http_request.h
+-	$(CC) $(CFLAGS) -Drealloc=test_realloc -I. -o $@ tests/test_http_request.c http_request.c
+-
+-tests/test_http_response: tests/test_http_response.c http_response.c request_io.c http_request.c http_response.h request_io.h http_request.h
+-	$(CC) $(CFLAGS) -Dsend=test_send -I. -o $@ tests/test_http_response.c http_response.c request_io.c http_request.c
+-
+-tests/test_static_files: tests/test_static_files.c static_files.c http_response.c http_request.c static_files.h http_response.h http_request.h
+-	$(CC) $(CFLAGS) -I. -o $@ tests/test_static_files.c static_files.c http_response.c http_request.c
+-
++CC = cc
++CFLAGS = -std=c11 -Wall -Wextra -Wpedantic -O2
++
++.PHONY: all test sanitize clean
++all: server
++
++server: proxy.c proxy_config.c proxy.h http_body.c http_body.h concurrency.c concurrency.h static_files.c static_files.h server.c http_request.c http_response.c request_io.c http_request.h http_response.h request_io.h
++	$(CC) $(CFLAGS) -pthread -o $@ $(PROXY_SOURCES) http_body.c concurrency.c static_files.c server.c http_request.c http_response.c request_io.c
++
++tests/test_http_request: tests/test_http_request.c http_request.c http_request.h
++	$(CC) $(CFLAGS) -Drealloc=test_realloc -I. -o $@ tests/test_http_request.c http_request.c
++
++tests/test_http_response: tests/test_http_response.c http_response.c request_io.c http_request.c http_response.h request_io.h http_request.h
++	$(CC) $(CFLAGS) -Dsend=test_send -I. -o $@ tests/test_http_response.c http_response.c request_io.c http_request.c
++
++tests/test_static_files: tests/test_static_files.c static_files.c http_response.c http_request.c static_files.h http_response.h http_request.h
++	$(CC) $(CFLAGS) -I. -o $@ tests/test_static_files.c static_files.c http_response.c http_request.c
++
+ tests/test_concurrency_state: tests/test_concurrency_state.c concurrency.c concurrency.h proxy.c proxy_config.c proxy.h http_body.c http_body.h static_files.c http_request.c http_response.c
+ 	$(CC) $(CFLAGS) -pthread -I. -o $@ tests/test_concurrency_state.c $(PROXY_SOURCES) http_body.c static_files.c http_request.c http_response.c
+ 
+@@ -29,26 +29,26 @@ tests/test_proxy: tests/test_proxy.c proxy.c proxy_config.c proxy.h http_request
+ test: tests/test_proxy tests/test_http_body tests/test_http_request tests/test_http_response tests/test_static_files tests/test_concurrency_state
+ 	./tests/test_proxy
+ 	./tests/test_http_body
+-	./tests/test_http_request
+-	./tests/test_http_response
++	./tests/test_http_request
++	./tests/test_http_response
+ 	./tests/test_static_files
+-	./tests/test_concurrency_state
+-
+-sanitize:
++	./tests/test_concurrency_state
++
++sanitize:
+ 	$(CC) -std=c11 -Wall -Wextra -Wpedantic -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -I. -o tests/test_proxy_asan tests/test_proxy.c proxy_config.c http_request.c
+ 	ASAN_OPTIONS=detect_leaks=1 ./tests/test_proxy_asan
+-	$(CC) -std=c11 -Wall -Wextra -Wpedantic -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -Dmalloc=test_body_malloc -I. -o tests/test_http_body_asan tests/test_http_body.c http_body.c http_request.c
+-	ASAN_OPTIONS=detect_leaks=1 ./tests/test_http_body_asan
+-	$(CC) -std=c11 -Wall -Wextra -Wpedantic -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -Drealloc=test_realloc -I. -o tests/test_http_request_asan tests/test_http_request.c http_request.c
+-	ASAN_OPTIONS=detect_leaks=1 ./tests/test_http_request_asan
+-	$(CC) -std=c11 -Wall -Wextra -Wpedantic -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -Dsend=test_send -I. -o tests/test_http_response_asan tests/test_http_response.c http_response.c request_io.c http_request.c
+-	ASAN_OPTIONS=detect_leaks=1 ./tests/test_http_response_asan
+-
+-	$(CC) -std=c11 -Wall -Wextra -Wpedantic -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -I. -o tests/test_static_files_asan tests/test_static_files.c static_files.c http_response.c http_request.c
+-	ASAN_OPTIONS=detect_leaks=1 ./tests/test_static_files_asan
+-
++	$(CC) -std=c11 -Wall -Wextra -Wpedantic -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -Dmalloc=test_body_malloc -I. -o tests/test_http_body_asan tests/test_http_body.c http_body.c http_request.c
++	ASAN_OPTIONS=detect_leaks=1 ./tests/test_http_body_asan
++	$(CC) -std=c11 -Wall -Wextra -Wpedantic -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -Drealloc=test_realloc -I. -o tests/test_http_request_asan tests/test_http_request.c http_request.c
++	ASAN_OPTIONS=detect_leaks=1 ./tests/test_http_request_asan
++	$(CC) -std=c11 -Wall -Wextra -Wpedantic -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -Dsend=test_send -I. -o tests/test_http_response_asan tests/test_http_response.c http_response.c request_io.c http_request.c
++	ASAN_OPTIONS=detect_leaks=1 ./tests/test_http_response_asan
++
++	$(CC) -std=c11 -Wall -Wextra -Wpedantic -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -I. -o tests/test_static_files_asan tests/test_static_files.c static_files.c http_response.c http_request.c
++	ASAN_OPTIONS=detect_leaks=1 ./tests/test_static_files_asan
++
+ 	$(CC) -std=c11 -Wall -Wextra -Wpedantic -g -O1 -pthread -fsanitize=address,undefined -fno-omit-frame-pointer -I. -o tests/test_concurrency_state_asan tests/test_concurrency_state.c $(PROXY_SOURCES) http_body.c static_files.c http_request.c http_response.c
+ 	ASAN_OPTIONS=detect_leaks=1 ./tests/test_concurrency_state_asan
+ 
+-clean:
++clean:
+ 	rm -f server tests/test_proxy tests/test_proxy_asan tests/test_http_body tests/test_http_body_asan tests/test_concurrency_state tests/test_concurrency_state_asan tests/test_static_files tests/test_static_files_asan tests/test_http_request tests/test_http_request_asan tests/test_http_response tests/test_http_response_asan
+diff --git a/README.md b/README.md
+index 943f64a..9a998f2 100644
+--- a/README.md
++++ b/README.md
+@@ -179,4 +179,4 @@ python3 tests/test_proxy.py
+ 
+ 프록시 검증: 단위/sanitizer 및 실제 TCP 15개(일반·전체 서버 ASan/UBSan/누수)가 통과했다. 기존 오류 12개·정적 15개·동시 10개·keep-alive 13개·POST 13개도 통과했다. 접속 기한은 내부 시계 단위 검사이며 실제 패킷 드롭 실험·TSan·처리량 부하 측정은 미실행이다.
+ 
+-최종 Docker 이미지를 다시 빌드하고 이미지의 start.sh 실행·정적 200·미기동 백엔드 502·SIGTERM 정상 종료를 확인했다. 이 Docker 스모크는 성공 중계 검사가 아니며, 성공 중계는 위 실제 TCP 백엔드 검사에서 확인했다.
++최종 Docker 이미지를 다시 빌드하고 이미지의 start.sh 실행·정적 200·미기동 백엔드 502·SIGTERM 정상 종료를 확인했다. 이 Docker 스모크는 성공 중계 검사가 아니며, 성공 중계는 위 실제 TCP 백엔드 검사에서 확인했다.
+diff --git a/concurrency.c b/concurrency.c
+index 1d5ef8e..24cd4a5 100644
+--- a/concurrency.c
++++ b/concurrency.c
+@@ -1,1245 +1,1245 @@
+-#define _GNU_SOURCE
+-#include "concurrency.h"
+-#include "http_body.h"
+-#include "http_request.h"
+-#include "http_response.h"
+-#include "static_files.h"
+-#include <arpa/inet.h>
+-#include <errno.h>
+-#include <fcntl.h>
+-#include <limits.h>
+-#include <pthread.h>
+-#include <signal.h>
+-#include <stdint.h>
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include <string.h>
+-#include <strings.h>
+-#include <sys/epoll.h>
+-#include <sys/eventfd.h>
+-#include <sys/socket.h>
+-#include <time.h>
+-#include <unistd.h>
+-
+-#define CHUNK_SIZE 8192
+-#define LISTENER_KEY UINT64_MAX
+-#define WAKE_KEY (UINT64_MAX - 1)
+-#define UPSTREAM_KEY (UINT64_C(1) << 63)
+-typedef struct Connection Connection;
+-typedef struct Job Job;
+-typedef enum { RECEIVING,
+-    KEEP_ALIVE_IDLE,
+-    BODY_RECEIVING,
+-    PROXYING,
+-    WAITING,
+-    RETRYING,
+-    SENDING } Phase;
+-typedef enum { IDLE,
+-    QUEUED,
+-    RUNNING,
+-    DONE } JobState;
+-struct Job {
+-    Job* next;
+-    Connection* connection;
+-    JobState state; /* pool.mutex로 보호한다. */
+-    int first, status, fd;
+-    off_t remaining, total;
+-    const char* mime;
+-    char location[HTTP_HEADER_LIMIT + 4];
+-    char bytes[CHUNK_SIZE];
+-    size_t length;
+-    int64_t queued_at;
+-    uint64_t request_number;
+-    uint32_t generation;
+-};
+-struct Connection {
+-    int socket, closed;
+-    uint32_t slot, generation;
+-    Phase phase;
+-    HttpRequest request; /* 내부 문자열 포인터를 위해 객체를 이동하지 않는다. */
+-    HttpBody body;
+-    int64_t body_deadline, interim_deadline;
+-    size_t interim_sent;
+-    int interim_pending;
+-    int request_complete, close_after_response;
+-    uint64_t completed_requests;
+-    char pending[4096]; /* 한 recv의 잔여 데이터만 유지한다. 응답 중에는 읽지 않는다. */
+-    size_t pending_length;
+-    Proxy* proxy;
+-    uint32_t upstream_generation;
+-    Job job; /* 연결당 하나: 완료 결과 슬롯도 미리 확보된다. */
+-    char header[HTTP_HEADER_LIMIT + 1024];
+-    size_t header_length, header_sent, chunk_sent;
+-    uint64_t bytes_sent;
+-    int64_t deadline;
+-};
+-typedef struct {
+-    pthread_mutex_t mutex;
+-    pthread_cond_t ready;
+-    pthread_t* threads;
+-    size_t thread_count, queued, limit;
+-    int stopping, root, wake;
+-    Job *head, *tail, *done_head, *done_tail;
+-} Pool;
+-typedef struct {
+-    int epoll, listener, wake, listening, stopping;
+-    int64_t shutdown_at, accept_retry_at;
+-    size_t limit, objects;
+-    size_t body_limit, body_timeout;
+-    size_t idle_timeout, max_requests;
+-    ProxyConfig* proxy_config;
+-    uint32_t upstream_generation;
+-    Connection** slots;
+-    uint32_t* generations;
+-    Pool pool;
+-} Loop;
+-static volatile sig_atomic_t stop_requested;
+-static volatile sig_atomic_t signal_wake = -1;
+-static int mark_shutdown_response(Connection* connection);
+-static void start_proxy(Loop* loop, Connection* connection);
+-static void drive_proxy(Loop* loop, Connection* connection, uint32_t events);
+-
+-static int64_t now_ms(void)
+-{
+-    struct timespec t;
+-    if (clock_gettime(CLOCK_MONOTONIC, &t) < 0)
+-        abort();
+-    return (int64_t)t.tv_sec * 1000 + t.tv_nsec / 1000000;
+-}
+-static void notify(int fd)
+-{
+-    uint64_t one = 1;
+-    while (write(fd, &one, sizeof(one)) < 0 && errno == EINTR) { }
+-}
+-static void stop_signal(int sig)
+-{
+-    (void)sig;
+-    int saved = errno;
+-    stop_requested = 1;
+-    if (signal_wake >= 0) {
+-        uint64_t one = 1;
+-        (void)write(signal_wake, &one, sizeof(one));
+-    }
+-    errno = saved;
+-}
+-
+-/* 이 함수에는 소켓 I/O가 없다. worker 하나가 파일 FD와 한 조각만 다룬다. */
+-static void execute_job(Pool* pool, Job* job)
+-{
+-    job->length = 0;
+-    job->status = 200;
+-    if (job->first) {
+-        StaticFileResult result;
+-        static_files_prepare(pool->root, &job->connection->request, &result);
+-        job->fd = result.fd;
+-        job->status = result.status;
+-        job->remaining = job->total = result.size;
+-        job->mime = result.mime;
+-        memcpy(job->location, result.location, sizeof(job->location));
+-        if (job->status != 200)
+-            return;
+-    }
+-    if (job->remaining == 0)
+-        return;
+-    size_t want = job->remaining > (off_t)CHUNK_SIZE ? CHUNK_SIZE : (size_t)job->remaining;
+-    ssize_t n;
+-    do {
+-        n = read(job->fd, job->bytes, want);
+-    } while (n < 0 && errno == EINTR);
+-    if (n <= 0) {
+-        job->status = 500;
+-        return;
+-    }
+-    job->length = (size_t)n;
+-    job->remaining -= n;
+-}
+-/* 대기열에서 하나를 꺼낸다. 종료 중이어도 이미 대기 중인 작업은 처리한다. */
+-static Job* take_job(Pool* pool, int* expired)
+-{
+-    pthread_mutex_lock(&pool->mutex);
+-    while (!pool->head && !pool->stopping)
+-        pthread_cond_wait(&pool->ready, &pool->mutex);
+-    if (!pool->head) {
+-        pthread_mutex_unlock(&pool->mutex);
+-        return NULL;
+-    }
+-    Job* job = pool->head;
+-    pool->head = job->next;
+-    if (!pool->head)
+-        pool->tail = NULL;
+-    --pool->queued;
+-    *expired = now_ms() - job->queued_at >= 10000;
+-    job->state = RUNNING;
+-    pthread_mutex_unlock(&pool->mutex);
+-    notify(pool->wake);
+-    return job;
+-}
+-
+-static void publish_completed_job(Pool* pool, Job* job)
+-{
+-    pthread_mutex_lock(&pool->mutex);
+-    job->state = DONE;
+-    job->next = NULL;
+-    if (pool->done_tail)
+-        pool->done_tail->next = job;
+-    else
+-        pool->done_head = job;
+-    pool->done_tail = job;
+-    pthread_mutex_unlock(&pool->mutex);
+-    notify(pool->wake);
+-}
+-
+-/* 작업 인수 → 파일 처리 → 완료 알림. 소켓은 이벤트 루프만 다룬다. */
+-static void* worker(void* argument)
+-{
+-    Pool* pool = argument;
+-    for (;;) {
+-        int expired;
+-        Job* job = take_job(pool, &expired);
+-        if (!job)
+-            return NULL;
+-        if (expired) {
+-            job->status = 503;
+-            job->length = 0;
+-        } else {
+-            execute_job(pool, job);
+-        }
+-        publish_completed_job(pool, job);
+-    }
+-}
+-static int pool_init(Pool* pool, size_t count, size_t limit, int root, int wake)
+-{
+-    memset(pool, 0, sizeof(*pool));
+-    pool->limit = limit;
+-    pool->root = root;
+-    pool->wake = wake;
+-    if (pthread_mutex_init(&pool->mutex, NULL))
+-        return -1;
+-    if (pthread_cond_init(&pool->ready, NULL)) {
+-        pthread_mutex_destroy(&pool->mutex);
+-        return -1;
+-    }
+-    pool->threads = calloc(count, sizeof(*pool->threads));
+-    if (!pool->threads)
+-        goto failure;
+-    for (; pool->thread_count < count; ++pool->thread_count)
+-        if (pthread_create(&pool->threads[pool->thread_count], NULL, worker, pool))
+-            goto failure;
+-    return 0;
+-failure:
+-    pthread_mutex_lock(&pool->mutex);
+-    pool->stopping = 1;
+-    pthread_cond_broadcast(&pool->ready);
+-    pthread_mutex_unlock(&pool->mutex);
+-    for (size_t i = 0; i < pool->thread_count; ++i)
+-        pthread_join(pool->threads[i], NULL);
+-    free(pool->threads);
+-    pthread_cond_destroy(&pool->ready);
+-    pthread_mutex_destroy(&pool->mutex);
+-    return -1;
+-}
+-static JobState job_state(Pool* pool, Job* job)
+-{
+-    pthread_mutex_lock(&pool->mutex);
+-    JobState state = job->state;
+-    pthread_mutex_unlock(&pool->mutex);
+-    return state;
+-}
+-static int submit(Pool* pool, Job* job)
+-{
+-    int ok = 0;
+-    pthread_mutex_lock(&pool->mutex);
+-    if (pool->queued < pool->limit) {
+-        job->next = NULL;
+-        job->state = QUEUED;
+-        if (pool->tail)
+-            pool->tail->next = job;
+-        else
+-            pool->head = job;
+-        pool->tail = job;
+-        ++pool->queued;
+-        ok = 1;
+-        pthread_cond_signal(&pool->ready);
+-    }
+-    pthread_mutex_unlock(&pool->mutex);
+-    return ok;
+-}
+-/* 아직 실행되지 않은 작업만 제거한다. RUNNING의 파일/요청은 만지지 않는다. */
+-static int cancel_queued(Pool* pool, Job* job)
+-{
+-    int canceled = 0;
+-    pthread_mutex_lock(&pool->mutex);
+-    if (job->state == QUEUED) {
+-        Job **at = &pool->head, *prev = NULL;
+-        while (*at && *at != job) {
+-            prev = *at;
+-            at = &(*at)->next;
+-        }
+-        if (*at) {
+-            *at = job->next;
+-            if (pool->tail == job)
+-                pool->tail = prev;
+-            --pool->queued;
+-            job->state = IDLE;
+-            canceled = 1;
+-        }
+-    }
+-    pthread_mutex_unlock(&pool->mutex);
+-    return canceled;
+-}
+-static uint64_t key(Connection* connection) { return ((uint64_t)connection->generation << 32) | connection->slot; }
+-static int interest(Loop* loop, Connection* connection, uint32_t events)
+-{
+-    struct epoll_event e = { .events = events | (events & EPOLLIN ? EPOLLRDHUP : 0), .data.u64 = key(connection) };
+-    return epoll_ctl(loop->epoll, EPOLL_CTL_MOD, connection->socket, &e);
+-}
+-static void release_connection(Loop* loop, Connection* connection)
+-{
+-    proxy_destroy(connection->proxy);
+-    if (connection->job.fd >= 0)
+-        close(connection->job.fd);
+-    http_request_destroy(&connection->request);
+-    http_body_destroy(&connection->body);
+-    loop->slots[connection->slot] = NULL;
+-    --loop->objects;
+-    free(connection);
+-}
+-static void close_connection(Loop* loop, Connection* connection)
+-{
+-    if (connection->closed)
+-        return;
+-    connection->closed = 1;
+-    proxy_destroy(connection->proxy);
+-    connection->proxy = NULL;
+-    epoll_ctl(loop->epoll, EPOLL_CTL_DEL, connection->socket, NULL);
+-    close(connection->socket);
+-    JobState state = job_state(&loop->pool, &connection->job);
+-    if (state == QUEUED && cancel_queued(&loop->pool, &connection->job))
+-        state = IDLE;
+-    else if (state == QUEUED)
+-        state = job_state(&loop->pool, &connection->job);
+-    /* DONE도 완료 큐에서 꺼낼 때까지 참조를 보존한다. */
+-    if (state == IDLE)
+-        release_connection(loop, connection);
+-}
+-
+-/* Connection의 여러 줄과 쉼표 목록 중 close 하나만 있어도 종료가 우선이다. */
+-static int client_requests_close(const HttpRequest* request)
+-{
+-    size_t cursor = 0;
+-    const HttpHeader* header;
+-    while ((header = http_request_next_header(request, "Connection", &cursor))) {
+-        const char* p = header->value;
+-        while (*p) {
+-            while (*p == ' ' || *p == '\t' || *p == ',')
+-                ++p;
+-            const char* start = p;
+-            while (*p && *p != ',')
+-                ++p;
+-            const char* end = p;
+-            while (end > start && (end[-1] == ' ' || end[-1] == '\t'))
+-                --end;
+-            if (end - start == 5 && !strncasecmp(start, "close", 5))
+-                return 1;
+-        }
+-    }
+-    return 0;
+-}
+-
+-static int response_must_close(Loop* loop, Connection* connection)
+-{
+-    return connection->close_after_response || loop->stopping || stop_requested
+-        || connection->completed_requests + 1 >= loop->max_requests;
+-}
+-
+-/* 현재 요청 경계를 넘은 바이트는 아직 파싱하지 않고 다음 차례까지 보관한다. */
+-static void save_pending(Connection* connection, const char* data, size_t length)
+-{
+-    if (length)
+-        memcpy(connection->pending, data, length);
+-    connection->pending_length = length;
+-}
+-
+-static void error_response(Loop* loop, Connection* connection, int status)
+-{
+-    if (connection->closed)
+-        return;
+-    if (connection->bytes_sent) {
+-        close_connection(loop, connection);
+-        return;
+-    }
+-    if (!connection->request_complete || (status != 403 && status != 404))
+-        connection->close_after_response = 1;
+-    /* 100을 일부 보냈으면 끝까지 보낸 뒤 최종 오류를 붙인다.
+-     * 한 바이트도 보내지 않았다면 임시 응답은 취소할 수 있다. */
+-    if (!connection->interim_sent)
+-        connection->interim_pending = 0;
+-    if (connection->job.fd >= 0) {
+-        close(connection->job.fd);
+-        connection->job.fd = -1;
+-    }
+-    const char* body = http_status_reason(status);
+-    connection->job.length = strlen(body);
+-    memcpy(connection->job.bytes, body, connection->job.length);
+-    connection->job.remaining = 0;
+-    int n = http_format_header_policy(connection->header, sizeof(connection->header), status,
+-        "text/plain; charset=utf-8", (off_t)connection->job.length, NULL, response_must_close(loop, connection));
+-    if (n < 0) {
+-        close_connection(loop, connection);
+-        return;
+-    }
+-    connection->header_length = (size_t)n;
+-    connection->header_sent = connection->chunk_sent = 0;
+-    connection->phase = SENDING;
+-    connection->deadline = now_ms() + 10000;
+-    if (interest(loop, connection, EPOLLOUT) < 0)
+-        close_connection(loop, connection);
+-}
+-static void schedule_read(Loop* loop, Connection* connection, int first)
+-{
+-    connection->job.request_number = connection->completed_requests + 1;
+-    connection->job.generation = connection->generation;
+-    connection->job.first = first;
+-    connection->job.queued_at = now_ms();
+-    connection->deadline = connection->job.queued_at + 10000;
+-    connection->phase = WAITING;
+-    if (interest(loop, connection, 0) < 0) {
+-        close_connection(loop, connection);
+-        return;
+-    }
+-    if (!submit(&loop->pool, &connection->job)) {
+-        if (first)
+-            error_response(loop, connection, 503);
+-        else
+-            connection->phase = RETRYING;
+-    }
+-}
+-static void retry_waiters(Loop* loop)
+-{
+-    for (;;) {
+-        Connection* oldest = NULL;
+-        for (size_t i = 0; i < loop->limit; ++i) {
+-            Connection* connection = loop->slots[i];
+-            if (connection && !connection->closed && connection->phase == RETRYING && (!oldest || connection->job.queued_at < oldest->job.queued_at))
+-                oldest = connection;
+-        }
+-        if (!oldest)
+-            return;
+-        if (now_ms() >= oldest->deadline) {
+-            error_response(loop, oldest, 503);
+-            continue;
+-        }
+-        if (!submit(&loop->pool, &oldest->job))
+-            return;
+-        oldest->phase = WAITING;
+-    }
+-}
+-static void completed_jobs(Loop* loop)
+-{
+-    Pool* pool = &loop->pool;
+-    pthread_mutex_lock(&pool->mutex);
+-    Job* jobs = pool->done_head;
+-    pool->done_head = pool->done_tail = NULL;
+-    pthread_mutex_unlock(&pool->mutex);
+-    while (jobs) {
+-        Job* job = jobs;
+-        jobs = job->next;
+-        Connection* connection = job->connection;
+-        pthread_mutex_lock(&pool->mutex);
+-        job->state = IDLE;
+-        pthread_mutex_unlock(&pool->mutex);
+-        if (connection->closed) {
+-            release_connection(loop, connection);
+-            continue;
+-        }
+-        /* 소켓 세대와 요청 순번을 모두 확인해 늦은 결과의 적용 대상을 제한한다. */
+-        if (job->generation != connection->generation
+-            || job->request_number != connection->completed_requests + 1) {
+-            close_connection(loop, connection);
+-            continue;
+-        }
+-        if (job->status != 200 && job->status != 301) {
+-            error_response(loop, connection, job->status);
+-            continue;
+-        }
+-        connection->chunk_sent = 0;
+-        if (job->first) {
+-            int n = http_format_header_policy(connection->header, sizeof(connection->header), job->status,
+-                job->mime, job->total, job->status == 301 ? job->location : NULL, response_must_close(loop, connection));
+-            if (n < 0) {
+-                error_response(loop, connection, 500);
+-                continue;
+-            }
+-            connection->header_length = (size_t)n;
+-            connection->header_sent = 0;
+-        }
+-        connection->phase = SENDING;
+-        connection->deadline = now_ms() + 10000;
+-        if (interest(loop, connection, EPOLLOUT) < 0)
+-            close_connection(loop, connection);
+-    }
+-    retry_waiters(loop);
+-}
+-static int parse_status(HttpParseResult result)
+-{
+-    switch (result) {
+-    case HTTP_PARSE_INVALID:
+-        return 400;
+-    case HTTP_PARSE_TOO_LARGE:
+-        return 431;
+-    case HTTP_PARSE_NO_MEMORY:
+-        return 500;
+-    case HTTP_PARSE_UNSUPPORTED_VERSION:
+-        return 505;
+-    default:
+-        return 500;
+-    }
+-}
+-/* POST는 파일 작업 없이 최종 응답만 준비한다. 본문은 이번 요청 정리까지 보관한다. */
+-static void complete_post(Loop* loop, Connection* connection)
+-{
+-    connection->request_complete = 1;
+-    if (proxy_route(connection->request.path)) {
+-        start_proxy(loop, connection);
+-        return;
+-    }
+-    int n = http_format_no_content_policy(connection->header, sizeof(connection->header), response_must_close(loop, connection));
+-    if (n < 0) {
+-        error_response(loop, connection, 500);
+-        return;
+-    }
+-    if (!connection->interim_sent)
+-        connection->interim_pending = 0;
+-    connection->header_length = (size_t)n;
+-    connection->header_sent = connection->chunk_sent = 0;
+-    connection->job.length = 0;
+-    connection->job.remaining = 0;
+-    connection->phase = SENDING;
+-    connection->deadline = now_ms() + 10000;
+-    if (interest(loop, connection, EPOLLOUT) < 0)
+-        close_connection(loop, connection);
+-}
+-
+-static int receive_body_bytes(Loop* loop, Connection* connection, const char* data, size_t length)
+-{
+-    if (now_ms() >= connection->body_deadline) {
+-        error_response(loop, connection, 408);
+-        return 0;
+-    }
+-    http_body_feed(&connection->body, data, length);
+-    if (connection->body.received == connection->body.length) {
+-        complete_post(loop, connection);
+-        return 0;
+-    }
+-    return 1;
+-}
+-
+-/* 헤더 경계 검증 → 메서드 선택 → 메모리 확보 → 같은 recv에 붙은 본문 처리. */
+-static void finish_request_headers(Loop* loop, Connection* connection, const char* data, size_t length)
+-{
+-    int64_t completed_at = now_ms();
+-    if (completed_at >= connection->deadline) {
+-        error_response(loop, connection, 408);
+-        return;
+-    }
+-    size_t body_length;
+-    int expect_continue;
+-    int status = http_body_validate(&connection->request, loop->body_limit, &body_length, &expect_continue);
+-    if (status) {
+-        error_response(loop, connection, status);
+-        return;
+-    }
+-    connection->close_after_response = client_requests_close(&connection->request);
+-    if (!strcmp(connection->request.method, "GET")) {
+-        connection->request_complete = 1;
+-        save_pending(connection, data, length);
+-        if (proxy_route(connection->request.path)) {
+-            start_proxy(loop, connection);
+-            return;
+-        }
+-        retry_waiters(loop);
+-        schedule_read(loop, connection, 1);
+-        return;
+-    }
+-    status = http_body_allocate(&connection->body, body_length);
+-    if (status) {
+-        error_response(loop, connection, status);
+-        return;
+-    }
+-    connection->body_deadline = completed_at + (int64_t)loop->body_timeout * 1000;
+-    connection->phase = BODY_RECEIVING;
+-    size_t consumed = length < body_length ? length : body_length;
+-    save_pending(connection, data + consumed, length - consumed);
+-    if (body_length == 0) {
+-        complete_post(loop, connection);
+-        return;
+-    }
+-    if (!receive_body_bytes(loop, connection, data, consumed))
+-        return;
+-    if (expect_continue) {
+-        connection->interim_pending = 1;
+-        connection->interim_deadline = now_ms() + 10000;
+-    }
+-    if (interest(loop, connection, EPOLLIN | (connection->interim_pending ? EPOLLOUT : 0)) < 0)
+-        close_connection(loop, connection);
+-}
+-
+-/* 헤더/본문 경계까지만 소비한다. 다음 요청은 응답 완료 전까지 파싱하지 않는다. */
+-static int consume_received(Loop* loop, Connection* connection, const char* data, size_t length)
+-{
+-    if (connection->phase == BODY_RECEIVING) {
+-        size_t remaining = connection->body.length - connection->body.received;
+-        size_t consumed = length < remaining ? length : remaining;
+-        save_pending(connection, data + consumed, length - consumed);
+-        return receive_body_bytes(loop, connection, data, consumed);
+-    }
+-    if (now_ms() >= connection->deadline) {
+-        error_response(loop, connection, 408);
+-        return 0;
+-    }
+-    size_t consumed;
+-    HttpParseResult result = http_request_feed_bytes(&connection->request, data, length, &consumed);
+-    if (result == HTTP_PARSE_INCOMPLETE)
+-        return 1;
+-    if (result != HTTP_PARSE_COMPLETE) {
+-        error_response(loop, connection, parse_status(result));
+-        return 0;
+-    }
+-    finish_request_headers(loop, connection, data + consumed, length - consumed);
+-    return 0;
+-}
+-
+-static void receive_connection(Loop* loop, Connection* connection)
+-{
+-    char data[4096];
+-    /* LT epoll로 남은 데이터는 다시 통지된다. 한 연결의 수신량을 유한하게 제한한다. */
+-    for (unsigned turn = 0; turn < 16; ++turn) {
+-        int64_t deadline = connection->phase == BODY_RECEIVING ? connection->body_deadline : connection->deadline;
+-        if (now_ms() >= deadline) {
+-            if (connection->phase == KEEP_ALIVE_IDLE)
+-                close_connection(loop, connection);
+-            else
+-                error_response(loop, connection, 408);
+-            return;
+-        }
+-        ssize_t n;
+-        if (connection->pending_length) {
+-            n = (ssize_t)connection->pending_length;
+-            memcpy(data, connection->pending, (size_t)n);
+-            connection->pending_length = 0;
+-        } else
+-            n = recv(connection->socket, data, sizeof(data), 0);
+-        if (n < 0) {
+-            if (errno == EINTR)
+-                continue;
+-            if (errno == EAGAIN || errno == EWOULDBLOCK)
+-                return;
+-            close_connection(loop, connection);
+-            return;
+-        }
+-        if (n == 0) {
+-            if (connection->request.used || connection->phase == BODY_RECEIVING)
+-                error_response(loop, connection, 400);
+-            else
+-                close_connection(loop, connection);
+-            return;
+-        }
+-        if (connection->phase == KEEP_ALIVE_IDLE) {
+-            if (now_ms() >= connection->deadline) {
+-                close_connection(loop, connection);
+-                return;
+-            }
+-            connection->phase = RECEIVING;
+-            connection->deadline = now_ms() + 10000;
+-        }
+-        if (!consume_received(loop, connection, data, (size_t)n))
+-            return;
+-    }
+-}
+-
+-/* 임시 응답 진행량은 최종 bytes_sent와 분리한다. 부분 100 뒤에도 400/408이 가능하다.
+- * 1은 완료, 0은 EAGAIN, -1은 연결 종료다. */
+-static int send_continue(Loop* loop, Connection* connection)
+-{
+-    static const char response[] = "HTTP/1.1 100 Continue\r\n\r\n";
+-    while (connection->interim_pending && connection->interim_sent < sizeof(response) - 1) {
+-        if (now_ms() >= connection->interim_deadline) {
+-            close_connection(loop, connection);
+-            return -1;
+-        }
+-        ssize_t n = send(connection->socket, response + connection->interim_sent,
+-            sizeof(response) - 1 - connection->interim_sent, 0);
+-        if (n < 0 && errno == EINTR)
+-            continue;
+-        if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
+-            return 0;
+-        if (n <= 0) {
+-            close_connection(loop, connection);
+-            return -1;
+-        }
+-        connection->interim_sent += (size_t)n;
+-        connection->interim_deadline = now_ms() + 10000;
+-    }
+-    connection->interim_pending = 0;
+-    return 1;
+-}
+-
+-static void send_body_continue(Loop* loop, Connection* connection)
+-{
+-    if (now_ms() >= connection->body_deadline) {
+-        error_response(loop, connection, 408);
+-        return;
+-    }
+-    if (send_continue(loop, connection) != 1)
+-        return;
+-    if (interest(loop, connection, EPOLLIN) < 0)
+-        close_connection(loop, connection);
+-}
+-
+-/* 요청 소유 자원만 정리한다. 소켓·세대·횟수·잔여 데이터는 연결이 소유한다. */
+-static void reset_request(Connection* connection)
+-{
+-    proxy_destroy(connection->proxy);
+-    connection->proxy = NULL;
+-    if (connection->job.fd >= 0)
+-        close(connection->job.fd);
+-    http_request_destroy(&connection->request);
+-    http_body_destroy(&connection->body);
+-    http_request_init(&connection->request);
+-    memset(&connection->job, 0, sizeof(connection->job));
+-    connection->job.fd = -1;
+-    connection->job.connection = connection;
+-    connection->header_length = connection->header_sent = connection->chunk_sent = 0;
+-    connection->bytes_sent = 0;
+-    connection->interim_pending = 0;
+-    connection->interim_sent = 0;
+-    connection->request_complete = connection->close_after_response = 0;
+-    connection->deadline = connection->body_deadline = connection->interim_deadline = 0;
+-}
+-
+-static void finish_response(Loop* loop, Connection* connection)
+-{
+-    int close = response_must_close(loop, connection);
+-    ++connection->completed_requests;
+-    if (close) {
+-        close_connection(loop, connection);
+-        return;
+-    }
+-    reset_request(connection);
+-    int buffered = connection->pending_length != 0;
+-    connection->phase = buffered ? RECEIVING : KEEP_ALIVE_IDLE;
+-    connection->deadline = now_ms() + (buffered ? 10000 : (int64_t)loop->idle_timeout * 1000);
+-    if (interest(loop, connection, EPOLLIN) < 0) {
+-        close_connection(loop, connection);
+-        return;
+-    }
+-    if (buffered)
+-        receive_connection(loop, connection);
+-}
+-
+-static void proxy_failure(Loop* loop, Connection* connection, int status)
+-{
+-    proxy_destroy(connection->proxy);
+-    connection->proxy = NULL;
+-    connection->close_after_response = 1;
+-    error_response(loop, connection, status);
+-}
+-
+-/* upstream별 새 세대를 써서 이전 요청의 늦은 epoll 이벤트를 무시한다. */
+-static int watch_upstream(Loop* loop, Connection* connection)
+-{
+-    int fd = proxy_socket(connection->proxy);
+-    if (fd < 0)
+-        return 0;
+-    uint32_t events = proxy_interest(connection->proxy);
+-    /* 감시 0도 HUP/ERR를 반복 통지할 수 있다. 백프레셔 동안에는 등록 자체를 뺀다. */
+-    if (!events) {
+-        if (epoll_ctl(loop->epoll, EPOLL_CTL_DEL, fd, NULL) == 0 || errno == ENOENT)
+-            return 0;
+-        return -1;
+-    }
+-    struct epoll_event event = {
+-        .events = events,
+-        .data.u64 = UPSTREAM_KEY | ((uint64_t)connection->upstream_generation << 32) | connection->slot
+-    };
+-    if (epoll_ctl(loop->epoll, EPOLL_CTL_MOD, fd, &event) == 0)
+-        return 0;
+-    if (errno != ENOENT)
+-        return -1;
+-    return epoll_ctl(loop->epoll, EPOLL_CTL_ADD, fd, &event);
+-}
+-
+-static void synchronize_proxy(Loop* loop, Connection* connection)
+-{
+-    Proxy* proxy = connection->proxy;
+-    connection->close_after_response |= proxy_frontend_close(proxy);
+-    if (proxy_finished(proxy)) {
+-        finish_response(loop, connection);
+-        return;
+-    }
+-    size_t length;
+-    int final;
+-    proxy_output(proxy, &length, &final);
+-    if (length && !connection->deadline)
+-        connection->deadline = now_ms() + 10000;
+-    if (!length)
+-        connection->deadline = 0;
+-    if (watch_upstream(loop, connection) < 0
+-        || interest(loop, connection, length || connection->interim_pending ? EPOLLOUT : 0) < 0)
+-        close_connection(loop, connection);
+-}
+-
+-static void drive_proxy(Loop* loop, Connection* connection, uint32_t events)
+-{
+-    int status = proxy_step(connection->proxy, events, now_ms());
+-    if (status) {
+-        proxy_failure(loop, connection, status);
+-        return;
+-    }
+-    synchronize_proxy(loop, connection);
+-}
+-
+-static void start_proxy(Loop* loop, Connection* connection)
+-{
+-    int status;
+-    connection->proxy = proxy_start(loop->proxy_config, &connection->request, &connection->body,
+-        response_must_close(loop, connection), now_ms(), &status);
+-    if (!connection->proxy) {
+-        connection->close_after_response = 1;
+-        error_response(loop, connection, status);
+-        return;
+-    }
+-    connection->upstream_generation = (++loop->upstream_generation) & UINT32_C(0x7fffffff);
+-    connection->phase = PROXYING;
+-    connection->deadline = 0;
+-    drive_proxy(loop, connection, 0);
+-}
+-
+-/* 로컬 100·백엔드 임시 응답·최종 응답의 바이트 진행량을 분리한다. */
+-static void send_proxy(Loop* loop, Connection* connection)
+-{
+-    if (stop_requested && proxy_mark_close(connection->proxy) < 0) {
+-        close_connection(loop, connection);
+-        return;
+-    }
+-    if (connection->interim_pending) {
+-        if (send_continue(loop, connection) != 1)
+-            return;
+-        connection->deadline = now_ms() + 10000;
+-    }
+-    size_t length;
+-    int final;
+-    const char* data = proxy_output(connection->proxy, &length, &final);
+-    if (!length) {
+-        drive_proxy(loop, connection, 0);
+-        return;
+-    }
+-    ssize_t n = send(connection->socket, data, length, 0);
+-    if (n < 0 && (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK))
+-        return;
+-    if (n <= 0) {
+-        close_connection(loop, connection);
+-        return;
+-    }
+-    if (final)
+-        connection->bytes_sent += (size_t)n;
+-    connection->deadline = now_ms() + 10000;
+-    proxy_consume_output(connection->proxy, (size_t)n, now_ms());
+-    drive_proxy(loop, connection, 0);
+-}
+-
+-static void send_connection(Loop* loop, Connection* connection)
+-{
+-    if (stop_requested && mark_shutdown_response(connection) < 0) {
+-        close_connection(loop, connection);
+-        return;
+-    }
+-    if (connection->interim_pending) {
+-        if (send_continue(loop, connection) != 1)
+-            return;
+-        connection->deadline = now_ms() + 10000;
+-    }
+-    /* 이 연결의 현재 한 조각만 송신한다. 다음 파일 읽기는 모두 보낸 뒤 제출한다. */
+-    while (connection->header_sent < connection->header_length || connection->chunk_sent < connection->job.length) {
+-        int header = connection->header_sent < connection->header_length;
+-        const char* data = header ? connection->header + connection->header_sent : connection->job.bytes + connection->chunk_sent;
+-        size_t length = header ? connection->header_length - connection->header_sent : connection->job.length - connection->chunk_sent;
+-        ssize_t n = send(connection->socket, data, length, 0);
+-        if (n < 0) {
+-            if (errno == EINTR)
+-                continue;
+-            if (errno == EAGAIN || errno == EWOULDBLOCK)
+-                return;
+-            close_connection(loop, connection);
+-            return;
+-        }
+-        if (n == 0) {
+-            close_connection(loop, connection);
+-            return;
+-        }
+-        connection->bytes_sent += (size_t)n;
+-        connection->deadline = now_ms() + 10000;
+-        if (header)
+-            connection->header_sent += (size_t)n;
+-        else
+-            connection->chunk_sent += (size_t)n;
+-    }
+-    if (connection->job.remaining > 0) {
+-        retry_waiters(loop);
+-        schedule_read(loop, connection, 0);
+-    } else
+-        finish_response(loop, connection);
+-}
+-static void monitor_listener(Loop* loop)
+-{
+-    int enabled = !loop->stopping && loop->objects < loop->limit && now_ms() >= loop->accept_retry_at;
+-    if (enabled == loop->listening)
+-        return;
+-    struct epoll_event e = { .events = EPOLLIN, .data.u64 = LISTENER_KEY };
+-    if (epoll_ctl(loop->epoll, enabled ? EPOLL_CTL_ADD : EPOLL_CTL_DEL, loop->listener, &e) == 0)
+-        loop->listening = enabled;
+-}
+-/* 반환한 객체는 슬롯에 고정해 요청 내부 포인터의 주소를 보존한다. */
+-static Connection* create_connection(Loop* loop, int socket)
+-{
+-    size_t slot = 0;
+-    while (loop->slots[slot])
+-        ++slot;
+-    Connection* connection = calloc(1, sizeof(*connection));
+-    if (!connection)
+-        return NULL;
+-    connection->socket = socket;
+-    connection->slot = (uint32_t)slot;
+-    connection->generation = (++loop->generations[slot]) & UINT32_C(0x7fffffff);
+-    connection->job.fd = -1;
+-    connection->job.connection = connection;
+-    connection->phase = RECEIVING;
+-    connection->deadline = now_ms() + 10000;
+-    http_request_init(&connection->request);
+-    loop->slots[slot] = connection;
+-    ++loop->objects;
+-    return connection;
+-}
+-
+-static void watch_new_connection(Loop* loop, Connection* connection)
+-{
+-    struct epoll_event event = {
+-        .events = EPOLLIN | EPOLLRDHUP,
+-        .data.u64 = key(connection)
+-    };
+-    if (epoll_ctl(loop->epoll, EPOLL_CTL_ADD, connection->socket, &event) < 0)
+-        close_connection(loop, connection);
+-}
+-
+-static void accept_connections(Loop* loop)
+-{
+-    while (!loop->stopping && loop->objects < loop->limit) {
+-        int fd = accept4(loop->listener, NULL, NULL, SOCK_NONBLOCK | SOCK_CLOEXEC);
+-        if (fd < 0) {
+-            if (errno == EINTR)
+-                continue;
+-            if (errno != EAGAIN && errno != EWOULDBLOCK) {
+-                perror("accept");
+-                loop->accept_retry_at = now_ms() + 1000;
+-            }
+-            break;
+-        }
+-        Connection* connection = create_connection(loop, fd);
+-        if (!connection) {
+-            close(fd);
+-            loop->accept_retry_at = now_ms() + 1000;
+-            break;
+-        }
+-        watch_new_connection(loop, connection);
+-    }
+-    monitor_listener(loop);
+-}
+-static int next_timeout(Loop* loop)
+-{
+-    int64_t now = now_ms(), nearest = now + 1000;
+-    if (loop->stopping && loop->shutdown_at < nearest)
+-        nearest = loop->shutdown_at;
+-    if (loop->accept_retry_at > now && loop->accept_retry_at < nearest)
+-        nearest = loop->accept_retry_at;
+-    for (size_t i = 0; i < loop->limit; ++i) {
+-        Connection* connection = loop->slots[i];
+-        if (!connection || connection->closed)
+-            continue;
+-        if (connection->phase == WAITING && job_state(&loop->pool, &connection->job) != QUEUED)
+-            continue;
+-        if (connection->phase == PROXYING) {
+-            int64_t upstream = proxy_deadline(connection->proxy);
+-            if (upstream < nearest)
+-                nearest = upstream;
+-            if (connection->deadline && !connection->interim_pending && connection->deadline < nearest)
+-                nearest = connection->deadline;
+-            if (connection->interim_pending && connection->interim_deadline < nearest)
+-                nearest = connection->interim_deadline;
+-            continue;
+-        }
+-        int64_t deadline = connection->phase == BODY_RECEIVING ? connection->body_deadline : connection->deadline;
+-        if (connection->phase == SENDING && connection->interim_pending)
+-            deadline = connection->interim_deadline;
+-        if (deadline < nearest)
+-            nearest = deadline;
+-        if (connection->interim_pending && connection->interim_deadline < nearest)
+-            nearest = connection->interim_deadline;
+-    }
+-    return nearest <= now ? 0 : (int)(nearest - now);
+-}
+-static void expire_connections(Loop* loop)
+-{
+-    int64_t now = now_ms();
+-    for (size_t i = 0; i < loop->limit; ++i) {
+-        Connection* connection = loop->slots[i];
+-        if (!connection || connection->closed)
+-            continue;
+-        if (connection->interim_pending && now >= connection->interim_deadline) {
+-            close_connection(loop, connection);
+-            continue;
+-        }
+-        if (connection->phase == BODY_RECEIVING) {
+-            if (now >= connection->body_deadline)
+-                error_response(loop, connection, 408);
+-            continue;
+-        }
+-        if (connection->phase == PROXYING) {
+-            if (connection->deadline && !connection->interim_pending && now >= connection->deadline)
+-                close_connection(loop, connection);
+-            else if (now >= proxy_deadline(connection->proxy))
+-                drive_proxy(loop, connection, 0);
+-            continue;
+-        }
+-        if (connection->phase == SENDING && connection->interim_pending)
+-            continue;
+-        if (now < connection->deadline)
+-            continue;
+-        if (connection->phase == RECEIVING)
+-            error_response(loop, connection, 408);
+-        else if (connection->phase == KEEP_ALIVE_IDLE)
+-            close_connection(loop, connection);
+-        else if (connection->phase == SENDING)
+-            close_connection(loop, connection);
+-        else if (connection->phase == RETRYING)
+-            error_response(loop, connection, 503);
+-        else if (cancel_queued(&loop->pool, &connection->job))
+-            error_response(loop, connection, 503);
+-    }
+-}
+-/* epoll이 돌려준 한 이벤트를 연결 종류와 현재 단계에 따라 처리한다. */
+-static void dispatch_event(Loop* loop, const struct epoll_event* event)
+-{
+-    uint64_t id = event->data.u64;
+-    if (id == WAKE_KEY) {
+-        uint64_t value;
+-        while (read(loop->wake, &value, sizeof(value)) > 0) { };
+-        return;
+-    }
+-    if (id == LISTENER_KEY) {
+-        if (!stop_requested)
+-            accept_connections(loop);
+-        return;
+-    }
+-    uint32_t slot = (uint32_t)id, gen = (uint32_t)(id >> 32) & UINT32_C(0x7fffffff);
+-    if (slot >= loop->limit)
+-        return;
+-    Connection* connection = loop->slots[slot];
+-    if (!connection || connection->closed)
+-        return;
+-    if (id & UPSTREAM_KEY) {
+-        if (connection->proxy && connection->upstream_generation == gen)
+-            drive_proxy(loop, connection, event->events);
+-        return;
+-    }
+-    if (connection->generation != gen)
+-        return;
+-    uint32_t e = event->events;
+-    if (stop_requested && connection->phase == KEEP_ALIVE_IDLE) {
+-        close_connection(loop, connection);
+-        return;
+-    }
+-    if (e & (EPOLLERR | EPOLLHUP)) {
+-        close_connection(loop, connection);
+-        return;
+-    }
+-    if ((connection->phase == RECEIVING || connection->phase == BODY_RECEIVING || connection->phase == KEEP_ALIVE_IDLE) && (e & (EPOLLIN | EPOLLRDHUP)))
+-        receive_connection(loop, connection);
+-    else if (connection->phase == BODY_RECEIVING && (e & EPOLLOUT))
+-        send_body_continue(loop, connection);
+-    else if (connection->phase == SENDING && (e & EPOLLOUT))
+-        send_connection(loop, connection);
+-    else if (connection->phase == PROXYING && (e & EPOLLOUT))
+-        send_proxy(loop, connection);
+-    /* 대기 중 RDHUP는 상대의 write-half close일 수 있어 송신 가능성을 유지한다. */
+-}
+-
+-static void force_shutdown(Loop* loop)
+-{
+-    /* 실행 중인 파일 I/O를 강제로 취소하지 않고 프로세스 전체를 종료한다. */
+-    for (size_t i = 0; i < loop->limit; ++i)
+-        if (loop->slots[i] && !loop->slots[i]->closed) {
+-            proxy_destroy(loop->slots[i]->proxy);
+-            close(loop->slots[i]->socket);
+-        }
+-    _exit(EXIT_SUCCESS);
+-}
+-
+-/* 아직 헤더를 한 바이트도 보내지 않았을 때만 종료 표시를 덧붙일 수 있다. */
+-static int mark_shutdown_response(Connection* connection)
+-{
+-    connection->close_after_response = 1;
+-    if (connection->proxy)
+-        return proxy_mark_close(connection->proxy);
+-    if (connection->header_sent || !connection->header_length
+-        || strstr(connection->header, "Connection: close\r\n"))
+-        return 0;
+-    static const char close_header[] = "Connection: close\r\n";
+-    size_t n = sizeof(close_header) - 1;
+-    if (connection->header_length < 2 || connection->header_length + n >= sizeof(connection->header))
+-        return -1;
+-    size_t insertion = connection->header_length - 2;
+-    memmove(connection->header + insertion + n, connection->header + insertion, 3);
+-    memcpy(connection->header + insertion, close_header, n);
+-    connection->header_length += n;
+-    return 0;
+-}
+-
+-static void begin_shutdown(Loop* loop)
+-{
+-    loop->stopping = 1;
+-    loop->shutdown_at = now_ms() + 10000;
+-    monitor_listener(loop);
+-    for (size_t i = 0; i < loop->limit; ++i) {
+-        Connection* connection = loop->slots[i];
+-        if (!connection || connection->closed)
+-            continue;
+-        if (connection->phase == KEEP_ALIVE_IDLE)
+-            close_connection(loop, connection);
+-        else if (mark_shutdown_response(connection) < 0)
+-            close_connection(loop, connection);
+-    }
+-}
+-
+-static void update_loop_state(Loop* loop)
+-{
+-    if (stop_requested && !loop->stopping)
+-        begin_shutdown(loop);
+-    completed_jobs(loop);
+-    expire_connections(loop);
+-    retry_waiters(loop);
+-    monitor_listener(loop);
+-}
+-
+-/* 상태 정리 → 준비 이벤트 대기 → 이벤트별 처리 순서를 반복한다. */
+-static void run_event_loop(Loop* loop)
+-{
+-    for (;;) {
+-        update_loop_state(loop);
+-        if (loop->stopping && loop->objects == 0)
+-            return;
+-        if (loop->stopping && now_ms() >= loop->shutdown_at)
+-            force_shutdown(loop);
+-        struct epoll_event events[64];
+-        int count = epoll_wait(loop->epoll, events, 64, next_timeout(loop));
+-        if (count < 0) {
+-            if (errno == EINTR)
+-                continue;
+-            perror("epoll_wait");
+-            loop->stopping = 1;
+-            loop->shutdown_at = now_ms();
+-            continue;
+-        }
+-        for (int i = 0; i < count; ++i)
+-            dispatch_event(loop, &events[i]);
+-    }
+-}
+-
+-static int allocate_loop_resources(Loop* loop, size_t limit)
+-{
+-    loop->epoll = -1;
+-    loop->wake = -1;
+-    /* 요청별 upstream 버퍼까지 포함한 크기 계산이 넘치지 않아야 한다. */
+-    if (proxy_connection_size() > SIZE_MAX - sizeof(Connection)
+-        || limit > SIZE_MAX / (sizeof(Connection) + proxy_connection_size()))
+-        return -1;
+-    loop->limit = limit;
+-    loop->slots = calloc(limit, sizeof(*loop->slots));
+-    loop->generations = calloc(limit, sizeof(*loop->generations));
+-    if (!loop->slots || !loop->generations)
+-        return -1;
+-    loop->epoll = epoll_create1(EPOLL_CLOEXEC);
+-    loop->wake = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+-    return loop->epoll < 0 || loop->wake < 0 ? -1 : 0;
+-}
+-
+-static void release_loop_resources(Loop* loop)
+-{
+-    if (loop->wake >= 0)
+-        close(loop->wake);
+-    if (loop->epoll >= 0)
+-        close(loop->epoll);
+-    free(loop->slots);
+-    free(loop->generations);
+-}
+-
+-static void stop_pool(Pool* pool)
+-{
+-    pthread_mutex_lock(&pool->mutex);
+-    pool->stopping = 1;
+-    pthread_cond_broadcast(&pool->ready);
+-    pthread_mutex_unlock(&pool->mutex);
+-    for (size_t i = 0; i < pool->thread_count; ++i)
+-        pthread_join(pool->threads[i], NULL);
+-    free(pool->threads);
+-    pthread_cond_destroy(&pool->ready);
+-    pthread_mutex_destroy(&pool->mutex);
+-}
+-
+-int concurrent_server_run(int listener, int root, size_t workers, size_t queue_limit, size_t limit,
+-    size_t body_limit, size_t body_timeout, size_t idle_timeout, size_t max_requests, ProxyConfig* proxy_config)
+-{
+-    Loop loop = { .listener = listener, .body_limit = body_limit, .body_timeout = body_timeout, .idle_timeout = idle_timeout, .max_requests = max_requests, .proxy_config = proxy_config };
+-    int run_result = -1;
+-    sigset_t termination, previous_mask;
+-    sigemptyset(&termination);
+-    sigaddset(&termination, SIGINT);
+-    sigaddset(&termination, SIGTERM);
+-    if (pthread_sigmask(SIG_BLOCK, &termination, &previous_mask))
+-        return -1;
+-    /* 슬롯을 재사용해도 세대 번호가 달라 늦은 epoll 이벤트가 새 연결에 적용되지 않는다. */
+-    if (allocate_loop_resources(&loop, limit) < 0)
+-        goto fail;
+-    if (pool_init(&loop.pool, workers, queue_limit, root, loop.wake) < 0)
+-        goto fail;
+-    struct epoll_event wake = { .events = EPOLLIN, .data.u64 = WAKE_KEY };
+-    if (epoll_ctl(loop.epoll, EPOLL_CTL_ADD, loop.wake, &wake) < 0)
+-        goto stop_pool;
+-    stop_requested = 0;
+-    signal_wake = loop.wake;
+-    struct sigaction action = { 0 };
+-    action.sa_handler = stop_signal;
+-    sigemptyset(&action.sa_mask);
+-    if (sigaction(SIGINT, &action, NULL) || sigaction(SIGTERM, &action, NULL))
+-        goto stop_pool;
+-    pthread_sigmask(SIG_SETMASK, &previous_mask, NULL);
+-    run_result = 0;
+-    struct sockaddr_in bound;
+-    socklen_t bound_length = sizeof(bound);
+-    if (getsockname(listener, (struct sockaddr*)&bound, &bound_length) == 0) {
+-        printf("Listening on port %u\n", (unsigned)ntohs(bound.sin_port));
+-        fflush(stdout);
+-    }
+-    monitor_listener(&loop);
+-    run_event_loop(&loop);
+-stop_pool:
+-    signal_wake = -1;
+-    pthread_sigmask(SIG_BLOCK, &termination, NULL);
+-    stop_pool(&loop.pool);
+-    release_loop_resources(&loop);
+-    pthread_sigmask(SIG_SETMASK, &previous_mask, NULL);
+-    return run_result;
+-fail:
+-    release_loop_resources(&loop);
+-    pthread_sigmask(SIG_SETMASK, &previous_mask, NULL);
+-    return -1;
+-}
++#define _GNU_SOURCE
++#include "concurrency.h"
++#include "http_body.h"
++#include "http_request.h"
++#include "http_response.h"
++#include "static_files.h"
++#include <arpa/inet.h>
++#include <errno.h>
++#include <fcntl.h>
++#include <limits.h>
++#include <pthread.h>
++#include <signal.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <strings.h>
++#include <sys/epoll.h>
++#include <sys/eventfd.h>
++#include <sys/socket.h>
++#include <time.h>
++#include <unistd.h>
++
++#define CHUNK_SIZE 8192
++#define LISTENER_KEY UINT64_MAX
++#define WAKE_KEY (UINT64_MAX - 1)
++#define UPSTREAM_KEY (UINT64_C(1) << 63)
++typedef struct Connection Connection;
++typedef struct Job Job;
++typedef enum { RECEIVING,
++    KEEP_ALIVE_IDLE,
++    BODY_RECEIVING,
++    PROXYING,
++    WAITING,
++    RETRYING,
++    SENDING } Phase;
++typedef enum { IDLE,
++    QUEUED,
++    RUNNING,
++    DONE } JobState;
++struct Job {
++    Job* next;
++    Connection* connection;
++    JobState state; /* pool.mutex로 보호한다. */
++    int first, status, fd;
++    off_t remaining, total;
++    const char* mime;
++    char location[HTTP_HEADER_LIMIT + 4];
++    char bytes[CHUNK_SIZE];
++    size_t length;
++    int64_t queued_at;
++    uint64_t request_number;
++    uint32_t generation;
++};
++struct Connection {
++    int socket, closed;
++    uint32_t slot, generation;
++    Phase phase;
++    HttpRequest request; /* 내부 문자열 포인터를 위해 객체를 이동하지 않는다. */
++    HttpBody body;
++    int64_t body_deadline, interim_deadline;
++    size_t interim_sent;
++    int interim_pending;
++    int request_complete, close_after_response;
++    uint64_t completed_requests;
++    char pending[4096]; /* 한 recv의 잔여 데이터만 유지한다. 응답 중에는 읽지 않는다. */
++    size_t pending_length;
++    Proxy* proxy;
++    uint32_t upstream_generation;
++    Job job; /* 연결당 하나: 완료 결과 슬롯도 미리 확보된다. */
++    char header[HTTP_HEADER_LIMIT + 1024];
++    size_t header_length, header_sent, chunk_sent;
++    uint64_t bytes_sent;
++    int64_t deadline;
++};
++typedef struct {
++    pthread_mutex_t mutex;
++    pthread_cond_t ready;
++    pthread_t* threads;
++    size_t thread_count, queued, limit;
++    int stopping, root, wake;
++    Job *head, *tail, *done_head, *done_tail;
++} Pool;
++typedef struct {
++    int epoll, listener, wake, listening, stopping;
++    int64_t shutdown_at, accept_retry_at;
++    size_t limit, objects;
++    size_t body_limit, body_timeout;
++    size_t idle_timeout, max_requests;
++    ProxyConfig* proxy_config;
++    uint32_t upstream_generation;
++    Connection** slots;
++    uint32_t* generations;
++    Pool pool;
++} Loop;
++static volatile sig_atomic_t stop_requested;
++static volatile sig_atomic_t signal_wake = -1;
++static int mark_shutdown_response(Connection* connection);
++static void start_proxy(Loop* loop, Connection* connection);
++static void drive_proxy(Loop* loop, Connection* connection, uint32_t events);
++
++static int64_t now_ms(void)
++{
++    struct timespec t;
++    if (clock_gettime(CLOCK_MONOTONIC, &t) < 0)
++        abort();
++    return (int64_t)t.tv_sec * 1000 + t.tv_nsec / 1000000;
++}
++static void notify(int fd)
++{
++    uint64_t one = 1;
++    while (write(fd, &one, sizeof(one)) < 0 && errno == EINTR) { }
++}
++static void stop_signal(int sig)
++{
++    (void)sig;
++    int saved = errno;
++    stop_requested = 1;
++    if (signal_wake >= 0) {
++        uint64_t one = 1;
++        (void)write(signal_wake, &one, sizeof(one));
++    }
++    errno = saved;
++}
++
++/* 이 함수에는 소켓 I/O가 없다. worker 하나가 파일 FD와 한 조각만 다룬다. */
++static void execute_job(Pool* pool, Job* job)
++{
++    job->length = 0;
++    job->status = 200;
++    if (job->first) {
++        StaticFileResult result;
++        static_files_prepare(pool->root, &job->connection->request, &result);
++        job->fd = result.fd;
++        job->status = result.status;
++        job->remaining = job->total = result.size;
++        job->mime = result.mime;
++        memcpy(job->location, result.location, sizeof(job->location));
++        if (job->status != 200)
++            return;
++    }
++    if (job->remaining == 0)
++        return;
++    size_t want = job->remaining > (off_t)CHUNK_SIZE ? CHUNK_SIZE : (size_t)job->remaining;
++    ssize_t n;
++    do {
++        n = read(job->fd, job->bytes, want);
++    } while (n < 0 && errno == EINTR);
++    if (n <= 0) {
++        job->status = 500;
++        return;
++    }
++    job->length = (size_t)n;
++    job->remaining -= n;
++}
++/* 대기열에서 하나를 꺼낸다. 종료 중이어도 이미 대기 중인 작업은 처리한다. */
++static Job* take_job(Pool* pool, int* expired)
++{
++    pthread_mutex_lock(&pool->mutex);
++    while (!pool->head && !pool->stopping)
++        pthread_cond_wait(&pool->ready, &pool->mutex);
++    if (!pool->head) {
++        pthread_mutex_unlock(&pool->mutex);
++        return NULL;
++    }
++    Job* job = pool->head;
++    pool->head = job->next;
++    if (!pool->head)
++        pool->tail = NULL;
++    --pool->queued;
++    *expired = now_ms() - job->queued_at >= 10000;
++    job->state = RUNNING;
++    pthread_mutex_unlock(&pool->mutex);
++    notify(pool->wake);
++    return job;
++}
++
++static void publish_completed_job(Pool* pool, Job* job)
++{
++    pthread_mutex_lock(&pool->mutex);
++    job->state = DONE;
++    job->next = NULL;
++    if (pool->done_tail)
++        pool->done_tail->next = job;
++    else
++        pool->done_head = job;
++    pool->done_tail = job;
++    pthread_mutex_unlock(&pool->mutex);
++    notify(pool->wake);
++}
++
++/* 작업 인수 → 파일 처리 → 완료 알림. 소켓은 이벤트 루프만 다룬다. */
++static void* worker(void* argument)
++{
++    Pool* pool = argument;
++    for (;;) {
++        int expired;
++        Job* job = take_job(pool, &expired);
++        if (!job)
++            return NULL;
++        if (expired) {
++            job->status = 503;
++            job->length = 0;
++        } else {
++            execute_job(pool, job);
++        }
++        publish_completed_job(pool, job);
++    }
++}
++static int pool_init(Pool* pool, size_t count, size_t limit, int root, int wake)
++{
++    memset(pool, 0, sizeof(*pool));
++    pool->limit = limit;
++    pool->root = root;
++    pool->wake = wake;
++    if (pthread_mutex_init(&pool->mutex, NULL))
++        return -1;
++    if (pthread_cond_init(&pool->ready, NULL)) {
++        pthread_mutex_destroy(&pool->mutex);
++        return -1;
++    }
++    pool->threads = calloc(count, sizeof(*pool->threads));
++    if (!pool->threads)
++        goto failure;
++    for (; pool->thread_count < count; ++pool->thread_count)
++        if (pthread_create(&pool->threads[pool->thread_count], NULL, worker, pool))
++            goto failure;
++    return 0;
++failure:
++    pthread_mutex_lock(&pool->mutex);
++    pool->stopping = 1;
++    pthread_cond_broadcast(&pool->ready);
++    pthread_mutex_unlock(&pool->mutex);
++    for (size_t i = 0; i < pool->thread_count; ++i)
++        pthread_join(pool->threads[i], NULL);
++    free(pool->threads);
++    pthread_cond_destroy(&pool->ready);
++    pthread_mutex_destroy(&pool->mutex);
++    return -1;
++}
++static JobState job_state(Pool* pool, Job* job)
++{
++    pthread_mutex_lock(&pool->mutex);
++    JobState state = job->state;
++    pthread_mutex_unlock(&pool->mutex);
++    return state;
++}
++static int submit(Pool* pool, Job* job)
++{
++    int ok = 0;
++    pthread_mutex_lock(&pool->mutex);
++    if (pool->queued < pool->limit) {
++        job->next = NULL;
++        job->state = QUEUED;
++        if (pool->tail)
++            pool->tail->next = job;
++        else
++            pool->head = job;
++        pool->tail = job;
++        ++pool->queued;
++        ok = 1;
++        pthread_cond_signal(&pool->ready);
++    }
++    pthread_mutex_unlock(&pool->mutex);
++    return ok;
++}
++/* 아직 실행되지 않은 작업만 제거한다. RUNNING의 파일/요청은 만지지 않는다. */
++static int cancel_queued(Pool* pool, Job* job)
++{
++    int canceled = 0;
++    pthread_mutex_lock(&pool->mutex);
++    if (job->state == QUEUED) {
++        Job **at = &pool->head, *prev = NULL;
++        while (*at && *at != job) {
++            prev = *at;
++            at = &(*at)->next;
++        }
++        if (*at) {
++            *at = job->next;
++            if (pool->tail == job)
++                pool->tail = prev;
++            --pool->queued;
++            job->state = IDLE;
++            canceled = 1;
++        }
++    }
++    pthread_mutex_unlock(&pool->mutex);
++    return canceled;
++}
++static uint64_t key(Connection* connection) { return ((uint64_t)connection->generation << 32) | connection->slot; }
++static int interest(Loop* loop, Connection* connection, uint32_t events)
++{
++    struct epoll_event e = { .events = events | (events & EPOLLIN ? EPOLLRDHUP : 0), .data.u64 = key(connection) };
++    return epoll_ctl(loop->epoll, EPOLL_CTL_MOD, connection->socket, &e);
++}
++static void release_connection(Loop* loop, Connection* connection)
++{
++    proxy_destroy(connection->proxy);
++    if (connection->job.fd >= 0)
++        close(connection->job.fd);
++    http_request_destroy(&connection->request);
++    http_body_destroy(&connection->body);
++    loop->slots[connection->slot] = NULL;
++    --loop->objects;
++    free(connection);
++}
++static void close_connection(Loop* loop, Connection* connection)
++{
++    if (connection->closed)
++        return;
++    connection->closed = 1;
++    proxy_destroy(connection->proxy);
++    connection->proxy = NULL;
++    epoll_ctl(loop->epoll, EPOLL_CTL_DEL, connection->socket, NULL);
++    close(connection->socket);
++    JobState state = job_state(&loop->pool, &connection->job);
++    if (state == QUEUED && cancel_queued(&loop->pool, &connection->job))
++        state = IDLE;
++    else if (state == QUEUED)
++        state = job_state(&loop->pool, &connection->job);
++    /* DONE도 완료 큐에서 꺼낼 때까지 참조를 보존한다. */
++    if (state == IDLE)
++        release_connection(loop, connection);
++}
++
++/* Connection의 여러 줄과 쉼표 목록 중 close 하나만 있어도 종료가 우선이다. */
++static int client_requests_close(const HttpRequest* request)
++{
++    size_t cursor = 0;
++    const HttpHeader* header;
++    while ((header = http_request_next_header(request, "Connection", &cursor))) {
++        const char* p = header->value;
++        while (*p) {
++            while (*p == ' ' || *p == '\t' || *p == ',')
++                ++p;
++            const char* start = p;
++            while (*p && *p != ',')
++                ++p;
++            const char* end = p;
++            while (end > start && (end[-1] == ' ' || end[-1] == '\t'))
++                --end;
++            if (end - start == 5 && !strncasecmp(start, "close", 5))
++                return 1;
++        }
++    }
++    return 0;
++}
++
++static int response_must_close(Loop* loop, Connection* connection)
++{
++    return connection->close_after_response || loop->stopping || stop_requested
++        || connection->completed_requests + 1 >= loop->max_requests;
++}
++
++/* 현재 요청 경계를 넘은 바이트는 아직 파싱하지 않고 다음 차례까지 보관한다. */
++static void save_pending(Connection* connection, const char* data, size_t length)
++{
++    if (length)
++        memcpy(connection->pending, data, length);
++    connection->pending_length = length;
++}
++
++static void error_response(Loop* loop, Connection* connection, int status)
++{
++    if (connection->closed)
++        return;
++    if (connection->bytes_sent) {
++        close_connection(loop, connection);
++        return;
++    }
++    if (!connection->request_complete || (status != 403 && status != 404))
++        connection->close_after_response = 1;
++    /* 100을 일부 보냈으면 끝까지 보낸 뒤 최종 오류를 붙인다.
++     * 한 바이트도 보내지 않았다면 임시 응답은 취소할 수 있다. */
++    if (!connection->interim_sent)
++        connection->interim_pending = 0;
++    if (connection->job.fd >= 0) {
++        close(connection->job.fd);
++        connection->job.fd = -1;
++    }
++    const char* body = http_status_reason(status);
++    connection->job.length = strlen(body);
++    memcpy(connection->job.bytes, body, connection->job.length);
++    connection->job.remaining = 0;
++    int n = http_format_header_policy(connection->header, sizeof(connection->header), status,
++        "text/plain; charset=utf-8", (off_t)connection->job.length, NULL, response_must_close(loop, connection));
++    if (n < 0) {
++        close_connection(loop, connection);
++        return;
++    }
++    connection->header_length = (size_t)n;
++    connection->header_sent = connection->chunk_sent = 0;
++    connection->phase = SENDING;
++    connection->deadline = now_ms() + 10000;
++    if (interest(loop, connection, EPOLLOUT) < 0)
++        close_connection(loop, connection);
++}
++static void schedule_read(Loop* loop, Connection* connection, int first)
++{
++    connection->job.request_number = connection->completed_requests + 1;
++    connection->job.generation = connection->generation;
++    connection->job.first = first;
++    connection->job.queued_at = now_ms();
++    connection->deadline = connection->job.queued_at + 10000;
++    connection->phase = WAITING;
++    if (interest(loop, connection, 0) < 0) {
++        close_connection(loop, connection);
++        return;
++    }
++    if (!submit(&loop->pool, &connection->job)) {
++        if (first)
++            error_response(loop, connection, 503);
++        else
++            connection->phase = RETRYING;
++    }
++}
++static void retry_waiters(Loop* loop)
++{
++    for (;;) {
++        Connection* oldest = NULL;
++        for (size_t i = 0; i < loop->limit; ++i) {
++            Connection* connection = loop->slots[i];
++            if (connection && !connection->closed && connection->phase == RETRYING && (!oldest || connection->job.queued_at < oldest->job.queued_at))
++                oldest = connection;
++        }
++        if (!oldest)
++            return;
++        if (now_ms() >= oldest->deadline) {
++            error_response(loop, oldest, 503);
++            continue;
++        }
++        if (!submit(&loop->pool, &oldest->job))
++            return;
++        oldest->phase = WAITING;
++    }
++}
++static void completed_jobs(Loop* loop)
++{
++    Pool* pool = &loop->pool;
++    pthread_mutex_lock(&pool->mutex);
++    Job* jobs = pool->done_head;
++    pool->done_head = pool->done_tail = NULL;
++    pthread_mutex_unlock(&pool->mutex);
++    while (jobs) {
++        Job* job = jobs;
++        jobs = job->next;
++        Connection* connection = job->connection;
++        pthread_mutex_lock(&pool->mutex);
++        job->state = IDLE;
++        pthread_mutex_unlock(&pool->mutex);
++        if (connection->closed) {
++            release_connection(loop, connection);
++            continue;
++        }
++        /* 소켓 세대와 요청 순번을 모두 확인해 늦은 결과의 적용 대상을 제한한다. */
++        if (job->generation != connection->generation
++            || job->request_number != connection->completed_requests + 1) {
++            close_connection(loop, connection);
++            continue;
++        }
++        if (job->status != 200 && job->status != 301) {
++            error_response(loop, connection, job->status);
++            continue;
++        }
++        connection->chunk_sent = 0;
++        if (job->first) {
++            int n = http_format_header_policy(connection->header, sizeof(connection->header), job->status,
++                job->mime, job->total, job->status == 301 ? job->location : NULL, response_must_close(loop, connection));
++            if (n < 0) {
++                error_response(loop, connection, 500);
++                continue;
++            }
++            connection->header_length = (size_t)n;
++            connection->header_sent = 0;
++        }
++        connection->phase = SENDING;
++        connection->deadline = now_ms() + 10000;
++        if (interest(loop, connection, EPOLLOUT) < 0)
++            close_connection(loop, connection);
++    }
++    retry_waiters(loop);
++}
++static int parse_status(HttpParseResult result)
++{
++    switch (result) {
++    case HTTP_PARSE_INVALID:
++        return 400;
++    case HTTP_PARSE_TOO_LARGE:
++        return 431;
++    case HTTP_PARSE_NO_MEMORY:
++        return 500;
++    case HTTP_PARSE_UNSUPPORTED_VERSION:
++        return 505;
++    default:
++        return 500;
++    }
++}
++/* POST는 파일 작업 없이 최종 응답만 준비한다. 본문은 이번 요청 정리까지 보관한다. */
++static void complete_post(Loop* loop, Connection* connection)
++{
++    connection->request_complete = 1;
++    if (proxy_route(connection->request.path)) {
++        start_proxy(loop, connection);
++        return;
++    }
++    int n = http_format_no_content_policy(connection->header, sizeof(connection->header), response_must_close(loop, connection));
++    if (n < 0) {
++        error_response(loop, connection, 500);
++        return;
++    }
++    if (!connection->interim_sent)
++        connection->interim_pending = 0;
++    connection->header_length = (size_t)n;
++    connection->header_sent = connection->chunk_sent = 0;
++    connection->job.length = 0;
++    connection->job.remaining = 0;
++    connection->phase = SENDING;
++    connection->deadline = now_ms() + 10000;
++    if (interest(loop, connection, EPOLLOUT) < 0)
++        close_connection(loop, connection);
++}
++
++static int receive_body_bytes(Loop* loop, Connection* connection, const char* data, size_t length)
++{
++    if (now_ms() >= connection->body_deadline) {
++        error_response(loop, connection, 408);
++        return 0;
++    }
++    http_body_feed(&connection->body, data, length);
++    if (connection->body.received == connection->body.length) {
++        complete_post(loop, connection);
++        return 0;
++    }
++    return 1;
++}
++
++/* 헤더 경계 검증 → 메서드 선택 → 메모리 확보 → 같은 recv에 붙은 본문 처리. */
++static void finish_request_headers(Loop* loop, Connection* connection, const char* data, size_t length)
++{
++    int64_t completed_at = now_ms();
++    if (completed_at >= connection->deadline) {
++        error_response(loop, connection, 408);
++        return;
++    }
++    size_t body_length;
++    int expect_continue;
++    int status = http_body_validate(&connection->request, loop->body_limit, &body_length, &expect_continue);
++    if (status) {
++        error_response(loop, connection, status);
++        return;
++    }
++    connection->close_after_response = client_requests_close(&connection->request);
++    if (!strcmp(connection->request.method, "GET")) {
++        connection->request_complete = 1;
++        save_pending(connection, data, length);
++        if (proxy_route(connection->request.path)) {
++            start_proxy(loop, connection);
++            return;
++        }
++        retry_waiters(loop);
++        schedule_read(loop, connection, 1);
++        return;
++    }
++    status = http_body_allocate(&connection->body, body_length);
++    if (status) {
++        error_response(loop, connection, status);
++        return;
++    }
++    connection->body_deadline = completed_at + (int64_t)loop->body_timeout * 1000;
++    connection->phase = BODY_RECEIVING;
++    size_t consumed = length < body_length ? length : body_length;
++    save_pending(connection, data + consumed, length - consumed);
++    if (body_length == 0) {
++        complete_post(loop, connection);
++        return;
++    }
++    if (!receive_body_bytes(loop, connection, data, consumed))
++        return;
++    if (expect_continue) {
++        connection->interim_pending = 1;
++        connection->interim_deadline = now_ms() + 10000;
++    }
++    if (interest(loop, connection, EPOLLIN | (connection->interim_pending ? EPOLLOUT : 0)) < 0)
++        close_connection(loop, connection);
++}
++
++/* 헤더/본문 경계까지만 소비한다. 다음 요청은 응답 완료 전까지 파싱하지 않는다. */
++static int consume_received(Loop* loop, Connection* connection, const char* data, size_t length)
++{
++    if (connection->phase == BODY_RECEIVING) {
++        size_t remaining = connection->body.length - connection->body.received;
++        size_t consumed = length < remaining ? length : remaining;
++        save_pending(connection, data + consumed, length - consumed);
++        return receive_body_bytes(loop, connection, data, consumed);
++    }
++    if (now_ms() >= connection->deadline) {
++        error_response(loop, connection, 408);
++        return 0;
++    }
++    size_t consumed;
++    HttpParseResult result = http_request_feed_bytes(&connection->request, data, length, &consumed);
++    if (result == HTTP_PARSE_INCOMPLETE)
++        return 1;
++    if (result != HTTP_PARSE_COMPLETE) {
++        error_response(loop, connection, parse_status(result));
++        return 0;
++    }
++    finish_request_headers(loop, connection, data + consumed, length - consumed);
++    return 0;
++}
++
++static void receive_connection(Loop* loop, Connection* connection)
++{
++    char data[4096];
++    /* LT epoll로 남은 데이터는 다시 통지된다. 한 연결의 수신량을 유한하게 제한한다. */
++    for (unsigned turn = 0; turn < 16; ++turn) {
++        int64_t deadline = connection->phase == BODY_RECEIVING ? connection->body_deadline : connection->deadline;
++        if (now_ms() >= deadline) {
++            if (connection->phase == KEEP_ALIVE_IDLE)
++                close_connection(loop, connection);
++            else
++                error_response(loop, connection, 408);
++            return;
++        }
++        ssize_t n;
++        if (connection->pending_length) {
++            n = (ssize_t)connection->pending_length;
++            memcpy(data, connection->pending, (size_t)n);
++            connection->pending_length = 0;
++        } else
++            n = recv(connection->socket, data, sizeof(data), 0);
++        if (n < 0) {
++            if (errno == EINTR)
++                continue;
++            if (errno == EAGAIN || errno == EWOULDBLOCK)
++                return;
++            close_connection(loop, connection);
++            return;
++        }
++        if (n == 0) {
++            if (connection->request.used || connection->phase == BODY_RECEIVING)
++                error_response(loop, connection, 400);
++            else
++                close_connection(loop, connection);
++            return;
++        }
++        if (connection->phase == KEEP_ALIVE_IDLE) {
++            if (now_ms() >= connection->deadline) {
++                close_connection(loop, connection);
++                return;
++            }
++            connection->phase = RECEIVING;
++            connection->deadline = now_ms() + 10000;
++        }
++        if (!consume_received(loop, connection, data, (size_t)n))
++            return;
++    }
++}
++
++/* 임시 응답 진행량은 최종 bytes_sent와 분리한다. 부분 100 뒤에도 400/408이 가능하다.
++ * 1은 완료, 0은 EAGAIN, -1은 연결 종료다. */
++static int send_continue(Loop* loop, Connection* connection)
++{
++    static const char response[] = "HTTP/1.1 100 Continue\r\n\r\n";
++    while (connection->interim_pending && connection->interim_sent < sizeof(response) - 1) {
++        if (now_ms() >= connection->interim_deadline) {
++            close_connection(loop, connection);
++            return -1;
++        }
++        ssize_t n = send(connection->socket, response + connection->interim_sent,
++            sizeof(response) - 1 - connection->interim_sent, 0);
++        if (n < 0 && errno == EINTR)
++            continue;
++        if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
++            return 0;
++        if (n <= 0) {
++            close_connection(loop, connection);
++            return -1;
++        }
++        connection->interim_sent += (size_t)n;
++        connection->interim_deadline = now_ms() + 10000;
++    }
++    connection->interim_pending = 0;
++    return 1;
++}
++
++static void send_body_continue(Loop* loop, Connection* connection)
++{
++    if (now_ms() >= connection->body_deadline) {
++        error_response(loop, connection, 408);
++        return;
++    }
++    if (send_continue(loop, connection) != 1)
++        return;
++    if (interest(loop, connection, EPOLLIN) < 0)
++        close_connection(loop, connection);
++}
++
++/* 요청 소유 자원만 정리한다. 소켓·세대·횟수·잔여 데이터는 연결이 소유한다. */
++static void reset_request(Connection* connection)
++{
++    proxy_destroy(connection->proxy);
++    connection->proxy = NULL;
++    if (connection->job.fd >= 0)
++        close(connection->job.fd);
++    http_request_destroy(&connection->request);
++    http_body_destroy(&connection->body);
++    http_request_init(&connection->request);
++    memset(&connection->job, 0, sizeof(connection->job));
++    connection->job.fd = -1;
++    connection->job.connection = connection;
++    connection->header_length = connection->header_sent = connection->chunk_sent = 0;
++    connection->bytes_sent = 0;
++    connection->interim_pending = 0;
++    connection->interim_sent = 0;
++    connection->request_complete = connection->close_after_response = 0;
++    connection->deadline = connection->body_deadline = connection->interim_deadline = 0;
++}
++
++static void finish_response(Loop* loop, Connection* connection)
++{
++    int close = response_must_close(loop, connection);
++    ++connection->completed_requests;
++    if (close) {
++        close_connection(loop, connection);
++        return;
++    }
++    reset_request(connection);
++    int buffered = connection->pending_length != 0;
++    connection->phase = buffered ? RECEIVING : KEEP_ALIVE_IDLE;
++    connection->deadline = now_ms() + (buffered ? 10000 : (int64_t)loop->idle_timeout * 1000);
++    if (interest(loop, connection, EPOLLIN) < 0) {
++        close_connection(loop, connection);
++        return;
++    }
++    if (buffered)
++        receive_connection(loop, connection);
++}
++
++static void proxy_failure(Loop* loop, Connection* connection, int status)
++{
++    proxy_destroy(connection->proxy);
++    connection->proxy = NULL;
++    connection->close_after_response = 1;
++    error_response(loop, connection, status);
++}
++
++/* upstream별 새 세대를 써서 이전 요청의 늦은 epoll 이벤트를 무시한다. */
++static int watch_upstream(Loop* loop, Connection* connection)
++{
++    int fd = proxy_socket(connection->proxy);
++    if (fd < 0)
++        return 0;
++    uint32_t events = proxy_interest(connection->proxy);
++    /* 감시 0도 HUP/ERR를 반복 통지할 수 있다. 백프레셔 동안에는 등록 자체를 뺀다. */
++    if (!events) {
++        if (epoll_ctl(loop->epoll, EPOLL_CTL_DEL, fd, NULL) == 0 || errno == ENOENT)
++            return 0;
++        return -1;
++    }
++    struct epoll_event event = {
++        .events = events,
++        .data.u64 = UPSTREAM_KEY | ((uint64_t)connection->upstream_generation << 32) | connection->slot
++    };
++    if (epoll_ctl(loop->epoll, EPOLL_CTL_MOD, fd, &event) == 0)
++        return 0;
++    if (errno != ENOENT)
++        return -1;
++    return epoll_ctl(loop->epoll, EPOLL_CTL_ADD, fd, &event);
++}
++
++static void synchronize_proxy(Loop* loop, Connection* connection)
++{
++    Proxy* proxy = connection->proxy;
++    connection->close_after_response |= proxy_frontend_close(proxy);
++    if (proxy_finished(proxy)) {
++        finish_response(loop, connection);
++        return;
++    }
++    size_t length;
++    int final;
++    proxy_output(proxy, &length, &final);
++    if (length && !connection->deadline)
++        connection->deadline = now_ms() + 10000;
++    if (!length)
++        connection->deadline = 0;
++    if (watch_upstream(loop, connection) < 0
++        || interest(loop, connection, length || connection->interim_pending ? EPOLLOUT : 0) < 0)
++        close_connection(loop, connection);
++}
++
++static void drive_proxy(Loop* loop, Connection* connection, uint32_t events)
++{
++    int status = proxy_step(connection->proxy, events, now_ms());
++    if (status) {
++        proxy_failure(loop, connection, status);
++        return;
++    }
++    synchronize_proxy(loop, connection);
++}
++
++static void start_proxy(Loop* loop, Connection* connection)
++{
++    int status;
++    connection->proxy = proxy_start(loop->proxy_config, &connection->request, &connection->body,
++        response_must_close(loop, connection), now_ms(), &status);
++    if (!connection->proxy) {
++        connection->close_after_response = 1;
++        error_response(loop, connection, status);
++        return;
++    }
++    connection->upstream_generation = (++loop->upstream_generation) & UINT32_C(0x7fffffff);
++    connection->phase = PROXYING;
++    connection->deadline = 0;
++    drive_proxy(loop, connection, 0);
++}
++
++/* 로컬 100·백엔드 임시 응답·최종 응답의 바이트 진행량을 분리한다. */
++static void send_proxy(Loop* loop, Connection* connection)
++{
++    if (stop_requested && proxy_mark_close(connection->proxy) < 0) {
++        close_connection(loop, connection);
++        return;
++    }
++    if (connection->interim_pending) {
++        if (send_continue(loop, connection) != 1)
++            return;
++        connection->deadline = now_ms() + 10000;
++    }
++    size_t length;
++    int final;
++    const char* data = proxy_output(connection->proxy, &length, &final);
++    if (!length) {
++        drive_proxy(loop, connection, 0);
++        return;
++    }
++    ssize_t n = send(connection->socket, data, length, 0);
++    if (n < 0 && (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK))
++        return;
++    if (n <= 0) {
++        close_connection(loop, connection);
++        return;
++    }
++    if (final)
++        connection->bytes_sent += (size_t)n;
++    connection->deadline = now_ms() + 10000;
++    proxy_consume_output(connection->proxy, (size_t)n, now_ms());
++    drive_proxy(loop, connection, 0);
++}
++
++static void send_connection(Loop* loop, Connection* connection)
++{
++    if (stop_requested && mark_shutdown_response(connection) < 0) {
++        close_connection(loop, connection);
++        return;
++    }
++    if (connection->interim_pending) {
++        if (send_continue(loop, connection) != 1)
++            return;
++        connection->deadline = now_ms() + 10000;
++    }
++    /* 이 연결의 현재 한 조각만 송신한다. 다음 파일 읽기는 모두 보낸 뒤 제출한다. */
++    while (connection->header_sent < connection->header_length || connection->chunk_sent < connection->job.length) {
++        int header = connection->header_sent < connection->header_length;
++        const char* data = header ? connection->header + connection->header_sent : connection->job.bytes + connection->chunk_sent;
++        size_t length = header ? connection->header_length - connection->header_sent : connection->job.length - connection->chunk_sent;
++        ssize_t n = send(connection->socket, data, length, 0);
++        if (n < 0) {
++            if (errno == EINTR)
++                continue;
++            if (errno == EAGAIN || errno == EWOULDBLOCK)
++                return;
++            close_connection(loop, connection);
++            return;
++        }
++        if (n == 0) {
++            close_connection(loop, connection);
++            return;
++        }
++        connection->bytes_sent += (size_t)n;
++        connection->deadline = now_ms() + 10000;
++        if (header)
++            connection->header_sent += (size_t)n;
++        else
++            connection->chunk_sent += (size_t)n;
++    }
++    if (connection->job.remaining > 0) {
++        retry_waiters(loop);
++        schedule_read(loop, connection, 0);
++    } else
++        finish_response(loop, connection);
++}
++static void monitor_listener(Loop* loop)
++{
++    int enabled = !loop->stopping && loop->objects < loop->limit && now_ms() >= loop->accept_retry_at;
++    if (enabled == loop->listening)
++        return;
++    struct epoll_event e = { .events = EPOLLIN, .data.u64 = LISTENER_KEY };
++    if (epoll_ctl(loop->epoll, enabled ? EPOLL_CTL_ADD : EPOLL_CTL_DEL, loop->listener, &e) == 0)
++        loop->listening = enabled;
++}
++/* 반환한 객체는 슬롯에 고정해 요청 내부 포인터의 주소를 보존한다. */
++static Connection* create_connection(Loop* loop, int socket)
++{
++    size_t slot = 0;
++    while (loop->slots[slot])
++        ++slot;
++    Connection* connection = calloc(1, sizeof(*connection));
++    if (!connection)
++        return NULL;
++    connection->socket = socket;
++    connection->slot = (uint32_t)slot;
++    connection->generation = (++loop->generations[slot]) & UINT32_C(0x7fffffff);
++    connection->job.fd = -1;
++    connection->job.connection = connection;
++    connection->phase = RECEIVING;
++    connection->deadline = now_ms() + 10000;
++    http_request_init(&connection->request);
++    loop->slots[slot] = connection;
++    ++loop->objects;
++    return connection;
++}
++
++static void watch_new_connection(Loop* loop, Connection* connection)
++{
++    struct epoll_event event = {
++        .events = EPOLLIN | EPOLLRDHUP,
++        .data.u64 = key(connection)
++    };
++    if (epoll_ctl(loop->epoll, EPOLL_CTL_ADD, connection->socket, &event) < 0)
++        close_connection(loop, connection);
++}
++
++static void accept_connections(Loop* loop)
++{
++    while (!loop->stopping && loop->objects < loop->limit) {
++        int fd = accept4(loop->listener, NULL, NULL, SOCK_NONBLOCK | SOCK_CLOEXEC);
++        if (fd < 0) {
++            if (errno == EINTR)
++                continue;
++            if (errno != EAGAIN && errno != EWOULDBLOCK) {
++                perror("accept");
++                loop->accept_retry_at = now_ms() + 1000;
++            }
++            break;
++        }
++        Connection* connection = create_connection(loop, fd);
++        if (!connection) {
++            close(fd);
++            loop->accept_retry_at = now_ms() + 1000;
++            break;
++        }
++        watch_new_connection(loop, connection);
++    }
++    monitor_listener(loop);
++}
++static int next_timeout(Loop* loop)
++{
++    int64_t now = now_ms(), nearest = now + 1000;
++    if (loop->stopping && loop->shutdown_at < nearest)
++        nearest = loop->shutdown_at;
++    if (loop->accept_retry_at > now && loop->accept_retry_at < nearest)
++        nearest = loop->accept_retry_at;
++    for (size_t i = 0; i < loop->limit; ++i) {
++        Connection* connection = loop->slots[i];
++        if (!connection || connection->closed)
++            continue;
++        if (connection->phase == WAITING && job_state(&loop->pool, &connection->job) != QUEUED)
++            continue;
++        if (connection->phase == PROXYING) {
++            int64_t upstream = proxy_deadline(connection->proxy);
++            if (upstream < nearest)
++                nearest = upstream;
++            if (connection->deadline && !connection->interim_pending && connection->deadline < nearest)
++                nearest = connection->deadline;
++            if (connection->interim_pending && connection->interim_deadline < nearest)
++                nearest = connection->interim_deadline;
++            continue;
++        }
++        int64_t deadline = connection->phase == BODY_RECEIVING ? connection->body_deadline : connection->deadline;
++        if (connection->phase == SENDING && connection->interim_pending)
++            deadline = connection->interim_deadline;
++        if (deadline < nearest)
++            nearest = deadline;
++        if (connection->interim_pending && connection->interim_deadline < nearest)
++            nearest = connection->interim_deadline;
++    }
++    return nearest <= now ? 0 : (int)(nearest - now);
++}
++static void expire_connections(Loop* loop)
++{
++    int64_t now = now_ms();
++    for (size_t i = 0; i < loop->limit; ++i) {
++        Connection* connection = loop->slots[i];
++        if (!connection || connection->closed)
++            continue;
++        if (connection->interim_pending && now >= connection->interim_deadline) {
++            close_connection(loop, connection);
++            continue;
++        }
++        if (connection->phase == BODY_RECEIVING) {
++            if (now >= connection->body_deadline)
++                error_response(loop, connection, 408);
++            continue;
++        }
++        if (connection->phase == PROXYING) {
++            if (connection->deadline && !connection->interim_pending && now >= connection->deadline)
++                close_connection(loop, connection);
++            else if (now >= proxy_deadline(connection->proxy))
++                drive_proxy(loop, connection, 0);
++            continue;
++        }
++        if (connection->phase == SENDING && connection->interim_pending)
++            continue;
++        if (now < connection->deadline)
++            continue;
++        if (connection->phase == RECEIVING)
++            error_response(loop, connection, 408);
++        else if (connection->phase == KEEP_ALIVE_IDLE)
++            close_connection(loop, connection);
++        else if (connection->phase == SENDING)
++            close_connection(loop, connection);
++        else if (connection->phase == RETRYING)
++            error_response(loop, connection, 503);
++        else if (cancel_queued(&loop->pool, &connection->job))
++            error_response(loop, connection, 503);
++    }
++}
++/* epoll이 돌려준 한 이벤트를 연결 종류와 현재 단계에 따라 처리한다. */
++static void dispatch_event(Loop* loop, const struct epoll_event* event)
++{
++    uint64_t id = event->data.u64;
++    if (id == WAKE_KEY) {
++        uint64_t value;
++        while (read(loop->wake, &value, sizeof(value)) > 0) { };
++        return;
++    }
++    if (id == LISTENER_KEY) {
++        if (!stop_requested)
++            accept_connections(loop);
++        return;
++    }
++    uint32_t slot = (uint32_t)id, gen = (uint32_t)(id >> 32) & UINT32_C(0x7fffffff);
++    if (slot >= loop->limit)
++        return;
++    Connection* connection = loop->slots[slot];
++    if (!connection || connection->closed)
++        return;
++    if (id & UPSTREAM_KEY) {
++        if (connection->proxy && connection->upstream_generation == gen)
++            drive_proxy(loop, connection, event->events);
++        return;
++    }
++    if (connection->generation != gen)
++        return;
++    uint32_t e = event->events;
++    if (stop_requested && connection->phase == KEEP_ALIVE_IDLE) {
++        close_connection(loop, connection);
++        return;
++    }
++    if (e & (EPOLLERR | EPOLLHUP)) {
++        close_connection(loop, connection);
++        return;
++    }
++    if ((connection->phase == RECEIVING || connection->phase == BODY_RECEIVING || connection->phase == KEEP_ALIVE_IDLE) && (e & (EPOLLIN | EPOLLRDHUP)))
++        receive_connection(loop, connection);
++    else if (connection->phase == BODY_RECEIVING && (e & EPOLLOUT))
++        send_body_continue(loop, connection);
++    else if (connection->phase == SENDING && (e & EPOLLOUT))
++        send_connection(loop, connection);
++    else if (connection->phase == PROXYING && (e & EPOLLOUT))
++        send_proxy(loop, connection);
++    /* 대기 중 RDHUP는 상대의 write-half close일 수 있어 송신 가능성을 유지한다. */
++}
++
++static void force_shutdown(Loop* loop)
++{
++    /* 실행 중인 파일 I/O를 강제로 취소하지 않고 프로세스 전체를 종료한다. */
++    for (size_t i = 0; i < loop->limit; ++i)
++        if (loop->slots[i] && !loop->slots[i]->closed) {
++            proxy_destroy(loop->slots[i]->proxy);
++            close(loop->slots[i]->socket);
++        }
++    _exit(EXIT_SUCCESS);
++}
++
++/* 아직 헤더를 한 바이트도 보내지 않았을 때만 종료 표시를 덧붙일 수 있다. */
++static int mark_shutdown_response(Connection* connection)
++{
++    connection->close_after_response = 1;
++    if (connection->proxy)
++        return proxy_mark_close(connection->proxy);
++    if (connection->header_sent || !connection->header_length
++        || strstr(connection->header, "Connection: close\r\n"))
++        return 0;
++    static const char close_header[] = "Connection: close\r\n";
++    size_t n = sizeof(close_header) - 1;
++    if (connection->header_length < 2 || connection->header_length + n >= sizeof(connection->header))
++        return -1;
++    size_t insertion = connection->header_length - 2;
++    memmove(connection->header + insertion + n, connection->header + insertion, 3);
++    memcpy(connection->header + insertion, close_header, n);
++    connection->header_length += n;
++    return 0;
++}
++
++static void begin_shutdown(Loop* loop)
++{
++    loop->stopping = 1;
++    loop->shutdown_at = now_ms() + 10000;
++    monitor_listener(loop);
++    for (size_t i = 0; i < loop->limit; ++i) {
++        Connection* connection = loop->slots[i];
++        if (!connection || connection->closed)
++            continue;
++        if (connection->phase == KEEP_ALIVE_IDLE)
++            close_connection(loop, connection);
++        else if (mark_shutdown_response(connection) < 0)
++            close_connection(loop, connection);
++    }
++}
++
++static void update_loop_state(Loop* loop)
++{
++    if (stop_requested && !loop->stopping)
++        begin_shutdown(loop);
++    completed_jobs(loop);
++    expire_connections(loop);
++    retry_waiters(loop);
++    monitor_listener(loop);
++}
++
++/* 상태 정리 → 준비 이벤트 대기 → 이벤트별 처리 순서를 반복한다. */
++static void run_event_loop(Loop* loop)
++{
++    for (;;) {
++        update_loop_state(loop);
++        if (loop->stopping && loop->objects == 0)
++            return;
++        if (loop->stopping && now_ms() >= loop->shutdown_at)
++            force_shutdown(loop);
++        struct epoll_event events[64];
++        int count = epoll_wait(loop->epoll, events, 64, next_timeout(loop));
++        if (count < 0) {
++            if (errno == EINTR)
++                continue;
++            perror("epoll_wait");
++            loop->stopping = 1;
++            loop->shutdown_at = now_ms();
++            continue;
++        }
++        for (int i = 0; i < count; ++i)
++            dispatch_event(loop, &events[i]);
++    }
++}
++
++static int allocate_loop_resources(Loop* loop, size_t limit)
++{
++    loop->epoll = -1;
++    loop->wake = -1;
++    /* 요청별 upstream 버퍼까지 포함한 크기 계산이 넘치지 않아야 한다. */
++    if (proxy_connection_size() > SIZE_MAX - sizeof(Connection)
++        || limit > SIZE_MAX / (sizeof(Connection) + proxy_connection_size()))
++        return -1;
++    loop->limit = limit;
++    loop->slots = calloc(limit, sizeof(*loop->slots));
++    loop->generations = calloc(limit, sizeof(*loop->generations));
++    if (!loop->slots || !loop->generations)
++        return -1;
++    loop->epoll = epoll_create1(EPOLL_CLOEXEC);
++    loop->wake = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
++    return loop->epoll < 0 || loop->wake < 0 ? -1 : 0;
++}
++
++static void release_loop_resources(Loop* loop)
++{
++    if (loop->wake >= 0)
++        close(loop->wake);
++    if (loop->epoll >= 0)
++        close(loop->epoll);
++    free(loop->slots);
++    free(loop->generations);
++}
++
++static void stop_pool(Pool* pool)
++{
++    pthread_mutex_lock(&pool->mutex);
++    pool->stopping = 1;
++    pthread_cond_broadcast(&pool->ready);
++    pthread_mutex_unlock(&pool->mutex);
++    for (size_t i = 0; i < pool->thread_count; ++i)
++        pthread_join(pool->threads[i], NULL);
++    free(pool->threads);
++    pthread_cond_destroy(&pool->ready);
++    pthread_mutex_destroy(&pool->mutex);
++}
++
++int concurrent_server_run(int listener, int root, size_t workers, size_t queue_limit, size_t limit,
++    size_t body_limit, size_t body_timeout, size_t idle_timeout, size_t max_requests, ProxyConfig* proxy_config)
++{
++    Loop loop = { .listener = listener, .body_limit = body_limit, .body_timeout = body_timeout, .idle_timeout = idle_timeout, .max_requests = max_requests, .proxy_config = proxy_config };
++    int run_result = -1;
++    sigset_t termination, previous_mask;
++    sigemptyset(&termination);
++    sigaddset(&termination, SIGINT);
++    sigaddset(&termination, SIGTERM);
++    if (pthread_sigmask(SIG_BLOCK, &termination, &previous_mask))
++        return -1;
++    /* 슬롯을 재사용해도 세대 번호가 달라 늦은 epoll 이벤트가 새 연결에 적용되지 않는다. */
++    if (allocate_loop_resources(&loop, limit) < 0)
++        goto fail;
++    if (pool_init(&loop.pool, workers, queue_limit, root, loop.wake) < 0)
++        goto fail;
++    struct epoll_event wake = { .events = EPOLLIN, .data.u64 = WAKE_KEY };
++    if (epoll_ctl(loop.epoll, EPOLL_CTL_ADD, loop.wake, &wake) < 0)
++        goto stop_pool;
++    stop_requested = 0;
++    signal_wake = loop.wake;
++    struct sigaction action = { 0 };
++    action.sa_handler = stop_signal;
++    sigemptyset(&action.sa_mask);
++    if (sigaction(SIGINT, &action, NULL) || sigaction(SIGTERM, &action, NULL))
++        goto stop_pool;
++    pthread_sigmask(SIG_SETMASK, &previous_mask, NULL);
++    run_result = 0;
++    struct sockaddr_in bound;
++    socklen_t bound_length = sizeof(bound);
++    if (getsockname(listener, (struct sockaddr*)&bound, &bound_length) == 0) {
++        printf("Listening on port %u\n", (unsigned)ntohs(bound.sin_port));
++        fflush(stdout);
++    }
++    monitor_listener(&loop);
++    run_event_loop(&loop);
++stop_pool:
++    signal_wake = -1;
++    pthread_sigmask(SIG_BLOCK, &termination, NULL);
++    stop_pool(&loop.pool);
++    release_loop_resources(&loop);
++    pthread_sigmask(SIG_SETMASK, &previous_mask, NULL);
++    return run_result;
++fail:
++    release_loop_resources(&loop);
++    pthread_sigmask(SIG_SETMASK, &previous_mask, NULL);
++    return -1;
++}
+diff --git a/concurrency.h b/concurrency.h
+index ab659d4..e0c32bb 100644
+--- a/concurrency.h
++++ b/concurrency.h
+@@ -5,4 +5,4 @@
+ int concurrent_server_run(int listener, int root, size_t workers, size_t queue_limit,
+                           size_t connection_limit, size_t body_limit, size_t body_timeout,
+                           size_t idle_timeout, size_t max_requests, ProxyConfig *proxy_config);
+-#endif
++#endif
+diff --git a/docs/reverse-proxy-design.md b/docs/reverse-proxy-design.md
+index a1a4e0c..55cf573 100644
+--- a/docs/reverse-proxy-design.md
++++ b/docs/reverse-proxy-design.md
+@@ -114,4 +114,4 @@ PUBLIC_URL은 경로 접두사·userinfo·쿼리·fragment 없는 공개 origin
+ 
+ 기존 오류 12개·정적 15개·동시 10개·keep-alive 13개·POST 13개 회귀도 통과했다. 마지막 감시/임시 응답 타이머 변경은 관련 실제 TCP 3개를 일반/전체 서버 sanitizer로 재검사했다. 접속 제한은 내부 시계 단위로 검사했으며 실제 SYN 드롭 환경의 기한 실험은 미실행이다. TSan·처리량 부하 측정도 미실행이다. 강제 프로세스 종료의 OS 자원 회수와 정상 종료 누수 검사는 구분한다.
+ 
+-최종 Docker 이미지를 다시 빌드하고 이미지의 start.sh 실행·정적 200·미기동 백엔드 502·SIGTERM 정상 종료를 확인했다. 이 Docker 스모크는 성공 중계 검사가 아니며, 성공 중계는 위 실제 TCP 백엔드 검사에서 확인했다.
++최종 Docker 이미지를 다시 빌드하고 이미지의 start.sh 실행·정적 200·미기동 백엔드 502·SIGTERM 정상 종료를 확인했다. 이 Docker 스모크는 성공 중계 검사가 아니며, 성공 중계는 위 실제 TCP 백엔드 검사에서 확인했다.
+diff --git a/docs/reverse-proxy-requirements.md b/docs/reverse-proxy-requirements.md
+index 677ee6f..e1bfc0f 100644
+--- a/docs/reverse-proxy-requirements.md
++++ b/docs/reverse-proxy-requirements.md
+@@ -108,4 +108,4 @@
+ 
+ 실제 패킷을 버리는 네트워크의 접속 기한 실험은 구성하지 않았으며 접속 기한 자체는 내부 시계 단위 검사로 확인했다. 처리량 부하 측정·TSan은 이번 단계에서 실행하지 않았다. EOF 경계의 조기 종료 판별과 전체 HTTP 준수에는 본 설계에 기록한 제한이 있다.
+ 
+-최종 Docker 이미지를 다시 빌드하고 이미지의 start.sh 실행·정적 200·미기동 백엔드 502·SIGTERM 정상 종료를 확인했다. 이 Docker 스모크는 성공 중계 검사가 아니며, 성공 중계는 위 실제 TCP 백엔드 검사에서 확인했다.
++최종 Docker 이미지를 다시 빌드하고 이미지의 start.sh 실행·정적 200·미기동 백엔드 502·SIGTERM 정상 종료를 확인했다. 이 Docker 스모크는 성공 중계 검사가 아니며, 성공 중계는 위 실제 TCP 백엔드 검사에서 확인했다.
+diff --git a/http_response.c b/http_response.c
+index 3a34a36..ae8a320 100644
+--- a/http_response.c
++++ b/http_response.c
+@@ -1,162 +1,162 @@
+-#include "http_response.h"
+-#include <errno.h>
+-#include <stdio.h>
+-#include <string.h>
+-#include <sys/socket.h>
+-#include <unistd.h>
+-#include <inttypes.h>
+-
+-/* send가 일부만 보내면 보낸 길이를 누적하고 나머지를 이어 보낸다.
+- * 성공은 송신 버퍼에 전달했다는 뜻이며 상대가 읽었다는 뜻은 아니다. */
+-static int send_all(int client, const char *data, size_t length)
+-{
+-    size_t sent = 0;
+-    while (sent < length) {
+-        ssize_t count = send(client, data + sent, length - sent, 0);
+-        if (count < 0 && errno == EINTR)
+-            continue;
+-        if (count <= 0)
+-            return -1;
+-        sent += (size_t)count;
+-    }
+-    return 0;
+-}
+-
+-/* 상태 코드에 맞는 짧은 본문을 만들고 상태 줄·헤더 → 본문 순서로 전송한다. */
+-int http_send_status(int client, int status)
+-{
+-    const char *reason;
+-    switch (status) {
+-    case 200: reason = "OK"; break;
+-    case 403: reason = "Forbidden"; break;
+-    case 404: reason = "Not Found"; break;
+-    case 400: reason = "Bad Request"; break;
+-    case 431: reason = "Request Header Fields Too Large"; break;
+-    case 500: reason = "Internal Server Error"; break;
+-    case 408: reason = "Request Timeout"; break;
+-    case 413: reason = "Content Too Large"; break;
+-    case 417: reason = "Expectation Failed"; break;
+-    case 501: reason = "Not Implemented"; break;
+-    case 502: reason = "Bad Gateway"; break;
+-    case 503: reason = "Service Unavailable"; break;
+-    case 504: reason = "Gateway Timeout"; break;
+-    case 505: reason = "HTTP Version Not Supported"; break;
+-    default: errno = EINVAL; return -1;
+-    }
+-    const char *body = status == 200 ? "hello world" : reason;
+-    /* 메모리 부족으로 500을 보낼 때에도 추가 동적 할당은 하지 않는다. */
+-    char header[256];
+-    int length = snprintf(header, sizeof(header),
+-        "HTTP/1.1 %d %s\r\n"
+-        "Content-Type: text/plain; charset=utf-8\r\n"
+-        "Content-Length: %zu\r\n"
+-        "Connection: close\r\n\r\n", status, reason, strlen(body));
+-    if (length < 0 || (size_t)length >= sizeof(header)) {
+-        errno = EOVERFLOW;
+-        return -1;
+-    }
+-    if (send_all(client, header, (size_t)length) < 0)
+-        return -1;
+-    return send_all(client, body, strlen(body));
+-}
+-
+-int http_send_hello(int client)
+-{
+-    return http_send_status(client, 200);
+-}
+-
+-
+-/* 301과 Location을 보내 클라이언트가 새 경로로 요청하도록 한다. */
+-int http_send_redirect(int client, const char *location)
+-{
+-    if (strpbrk(location, "\r\n") || location[0] != '/' || location[1] == '/') {
+-        errno = EINVAL; return -1;
+-    }
+-    const char *prefix = "HTTP/1.1 301 Moved Permanently\r\nLocation: ";
+-    const char *suffix = "\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
+-    if (send_all(client, prefix, strlen(prefix)) < 0 ||
+-        send_all(client, location, strlen(location)) < 0) return -1;
+-    return send_all(client, suffix, strlen(suffix));
+-}
+-
+-/* 첫 조각 읽기 → 200 헤더 → read/send 반복. 파일 전체를 메모리에 올리지 않는다.
+- * 헤더 전 읽기 실패는 500으로 응답한다. 전송 시작 후 실패는 연결 종료로 처리한다.
+- * 파일 FD는 호출한 쪽이 닫는다. */
+-int http_send_file(int client, int fd, off_t size, const char *mime)
+-{
+-    char buffer[8192], header[256];
+-    if (size < 0) return http_send_status(client, 500);
+-    size_t want = size > (off_t)sizeof(buffer) ? sizeof(buffer) : (size_t)size;
+-    ssize_t count;
+-    do { count = read(fd, buffer, want); } while (count < 0 && errno == EINTR);
+-    if (count < 0 || (count == 0 && size > 0)) return http_send_status(client, 500);
+-    int length = snprintf(header, sizeof(header),
+-        "HTTP/1.1 200 OK\r\nContent-Type: %s\r\nContent-Length: %jd\r\nConnection: close\r\n\r\n",
+-        mime, (intmax_t)size);
+-    if (length < 0 || (size_t)length >= sizeof(header)) return http_send_status(client, 500);
+-    if (send_all(client, header, (size_t)length) < 0) return -1;
+-    off_t remaining = size;
+-    while (remaining > 0) {
+-        if (count <= 0) return -1; /* 응답을 시작했으므로 새 500 응답을 붙이지 않는다. */
+-        if (send_all(client, buffer, (size_t)count) < 0) return -1;
+-        remaining -= count;
+-        if (!remaining) break;
+-        want = remaining > (off_t)sizeof(buffer) ? sizeof(buffer) : (size_t)remaining;
+-        do { count = read(fd, buffer, want); } while (count < 0 && errno == EINTR);
+-    }
+-    return 0;
+-}
+-
+-/* 이벤트 루프용: 전송하지 않고 헤더만 만든다. */
+-int http_format_header(char *out, size_t capacity, int status, const char *mime,
+-                       off_t length, const char *location)
+-{
+-    return http_format_header_policy(out, capacity, status, mime, length, location, 1);
+-}
+-
+-int http_format_header_policy(char *out, size_t capacity, int status, const char *mime,
+-                              off_t length, const char *location, int close_connection)
+-{
+-    const char *reason = http_status_reason(status);
+-    if (!reason) return -1;
+-    const char *connection = close_connection ? "Connection: close\r\n" : "";
+-    int n;
+-    if (location)
+-        n = snprintf(out, capacity, "HTTP/1.1 %d %s\r\nLocation: %s\r\nContent-Length: 0\r\n%s\r\n", status, reason, location, connection);
+-    else
+-        n = snprintf(out, capacity, "HTTP/1.1 %d %s\r\nContent-Type: %s\r\nContent-Length: %jd\r\n%s\r\n", status, reason, mime, (intmax_t)length, connection);
+-    return n < 0 || (size_t)n >= capacity ? -1 : n;
+-}
+-const char *http_status_reason(int status)
+-{
+-    switch (status) {
+-    case 200: return "OK";
+-    case 301: return "Moved Permanently";
+-    case 400: return "Bad Request";
+-    case 403: return "Forbidden";
+-    case 404: return "Not Found";
+-    case 408: return "Request Timeout";
+-    case 413: return "Content Too Large";
+-    case 417: return "Expectation Failed";
+-    case 431: return "Request Header Fields Too Large";
+-    case 500: return "Internal Server Error";
+-    case 501: return "Not Implemented";
+-    case 502: return "Bad Gateway";
+-    case 503: return "Service Unavailable";
+-    case 504: return "Gateway Timeout";
+-    case 505: return "HTTP Version Not Supported";
+-    default: return NULL;
+-    }
+-}
+-
+-/* 204에는 본문뿐 아니라 Content-Length도 넣지 않는다. */
+-int http_format_no_content(char *out, size_t capacity)
+-{
+-    return http_format_no_content_policy(out, capacity, 1);
+-}
+-int http_format_no_content_policy(char *out, size_t capacity, int close_connection)
+-{
+-    int n = snprintf(out, capacity, "HTTP/1.1 204 No Content\r\n%s\r\n",
+-                     close_connection ? "Connection: close\r\n" : "");
+-    return n < 0 || (size_t)n >= capacity ? -1 : n;
+-}
++#include "http_response.h"
++#include <errno.h>
++#include <stdio.h>
++#include <string.h>
++#include <sys/socket.h>
++#include <unistd.h>
++#include <inttypes.h>
++
++/* send가 일부만 보내면 보낸 길이를 누적하고 나머지를 이어 보낸다.
++ * 성공은 송신 버퍼에 전달했다는 뜻이며 상대가 읽었다는 뜻은 아니다. */
++static int send_all(int client, const char *data, size_t length)
++{
++    size_t sent = 0;
++    while (sent < length) {
++        ssize_t count = send(client, data + sent, length - sent, 0);
++        if (count < 0 && errno == EINTR)
++            continue;
++        if (count <= 0)
++            return -1;
++        sent += (size_t)count;
++    }
++    return 0;
++}
++
++/* 상태 코드에 맞는 짧은 본문을 만들고 상태 줄·헤더 → 본문 순서로 전송한다. */
++int http_send_status(int client, int status)
++{
++    const char *reason;
++    switch (status) {
++    case 200: reason = "OK"; break;
++    case 403: reason = "Forbidden"; break;
++    case 404: reason = "Not Found"; break;
++    case 400: reason = "Bad Request"; break;
++    case 431: reason = "Request Header Fields Too Large"; break;
++    case 500: reason = "Internal Server Error"; break;
++    case 408: reason = "Request Timeout"; break;
++    case 413: reason = "Content Too Large"; break;
++    case 417: reason = "Expectation Failed"; break;
++    case 501: reason = "Not Implemented"; break;
++    case 502: reason = "Bad Gateway"; break;
++    case 503: reason = "Service Unavailable"; break;
++    case 504: reason = "Gateway Timeout"; break;
++    case 505: reason = "HTTP Version Not Supported"; break;
++    default: errno = EINVAL; return -1;
++    }
++    const char *body = status == 200 ? "hello world" : reason;
++    /* 메모리 부족으로 500을 보낼 때에도 추가 동적 할당은 하지 않는다. */
++    char header[256];
++    int length = snprintf(header, sizeof(header),
++        "HTTP/1.1 %d %s\r\n"
++        "Content-Type: text/plain; charset=utf-8\r\n"
++        "Content-Length: %zu\r\n"
++        "Connection: close\r\n\r\n", status, reason, strlen(body));
++    if (length < 0 || (size_t)length >= sizeof(header)) {
++        errno = EOVERFLOW;
++        return -1;
++    }
++    if (send_all(client, header, (size_t)length) < 0)
++        return -1;
++    return send_all(client, body, strlen(body));
++}
++
++int http_send_hello(int client)
++{
++    return http_send_status(client, 200);
++}
++
++
++/* 301과 Location을 보내 클라이언트가 새 경로로 요청하도록 한다. */
++int http_send_redirect(int client, const char *location)
++{
++    if (strpbrk(location, "\r\n") || location[0] != '/' || location[1] == '/') {
++        errno = EINVAL; return -1;
++    }
++    const char *prefix = "HTTP/1.1 301 Moved Permanently\r\nLocation: ";
++    const char *suffix = "\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
++    if (send_all(client, prefix, strlen(prefix)) < 0 ||
++        send_all(client, location, strlen(location)) < 0) return -1;
++    return send_all(client, suffix, strlen(suffix));
++}
++
++/* 첫 조각 읽기 → 200 헤더 → read/send 반복. 파일 전체를 메모리에 올리지 않는다.
++ * 헤더 전 읽기 실패는 500으로 응답한다. 전송 시작 후 실패는 연결 종료로 처리한다.
++ * 파일 FD는 호출한 쪽이 닫는다. */
++int http_send_file(int client, int fd, off_t size, const char *mime)
++{
++    char buffer[8192], header[256];
++    if (size < 0) return http_send_status(client, 500);
++    size_t want = size > (off_t)sizeof(buffer) ? sizeof(buffer) : (size_t)size;
++    ssize_t count;
++    do { count = read(fd, buffer, want); } while (count < 0 && errno == EINTR);
++    if (count < 0 || (count == 0 && size > 0)) return http_send_status(client, 500);
++    int length = snprintf(header, sizeof(header),
++        "HTTP/1.1 200 OK\r\nContent-Type: %s\r\nContent-Length: %jd\r\nConnection: close\r\n\r\n",
++        mime, (intmax_t)size);
++    if (length < 0 || (size_t)length >= sizeof(header)) return http_send_status(client, 500);
++    if (send_all(client, header, (size_t)length) < 0) return -1;
++    off_t remaining = size;
++    while (remaining > 0) {
++        if (count <= 0) return -1; /* 응답을 시작했으므로 새 500 응답을 붙이지 않는다. */
++        if (send_all(client, buffer, (size_t)count) < 0) return -1;
++        remaining -= count;
++        if (!remaining) break;
++        want = remaining > (off_t)sizeof(buffer) ? sizeof(buffer) : (size_t)remaining;
++        do { count = read(fd, buffer, want); } while (count < 0 && errno == EINTR);
++    }
++    return 0;
++}
++
++/* 이벤트 루프용: 전송하지 않고 헤더만 만든다. */
++int http_format_header(char *out, size_t capacity, int status, const char *mime,
++                       off_t length, const char *location)
++{
++    return http_format_header_policy(out, capacity, status, mime, length, location, 1);
++}
++
++int http_format_header_policy(char *out, size_t capacity, int status, const char *mime,
++                              off_t length, const char *location, int close_connection)
++{
++    const char *reason = http_status_reason(status);
++    if (!reason) return -1;
++    const char *connection = close_connection ? "Connection: close\r\n" : "";
++    int n;
++    if (location)
++        n = snprintf(out, capacity, "HTTP/1.1 %d %s\r\nLocation: %s\r\nContent-Length: 0\r\n%s\r\n", status, reason, location, connection);
++    else
++        n = snprintf(out, capacity, "HTTP/1.1 %d %s\r\nContent-Type: %s\r\nContent-Length: %jd\r\n%s\r\n", status, reason, mime, (intmax_t)length, connection);
++    return n < 0 || (size_t)n >= capacity ? -1 : n;
++}
++const char *http_status_reason(int status)
++{
++    switch (status) {
++    case 200: return "OK";
++    case 301: return "Moved Permanently";
++    case 400: return "Bad Request";
++    case 403: return "Forbidden";
++    case 404: return "Not Found";
++    case 408: return "Request Timeout";
++    case 413: return "Content Too Large";
++    case 417: return "Expectation Failed";
++    case 431: return "Request Header Fields Too Large";
++    case 500: return "Internal Server Error";
++    case 501: return "Not Implemented";
++    case 502: return "Bad Gateway";
++    case 503: return "Service Unavailable";
++    case 504: return "Gateway Timeout";
++    case 505: return "HTTP Version Not Supported";
++    default: return NULL;
++    }
++}
++
++/* 204에는 본문뿐 아니라 Content-Length도 넣지 않는다. */
++int http_format_no_content(char *out, size_t capacity)
++{
++    return http_format_no_content_policy(out, capacity, 1);
++}
++int http_format_no_content_policy(char *out, size_t capacity, int close_connection)
++{
++    int n = snprintf(out, capacity, "HTTP/1.1 204 No Content\r\n%s\r\n",
++                     close_connection ? "Connection: close\r\n" : "");
++    return n < 0 || (size_t)n >= capacity ? -1 : n;
++}
+diff --git a/http_response.h b/http_response.h
+index fce0ee5..616b94d 100644
+--- a/http_response.h
++++ b/http_response.h
+@@ -1,19 +1,19 @@
+-#ifndef HTTP_RESPONSE_H
+-#define HTTP_RESPONSE_H
+-#include <sys/types.h>
+-int http_format_no_content(char *out, size_t capacity);
+-int http_format_no_content_policy(char *out, size_t capacity, int close_connection);
+-#include <stddef.h>
+-
+-/* client 소켓에 고정 HTTP 응답 전체를 보낸다. 성공 0, 실패 -1. */
+-int http_send_hello(int client);
+-int http_send_status(int client, int status);
+-
+-int http_send_redirect(int client, const char *location);
+-int http_send_file(int client, int fd, off_t size, const char *mime);
+-const char *http_status_reason(int status);
+-int http_format_header(char *out, size_t capacity, int status, const char *mime,
+-                       off_t length, const char *location);
+-int http_format_header_policy(char *out, size_t capacity, int status, const char *mime,
+-                              off_t length, const char *location, int close_connection);
+-#endif
++#ifndef HTTP_RESPONSE_H
++#define HTTP_RESPONSE_H
++#include <sys/types.h>
++int http_format_no_content(char *out, size_t capacity);
++int http_format_no_content_policy(char *out, size_t capacity, int close_connection);
++#include <stddef.h>
++
++/* client 소켓에 고정 HTTP 응답 전체를 보낸다. 성공 0, 실패 -1. */
++int http_send_hello(int client);
++int http_send_status(int client, int status);
++
++int http_send_redirect(int client, const char *location);
++int http_send_file(int client, int fd, off_t size, const char *mime);
++const char *http_status_reason(int status);
++int http_format_header(char *out, size_t capacity, int status, const char *mime,
++                       off_t length, const char *location);
++int http_format_header_policy(char *out, size_t capacity, int status, const char *mime,
++                              off_t length, const char *location, int close_connection);
++#endif
+diff --git a/static_files.c b/static_files.c
+index 74e4bcb..1028805 100644
+--- a/static_files.c
++++ b/static_files.c
+@@ -1,203 +1,203 @@
+-#define _POSIX_C_SOURCE 200809L
+-#include "static_files.h"
+-#include "http_response.h"
+-#include <errno.h>
+-#include <stdio.h>
+-#include <fcntl.h>
+-#include <stdlib.h>
+-#include <string.h>
+-#include <strings.h>
+-#include <sys/stat.h>
+-#include <unistd.h>
+-
+-static int error_status(int error)
+-{
+-    if (error == ENOENT || error == ENOTDIR) return 404;
+-    if (error == EACCES || error == EPERM || error == ELOOP) return 403;
+-    return 500;
+-}
+-
+-/* 링크는 열기 전과 실제 open 모두에서 거절한다. FIFO 열기도 대기하지 않는다. */
+-/* 부모 디렉터리 FD에서 항목 하나를 연다. 예: public FD + docs → docs FD.
+- * 검사한 항목과 실제 연 항목이 같은지도 확인한다. */
+-static int open_child(int parent, const char *name, int *status)
+-{
+-    struct stat before, after;
+-    if (fstatat(parent, name, &before, AT_SYMLINK_NOFOLLOW) < 0) {
+-        *status = error_status(errno); return -1;
+-    }
+-    if (!S_ISDIR(before.st_mode) && !S_ISREG(before.st_mode)) {
+-        *status = 403; return -1;
+-    }
+-    int fd = openat(parent, name, O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC);
+-    if (fd < 0) { *status = error_status(errno); return -1; }
+-    if (fstat(fd, &after) < 0) { close(fd); *status = 500; return -1; }
+-    if ((!S_ISDIR(after.st_mode) && !S_ISREG(after.st_mode)) ||
+-        before.st_dev != after.st_dev || before.st_ino != after.st_ino) {
+-        close(fd); *status = 403; return -1;
+-    }
+-    return fd;
+-}
+-
+-/* 디렉터리 FD 스택으로 실제 경로를 순서대로 확인한다.
+- * a/../b에서도 a를 건너뛰지 않는다. 루트 위로 올라갈 수 없다.
+- */
+-/* 경로를 / 단위로 나누어 open_child를 차례로 호출한다.
+- * docs/page.html: root → docs FD → page.html FD. 중간 FD는 닫고 최종 FD만 반환한다.
+- * 클라이언트는 루트 위로 갈 수 없다. 서버의 루트 설정에는 ../public 등을 허용한다. */
+-static int walk(int root, char *path, int *status, int configuring_root)
+-{
+-    size_t capacity = strlen(path) + 2, depth = 0;
+-    int *stack = malloc(capacity * sizeof(*stack));
+-    if (!stack) { *status = 500; return -1; }
+-    stack[0] = dup(root);
+-    if (stack[0] < 0) { free(stack); *status = 500; return -1; }
+-    char *save;
+-    for (char *part = strtok_r(path, "/", &save); part; part = strtok_r(NULL, "/", &save)) {
+-        struct stat current;
+-        if (fstat(stack[depth], &current) < 0) { *status = 500; goto fail; }
+-        if (!S_ISDIR(current.st_mode)) { *status = 404; goto fail; }
+-        if (strcmp(part, ".") == 0) continue;
+-        if (strcmp(part, "..") == 0) {
+-            if (!depth) {
+-                if (!configuring_root) { *status = 403; goto fail; }
+-                int parent = open_child(stack[0], "..", status);
+-                if (parent < 0) goto fail;
+-                close(stack[0]); stack[0] = parent; continue;
+-            }
+-            close(stack[depth--]); continue;
+-        }
+-        int next = open_child(stack[depth], part, status);
+-        if (next < 0) goto fail;
+-        stack[++depth] = next;
+-    }
+-    int result = stack[depth];
+-    while (depth) close(stack[--depth]);
+-    free(stack);
+-    return result;
+-fail:
+-    do { close(stack[depth]); } while (depth--);
+-    free(stack);
+-    return -1;
+-}
+-
+-/* 서버 시작 시 기준 디렉터리를 열고 사용 가능 여부를 검사한다.
+- * 반환 FD는 main이 유지하며, 요청마다 이 위치에서 파일을 찾는다. */
+-int static_root_open(const char *path)
+-{
+-    if (!path || !*path) { errno = EINVAL; return -1; }
+-    int base = open(path[0] == '/' ? "/" : ".", O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+-    if (base < 0) return -1;
+-    char *copy = strdup(path);
+-    if (!copy) { close(base); return -1; }
+-    int status = 500;
+-    int fd = walk(base, copy, &status, 1);
+-    free(copy); close(base);
+-    struct stat st;
+-    if (fd >= 0 && (fstat(fd, &st) < 0 || !S_ISDIR(st.st_mode) ||
+-                   faccessat(fd, ".", R_OK | X_OK, 0) < 0)) {
+-        close(fd); fd = -1;
+-    }
+-    if (fd < 0) errno = status == 403 ? EACCES : status == 404 ? ENOENT : EIO;
+-    return fd;
+-}
+-
+-static int hex(unsigned char c)
+-{
+-    if (c >= '0' && c <= '9') return c - '0';
+-    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+-    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+-    return -1;
+-}
+-
+-/* 파일을 찾기 전에 %20 등을 한 번만 푼다. 잘못된 인코딩·제어 문자는 거절한다. */
+-static char *decode_path(const char *raw, int *status)
+-{
+-    if (!raw || raw[0] != '/') { *status = 400; return NULL; }
+-    char *decoded = malloc(strlen(raw) + 1);
+-    if (!decoded) { *status = 500; return NULL; }
+-    size_t out = 0;
+-    for (size_t i = 0; raw[i]; ++i) {
+-        unsigned char c = (unsigned char)raw[i];
+-        if (c == '%') {
+-            if (!raw[i+1] || !raw[i+2] || hex(raw[i+1]) < 0 || hex(raw[i+2]) < 0) {
+-                free(decoded); *status = 400; return NULL;
+-            }
+-            c = (unsigned char)(hex(raw[i+1]) * 16 + hex(raw[i+2])); i += 2;
+-        }
+-        if (c < 0x20 || c == 0x7f) { free(decoded); *status = 400; return NULL; }
+-        decoded[out++] = (char)c;
+-    }
+-    decoded[out] = '\0';
+-    return decoded;
+-}
+-
+-/* 확장자로 Content-Type을 고른다. 모르는 확장자는 일반 바이너리로 전송한다. */
+-const char *static_mime_type(const char *name)
+-{
+-    const char *ext = strrchr(name, '.');
+-    if (!ext) return "application/octet-stream";
+-    ++ext;
+-    static const struct { const char *ext, *mime; } types[] = {
+-        {"html","text/html; charset=utf-8"}, {"htm","text/html; charset=utf-8"},
+-        {"css","text/css; charset=utf-8"}, {"js","text/javascript; charset=utf-8"},
+-        {"txt","text/plain; charset=utf-8"}, {"png","image/png"},
+-        {"jpg","image/jpeg"}, {"jpeg","image/jpeg"}, {"gif","image/gif"},
+-        {"svg","image/svg+xml"}, {"ico","image/vnd.microsoft.icon"}
+-    };
+-    for (size_t i=0; i<sizeof(types)/sizeof(types[0]); ++i)
+-        if (!strcasecmp(ext, types[i].ext)) return types[i].mime;
+-    return "application/octet-stream";
+-}
+-
+-/* 파일 작업 전용: 디코딩·안전한 탐색·기본 페이지·메타정보를 준비한다.
+- * 소켓 송신은 하지 않는다. 성공 시 파일 FD 소유권을 호출자에게 넘긴다. */
+-void static_files_prepare(int root, const HttpRequest *request, StaticFileResult *out)
+-{
+-    memset(out, 0, sizeof(*out)); out->fd = -1; out->status = 500;
+-    int status = 500, fd = -1;
+-    char *decoded = decode_path(request->path, &status);
+-    if (!decoded) { out->status = status; return; }
+-    size_t length = strlen(decoded);
+-    int trailing_slash = length && decoded[length-1] == '/';
+-    const char *mime = static_mime_type(decoded);
+-    char *copy = strdup(decoded);
+-    if (!copy) { free(decoded); return; }
+-    fd = walk(root, copy, &status, 0); free(copy);
+-    if (fd < 0) goto error;
+-    struct stat st;
+-    if (fstat(fd, &st) < 0) { status = 500; goto error; }
+-    if (S_ISDIR(st.st_mode)) {
+-        if (!trailing_slash) {
+-            const char *raw = request->path;
+-            while (raw[0] == '/' && raw[1] == '/') ++raw;
+-            if (strchr(raw, '\\')) { status = 400; goto error; }
+-            int n = snprintf(out->location, sizeof(out->location), "%s/%s%s", raw,
+-                       request->query ? "?" : "", request->query ? request->query : "");
+-            status = n < 0 || (size_t)n >= sizeof(out->location) ? 500 : 301;
+-            goto error;
+-        }
+-        int index = open_child(fd, "index.html", &status);
+-        close(fd); fd = index;
+-        if (fd < 0) goto error;
+-        if (fstat(fd, &st) < 0) { status = 500; goto error; }
+-        if (!S_ISREG(st.st_mode)) { status = 403; goto error; }
+-        mime = static_mime_type("index.html");
+-    } else if (trailing_slash) { status = 404; goto error; }
+-    if (!S_ISREG(st.st_mode)) { status = 403; goto error; }
+-    out->status = 200; out->fd = fd; out->size = st.st_size; out->mime = mime;
+-    free(decoded); return;
+-error:
+-    if (fd >= 0) close(fd);
+-    free(decoded); out->status = status;
+-}
+-
+-int static_files_serve(int client, int root, const HttpRequest *request)
+-{
+-    StaticFileResult result;
+-    static_files_prepare(root, request, &result);
+-    if (result.status == 301) return http_send_redirect(client, result.location);
+-    if (result.status != 200) return http_send_status(client, result.status);
+-    int sent = http_send_file(client, result.fd, result.size, result.mime);
+-    close(result.fd); return sent;
+-}
++#define _POSIX_C_SOURCE 200809L
++#include "static_files.h"
++#include "http_response.h"
++#include <errno.h>
++#include <stdio.h>
++#include <fcntl.h>
++#include <stdlib.h>
++#include <string.h>
++#include <strings.h>
++#include <sys/stat.h>
++#include <unistd.h>
++
++static int error_status(int error)
++{
++    if (error == ENOENT || error == ENOTDIR) return 404;
++    if (error == EACCES || error == EPERM || error == ELOOP) return 403;
++    return 500;
++}
++
++/* 링크는 열기 전과 실제 open 모두에서 거절한다. FIFO 열기도 대기하지 않는다. */
++/* 부모 디렉터리 FD에서 항목 하나를 연다. 예: public FD + docs → docs FD.
++ * 검사한 항목과 실제 연 항목이 같은지도 확인한다. */
++static int open_child(int parent, const char *name, int *status)
++{
++    struct stat before, after;
++    if (fstatat(parent, name, &before, AT_SYMLINK_NOFOLLOW) < 0) {
++        *status = error_status(errno); return -1;
++    }
++    if (!S_ISDIR(before.st_mode) && !S_ISREG(before.st_mode)) {
++        *status = 403; return -1;
++    }
++    int fd = openat(parent, name, O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC);
++    if (fd < 0) { *status = error_status(errno); return -1; }
++    if (fstat(fd, &after) < 0) { close(fd); *status = 500; return -1; }
++    if ((!S_ISDIR(after.st_mode) && !S_ISREG(after.st_mode)) ||
++        before.st_dev != after.st_dev || before.st_ino != after.st_ino) {
++        close(fd); *status = 403; return -1;
++    }
++    return fd;
++}
++
++/* 디렉터리 FD 스택으로 실제 경로를 순서대로 확인한다.
++ * a/../b에서도 a를 건너뛰지 않는다. 루트 위로 올라갈 수 없다.
++ */
++/* 경로를 / 단위로 나누어 open_child를 차례로 호출한다.
++ * docs/page.html: root → docs FD → page.html FD. 중간 FD는 닫고 최종 FD만 반환한다.
++ * 클라이언트는 루트 위로 갈 수 없다. 서버의 루트 설정에는 ../public 등을 허용한다. */
++static int walk(int root, char *path, int *status, int configuring_root)
++{
++    size_t capacity = strlen(path) + 2, depth = 0;
++    int *stack = malloc(capacity * sizeof(*stack));
++    if (!stack) { *status = 500; return -1; }
++    stack[0] = dup(root);
++    if (stack[0] < 0) { free(stack); *status = 500; return -1; }
++    char *save;
++    for (char *part = strtok_r(path, "/", &save); part; part = strtok_r(NULL, "/", &save)) {
++        struct stat current;
++        if (fstat(stack[depth], &current) < 0) { *status = 500; goto fail; }
++        if (!S_ISDIR(current.st_mode)) { *status = 404; goto fail; }
++        if (strcmp(part, ".") == 0) continue;
++        if (strcmp(part, "..") == 0) {
++            if (!depth) {
++                if (!configuring_root) { *status = 403; goto fail; }
++                int parent = open_child(stack[0], "..", status);
++                if (parent < 0) goto fail;
++                close(stack[0]); stack[0] = parent; continue;
++            }
++            close(stack[depth--]); continue;
++        }
++        int next = open_child(stack[depth], part, status);
++        if (next < 0) goto fail;
++        stack[++depth] = next;
++    }
++    int result = stack[depth];
++    while (depth) close(stack[--depth]);
++    free(stack);
++    return result;
++fail:
++    do { close(stack[depth]); } while (depth--);
++    free(stack);
++    return -1;
++}
++
++/* 서버 시작 시 기준 디렉터리를 열고 사용 가능 여부를 검사한다.
++ * 반환 FD는 main이 유지하며, 요청마다 이 위치에서 파일을 찾는다. */
++int static_root_open(const char *path)
++{
++    if (!path || !*path) { errno = EINVAL; return -1; }
++    int base = open(path[0] == '/' ? "/" : ".", O_RDONLY | O_DIRECTORY | O_CLOEXEC);
++    if (base < 0) return -1;
++    char *copy = strdup(path);
++    if (!copy) { close(base); return -1; }
++    int status = 500;
++    int fd = walk(base, copy, &status, 1);
++    free(copy); close(base);
++    struct stat st;
++    if (fd >= 0 && (fstat(fd, &st) < 0 || !S_ISDIR(st.st_mode) ||
++                   faccessat(fd, ".", R_OK | X_OK, 0) < 0)) {
++        close(fd); fd = -1;
++    }
++    if (fd < 0) errno = status == 403 ? EACCES : status == 404 ? ENOENT : EIO;
++    return fd;
++}
++
++static int hex(unsigned char c)
++{
++    if (c >= '0' && c <= '9') return c - '0';
++    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
++    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
++    return -1;
++}
++
++/* 파일을 찾기 전에 %20 등을 한 번만 푼다. 잘못된 인코딩·제어 문자는 거절한다. */
++static char *decode_path(const char *raw, int *status)
++{
++    if (!raw || raw[0] != '/') { *status = 400; return NULL; }
++    char *decoded = malloc(strlen(raw) + 1);
++    if (!decoded) { *status = 500; return NULL; }
++    size_t out = 0;
++    for (size_t i = 0; raw[i]; ++i) {
++        unsigned char c = (unsigned char)raw[i];
++        if (c == '%') {
++            if (!raw[i+1] || !raw[i+2] || hex(raw[i+1]) < 0 || hex(raw[i+2]) < 0) {
++                free(decoded); *status = 400; return NULL;
++            }
++            c = (unsigned char)(hex(raw[i+1]) * 16 + hex(raw[i+2])); i += 2;
++        }
++        if (c < 0x20 || c == 0x7f) { free(decoded); *status = 400; return NULL; }
++        decoded[out++] = (char)c;
++    }
++    decoded[out] = '\0';
++    return decoded;
++}
++
++/* 확장자로 Content-Type을 고른다. 모르는 확장자는 일반 바이너리로 전송한다. */
++const char *static_mime_type(const char *name)
++{
++    const char *ext = strrchr(name, '.');
++    if (!ext) return "application/octet-stream";
++    ++ext;
++    static const struct { const char *ext, *mime; } types[] = {
++        {"html","text/html; charset=utf-8"}, {"htm","text/html; charset=utf-8"},
++        {"css","text/css; charset=utf-8"}, {"js","text/javascript; charset=utf-8"},
++        {"txt","text/plain; charset=utf-8"}, {"png","image/png"},
++        {"jpg","image/jpeg"}, {"jpeg","image/jpeg"}, {"gif","image/gif"},
++        {"svg","image/svg+xml"}, {"ico","image/vnd.microsoft.icon"}
++    };
++    for (size_t i=0; i<sizeof(types)/sizeof(types[0]); ++i)
++        if (!strcasecmp(ext, types[i].ext)) return types[i].mime;
++    return "application/octet-stream";
++}
++
++/* 파일 작업 전용: 디코딩·안전한 탐색·기본 페이지·메타정보를 준비한다.
++ * 소켓 송신은 하지 않는다. 성공 시 파일 FD 소유권을 호출자에게 넘긴다. */
++void static_files_prepare(int root, const HttpRequest *request, StaticFileResult *out)
++{
++    memset(out, 0, sizeof(*out)); out->fd = -1; out->status = 500;
++    int status = 500, fd = -1;
++    char *decoded = decode_path(request->path, &status);
++    if (!decoded) { out->status = status; return; }
++    size_t length = strlen(decoded);
++    int trailing_slash = length && decoded[length-1] == '/';
++    const char *mime = static_mime_type(decoded);
++    char *copy = strdup(decoded);
++    if (!copy) { free(decoded); return; }
++    fd = walk(root, copy, &status, 0); free(copy);
++    if (fd < 0) goto error;
++    struct stat st;
++    if (fstat(fd, &st) < 0) { status = 500; goto error; }
++    if (S_ISDIR(st.st_mode)) {
++        if (!trailing_slash) {
++            const char *raw = request->path;
++            while (raw[0] == '/' && raw[1] == '/') ++raw;
++            if (strchr(raw, '\\')) { status = 400; goto error; }
++            int n = snprintf(out->location, sizeof(out->location), "%s/%s%s", raw,
++                       request->query ? "?" : "", request->query ? request->query : "");
++            status = n < 0 || (size_t)n >= sizeof(out->location) ? 500 : 301;
++            goto error;
++        }
++        int index = open_child(fd, "index.html", &status);
++        close(fd); fd = index;
++        if (fd < 0) goto error;
++        if (fstat(fd, &st) < 0) { status = 500; goto error; }
++        if (!S_ISREG(st.st_mode)) { status = 403; goto error; }
++        mime = static_mime_type("index.html");
++    } else if (trailing_slash) { status = 404; goto error; }
++    if (!S_ISREG(st.st_mode)) { status = 403; goto error; }
++    out->status = 200; out->fd = fd; out->size = st.st_size; out->mime = mime;
++    free(decoded); return;
++error:
++    if (fd >= 0) close(fd);
++    free(decoded); out->status = status;
++}
++
++int static_files_serve(int client, int root, const HttpRequest *request)
++{
++    StaticFileResult result;
++    static_files_prepare(root, request, &result);
++    if (result.status == 301) return http_send_redirect(client, result.location);
++    if (result.status != 200) return http_send_status(client, result.status);
++    int sent = http_send_file(client, result.fd, result.size, result.mime);
++    close(result.fd); return sent;
++}
+diff --git a/static_files.h b/static_files.h
+index b429908..5037f5f 100644
+--- a/static_files.h
++++ b/static_files.h
+@@ -1,16 +1,16 @@
+-#ifndef STATIC_FILES_H
+-#define STATIC_FILES_H
+-#include "http_request.h"
+-#include <sys/types.h>
+-int static_root_open(const char *path);
+-int static_files_serve(int client, int root, const HttpRequest *request);
+-const char *static_mime_type(const char *name);
+-typedef struct {
+-    int status, fd;
+-    off_t size;
+-    const char *mime;
+-    char location[HTTP_HEADER_LIMIT + 4];
+-} StaticFileResult;
+-/* 파일 작업만 수행한다. 소켓에는 접근하지 않는다. fd는 호출자가 소유한다. */
+-void static_files_prepare(int root, const HttpRequest *request, StaticFileResult *result);
+-#endif
++#ifndef STATIC_FILES_H
++#define STATIC_FILES_H
++#include "http_request.h"
++#include <sys/types.h>
++int static_root_open(const char *path);
++int static_files_serve(int client, int root, const HttpRequest *request);
++const char *static_mime_type(const char *name);
++typedef struct {
++    int status, fd;
++    off_t size;
++    const char *mime;
++    char location[HTTP_HEADER_LIMIT + 4];
++} StaticFileResult;
++/* 파일 작업만 수행한다. 소켓에는 접근하지 않는다. fd는 호출자가 소유한다. */
++void static_files_prepare(int root, const HttpRequest *request, StaticFileResult *result);
++#endif
+diff --git a/tests/slow_file.c b/tests/slow_file.c
+index 7b2dc17..5ff8a19 100644
+--- a/tests/slow_file.c
++++ b/tests/slow_file.c
+@@ -16,4 +16,4 @@ int __wrap_openat(int fd,const char *path,int flags,...)
+         while(nanosleep(&delay,&delay)<0){}
+     }
+     return __real_openat(fd,path,flags,mode);
+-}
++}
+diff --git a/tests/test_concurrency.py b/tests/test_concurrency.py
+index 942e6e3..1146bf6 100644
+--- a/tests/test_concurrency.py
++++ b/tests/test_concurrency.py
+@@ -1,103 +1,103 @@
+-"""Linux TCP 동시성·포화·기한·종료 검사. 지연은 테스트 빌드에서만 주입한다."""
+-import concurrent.futures, os, pathlib, signal, socket, subprocess, tempfile, time, unittest
+-BINARY=os.environ.get('TEST_SERVER',str(pathlib.Path(__file__).resolve().parents[1]/'server'))
+-class Running:
+-    def __init__(self,root,workers=2,queue=16,limit=40,delay=0):
+-        s=socket.socket();s.bind(('127.0.0.1',0));self.port=s.getsockname()[1];s.close()
+-        env=dict(os.environ,TEST_OPEN_DELAY_MS=str(delay))
+-        self.proc=subprocess.Popen([BINARY,str(self.port),str(root),str(workers),str(queue),str(limit),'1048576','30','10','1','http://localhost:8080','5','10','http://127.0.0.1:9'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=env)
+-        line=self.proc.stdout.readline()
+-        if not line.startswith(b'Listening'):
+-            _,err=self.proc.communicate(timeout=3)
+-            raise RuntimeError(err.decode())
+-    def connect(self):return socket.create_connection(('127.0.0.1',self.port),timeout=16)
+-    def stop(self):
+-        if self.proc.poll() is None:self.proc.terminate()
+-        out,err=self.proc.communicate(timeout=13)
+-        if self.proc.returncode!=0:raise AssertionError(f'exit {self.proc.returncode}: {err.decode()}')
+-        if b'ERROR: AddressSanitizer' in err or b'runtime error:' in err:raise AssertionError(err.decode())
+-    def request(self,path='/'):
+-        with self.connect() as s:
+-            s.sendall(f'GET {path} HTTP/1.1\r\nHost: localhost\r\n\r\n'.encode())
+-            return read_response(s)
+-def read_response(s):
+-    data=bytearray()
+-    while True:
+-        try:p=s.recv(65536)
+-        except ConnectionResetError:break
+-        if not p:break
+-        data.extend(p)
+-    h,b=bytes(data).split(b'\r\n\r\n',1)
+-    lines=h.decode().split('\r\n');headers=dict(x.split(': ',1) for x in lines[1:])
+-    assert len(b)==int(headers['Content-Length'])
+-    return int(lines[0].split()[1]),b
+-class ConcurrencyTests(unittest.TestCase):
+-    def setUp(self):
+-        self.tmp=tempfile.TemporaryDirectory();self.root=pathlib.Path(self.tmp.name)
+-        (self.root/'index.html').write_bytes(b'index');(self.root/'slow.txt').write_bytes(b'slow')
+-        self.body=bytes(range(256))*4096;(self.root/'bulk.bin').write_bytes(self.body)
+-        with open(self.root/'huge.bin','wb') as f:f.truncate(128*1024*1024)
+-        self.servers=[]
+-    def server(self,**kw):
+-        s=Running(self.root,**kw);self.servers.append(s);return s
+-    def tearDown(self):
+-        for s in self.servers:s.stop()
+-        self.tmp.cleanup()
+-    def test_parallel_files_and_slow_receive(self):
+-        s=self.server();slow=s.connect();slow.sendall(b'GET / HTTP/1.1\r\nHost:')
+-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as pool:
+-            replies=list(pool.map(lambda _:s.request('/bulk.bin'),range(20)))
+-        for code,body in replies:self.assertEqual((code,body),(200,self.body))
+-        slow.close();self.assertEqual(s.request(),(200,b'index'))
+-    def test_queue_full_503(self):
+-        s=self.server(workers=1,queue=1,delay=1800)
+-        with concurrent.futures.ThreadPoolExecutor() as pool:
+-            a=pool.submit(s.request,'/slow.txt');time.sleep(.2)
+-            b=pool.submit(s.request,'/slow.txt');time.sleep(.2)
+-            self.assertEqual(s.request()[0],503)
+-            self.assertEqual(a.result(),(200,b'slow'));self.assertEqual(b.result(),(200,b'slow'))
+-    def test_queue_deadline_excludes_running_time(self):
+-        s=self.server(workers=1,queue=1,delay=11500)
+-        with concurrent.futures.ThreadPoolExecutor() as pool:
+-            a=pool.submit(s.request,'/slow.txt');time.sleep(.2);start=time.monotonic()
+-            self.assertEqual(s.request()[0],503)
+-            self.assertGreater(time.monotonic()-start,9.7)
+-            self.assertEqual(a.result(),(200,b'slow'))
+-        self.assertEqual(s.request(),(200,b'index'))
+-    def test_connection_limit_resume(self):
+-        s=self.server(limit=1);a=s.connect();a.sendall(b'GET ')
+-        b=s.connect();b.sendall(b'GET / HTTP/1.1\r\nHost: localhost\r\n\r\n');b.settimeout(.3)
+-        with self.assertRaises(socket.timeout):b.recv(1)
+-        a.close();b.settimeout(4);self.assertEqual(read_response(b),(200,b'index'));b.close()
+-    def test_header_deadline_and_other_connection(self):
+-        s=self.server();a=s.connect();a.sendall(b'GET / HTTP/1.1\r\nHost:');start=time.monotonic()
+-        self.assertEqual(s.request(),(200,b'index'))
+-        for _ in range(4):time.sleep(2);a.sendall(b' ')
+-        self.assertEqual(read_response(a)[0],408);self.assertLess(time.monotonic()-start,12);a.close()
+-    def test_disconnect_and_fd_reuse(self):
+-        s=self.server(workers=2,delay=100)
+-        for _ in range(40):
+-            a=s.connect();a.sendall(b'GET /slow.txt HTTP/1.1\r\nHost: localhost\r\n\r\n');a.close()
+-            code,body=s.request();self.assertIn(code,(200,503))
+-            if code==200:self.assertEqual(body,b'index')
+-        time.sleep(.5);self.assertEqual(s.request(),(200,b'index'))
+-    def test_graceful_finish(self):
+-        s=self.server(delay=700);a=s.connect();a.sendall(b'GET /slow.txt HTTP/1.1\r\nHost: localhost\r\n\r\n');time.sleep(.15)
+-        s.proc.send_signal(signal.SIGTERM);self.assertEqual(read_response(a),(200,b'slow'));a.close()
+-        s.proc.wait(timeout=3);self.assertEqual(s.proc.returncode,0)
+-    def test_graceful_deadline_and_repeat_signal(self):
+-        s=self.server(workers=1,delay=20000);a=s.connect();a.sendall(b'GET /slow.txt HTTP/1.1\r\nHost: localhost\r\n\r\n');time.sleep(.2)
+-        start=time.monotonic();s.proc.send_signal(signal.SIGTERM);time.sleep(2);s.proc.send_signal(signal.SIGTERM)
+-        s.proc.wait(timeout=11);self.assertLess(time.monotonic()-start,12);self.assertEqual(s.proc.returncode,0);a.close()
+-    def test_slow_sender_timeout_does_not_block_others(self):
+-        s=self.server();baseline=len(list(pathlib.Path(f'/proc/{s.proc.pid}/fd').iterdir()));a=s.connect();a.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,1024)
+-        a.sendall(b'GET /huge.bin HTTP/1.1\r\nHost: localhost\r\n\r\n')
+-        time.sleep(.5);self.assertEqual(s.request(),(200,b'index'))
+-        time.sleep(11)
+-        self.assertEqual(len(list(pathlib.Path(f'/proc/{s.proc.pid}/fd').iterdir())),baseline)
+-        # 송신 진행이 멈춘 연결을 정리한 뒤에도 새 요청은 처리한다.
+-        self.assertEqual(s.request(),(200,b'index'));a.close()
+-    def test_invalid_cli(self):
+-        for values in ([],['8080',str(self.root),'0','1','1'],['8080',str(self.root),'1','0','1'],['8080',str(self.root),'1','1','0'],['8080',str(self.root),'1x','1','1']):
+-            self.assertNotEqual(subprocess.run([BINARY,*values,'1048576','30','10','1','http://localhost:8080','5','10','http://127.0.0.1:9'],capture_output=True,timeout=3).returncode,0)
+-if __name__=='__main__':unittest.main(verbosity=2)
++"""Linux TCP 동시성·포화·기한·종료 검사. 지연은 테스트 빌드에서만 주입한다."""
++import concurrent.futures, os, pathlib, signal, socket, subprocess, tempfile, time, unittest
++BINARY=os.environ.get('TEST_SERVER',str(pathlib.Path(__file__).resolve().parents[1]/'server'))
++class Running:
++    def __init__(self,root,workers=2,queue=16,limit=40,delay=0):
++        s=socket.socket();s.bind(('127.0.0.1',0));self.port=s.getsockname()[1];s.close()
++        env=dict(os.environ,TEST_OPEN_DELAY_MS=str(delay))
++        self.proc=subprocess.Popen([BINARY,str(self.port),str(root),str(workers),str(queue),str(limit),'1048576','30','10','1','http://localhost:8080','5','10','http://127.0.0.1:9'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=env)
++        line=self.proc.stdout.readline()
++        if not line.startswith(b'Listening'):
++            _,err=self.proc.communicate(timeout=3)
++            raise RuntimeError(err.decode())
++    def connect(self):return socket.create_connection(('127.0.0.1',self.port),timeout=16)
++    def stop(self):
++        if self.proc.poll() is None:self.proc.terminate()
++        out,err=self.proc.communicate(timeout=13)
++        if self.proc.returncode!=0:raise AssertionError(f'exit {self.proc.returncode}: {err.decode()}')
++        if b'ERROR: AddressSanitizer' in err or b'runtime error:' in err:raise AssertionError(err.decode())
++    def request(self,path='/'):
++        with self.connect() as s:
++            s.sendall(f'GET {path} HTTP/1.1\r\nHost: localhost\r\n\r\n'.encode())
++            return read_response(s)
++def read_response(s):
++    data=bytearray()
++    while True:
++        try:p=s.recv(65536)
++        except ConnectionResetError:break
++        if not p:break
++        data.extend(p)
++    h,b=bytes(data).split(b'\r\n\r\n',1)
++    lines=h.decode().split('\r\n');headers=dict(x.split(': ',1) for x in lines[1:])
++    assert len(b)==int(headers['Content-Length'])
++    return int(lines[0].split()[1]),b
++class ConcurrencyTests(unittest.TestCase):
++    def setUp(self):
++        self.tmp=tempfile.TemporaryDirectory();self.root=pathlib.Path(self.tmp.name)
++        (self.root/'index.html').write_bytes(b'index');(self.root/'slow.txt').write_bytes(b'slow')
++        self.body=bytes(range(256))*4096;(self.root/'bulk.bin').write_bytes(self.body)
++        with open(self.root/'huge.bin','wb') as f:f.truncate(128*1024*1024)
++        self.servers=[]
++    def server(self,**kw):
++        s=Running(self.root,**kw);self.servers.append(s);return s
++    def tearDown(self):
++        for s in self.servers:s.stop()
++        self.tmp.cleanup()
++    def test_parallel_files_and_slow_receive(self):
++        s=self.server();slow=s.connect();slow.sendall(b'GET / HTTP/1.1\r\nHost:')
++        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as pool:
++            replies=list(pool.map(lambda _:s.request('/bulk.bin'),range(20)))
++        for code,body in replies:self.assertEqual((code,body),(200,self.body))
++        slow.close();self.assertEqual(s.request(),(200,b'index'))
++    def test_queue_full_503(self):
++        s=self.server(workers=1,queue=1,delay=1800)
++        with concurrent.futures.ThreadPoolExecutor() as pool:
++            a=pool.submit(s.request,'/slow.txt');time.sleep(.2)
++            b=pool.submit(s.request,'/slow.txt');time.sleep(.2)
++            self.assertEqual(s.request()[0],503)
++            self.assertEqual(a.result(),(200,b'slow'));self.assertEqual(b.result(),(200,b'slow'))
++    def test_queue_deadline_excludes_running_time(self):
++        s=self.server(workers=1,queue=1,delay=11500)
++        with concurrent.futures.ThreadPoolExecutor() as pool:
++            a=pool.submit(s.request,'/slow.txt');time.sleep(.2);start=time.monotonic()
++            self.assertEqual(s.request()[0],503)
++            self.assertGreater(time.monotonic()-start,9.7)
++            self.assertEqual(a.result(),(200,b'slow'))
++        self.assertEqual(s.request(),(200,b'index'))
++    def test_connection_limit_resume(self):
++        s=self.server(limit=1);a=s.connect();a.sendall(b'GET ')
++        b=s.connect();b.sendall(b'GET / HTTP/1.1\r\nHost: localhost\r\n\r\n');b.settimeout(.3)
++        with self.assertRaises(socket.timeout):b.recv(1)
++        a.close();b.settimeout(4);self.assertEqual(read_response(b),(200,b'index'));b.close()
++    def test_header_deadline_and_other_connection(self):
++        s=self.server();a=s.connect();a.sendall(b'GET / HTTP/1.1\r\nHost:');start=time.monotonic()
++        self.assertEqual(s.request(),(200,b'index'))
++        for _ in range(4):time.sleep(2);a.sendall(b' ')
++        self.assertEqual(read_response(a)[0],408);self.assertLess(time.monotonic()-start,12);a.close()
++    def test_disconnect_and_fd_reuse(self):
++        s=self.server(workers=2,delay=100)
++        for _ in range(40):
++            a=s.connect();a.sendall(b'GET /slow.txt HTTP/1.1\r\nHost: localhost\r\n\r\n');a.close()
++            code,body=s.request();self.assertIn(code,(200,503))
++            if code==200:self.assertEqual(body,b'index')
++        time.sleep(.5);self.assertEqual(s.request(),(200,b'index'))
++    def test_graceful_finish(self):
++        s=self.server(delay=700);a=s.connect();a.sendall(b'GET /slow.txt HTTP/1.1\r\nHost: localhost\r\n\r\n');time.sleep(.15)
++        s.proc.send_signal(signal.SIGTERM);self.assertEqual(read_response(a),(200,b'slow'));a.close()
++        s.proc.wait(timeout=3);self.assertEqual(s.proc.returncode,0)
++    def test_graceful_deadline_and_repeat_signal(self):
++        s=self.server(workers=1,delay=20000);a=s.connect();a.sendall(b'GET /slow.txt HTTP/1.1\r\nHost: localhost\r\n\r\n');time.sleep(.2)
++        start=time.monotonic();s.proc.send_signal(signal.SIGTERM);time.sleep(2);s.proc.send_signal(signal.SIGTERM)
++        s.proc.wait(timeout=11);self.assertLess(time.monotonic()-start,12);self.assertEqual(s.proc.returncode,0);a.close()
++    def test_slow_sender_timeout_does_not_block_others(self):
++        s=self.server();baseline=len(list(pathlib.Path(f'/proc/{s.proc.pid}/fd').iterdir()));a=s.connect();a.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,1024)
++        a.sendall(b'GET /huge.bin HTTP/1.1\r\nHost: localhost\r\n\r\n')
++        time.sleep(.5);self.assertEqual(s.request(),(200,b'index'))
++        time.sleep(11)
++        self.assertEqual(len(list(pathlib.Path(f'/proc/{s.proc.pid}/fd').iterdir())),baseline)
++        # 송신 진행이 멈춘 연결을 정리한 뒤에도 새 요청은 처리한다.
++        self.assertEqual(s.request(),(200,b'index'));a.close()
++    def test_invalid_cli(self):
++        for values in ([],['8080',str(self.root),'0','1','1'],['8080',str(self.root),'1','0','1'],['8080',str(self.root),'1','1','0'],['8080',str(self.root),'1x','1','1']):
++            self.assertNotEqual(subprocess.run([BINARY,*values,'1048576','30','10','1','http://localhost:8080','5','10','http://127.0.0.1:9'],capture_output=True,timeout=3).returncode,0)
++if __name__=='__main__':unittest.main(verbosity=2)
+diff --git a/tests/test_concurrency_state.c b/tests/test_concurrency_state.c
+index 1687e31..73ec4a6 100644
+--- a/tests/test_concurrency_state.c
++++ b/tests/test_concurrency_state.c
+@@ -71,4 +71,4 @@ int main(void)
+     close(l.epoll);pthread_cond_destroy(&l.pool.ready);pthread_mutex_destroy(&l.pool.mutex);
+     free(l.slots);free(l.generations);
+     puts("PASS: queue/retry/deadline/lifetime and partial 100/EINTR/EAGAIN before final error");
+-}
++}
+diff --git a/tests/test_static_files.py b/tests/test_static_files.py
+index 068f795..f96d6d1 100644
+--- a/tests/test_static_files.py
++++ b/tests/test_static_files.py
+@@ -1,114 +1,114 @@
+-"""Linux에서 임시 파일 루트와 서버를 만들어 검증한다."""
+-import os, pathlib, socket, subprocess, tempfile, time, unittest
+-SERVER = os.environ.get('TEST_SERVER', str(pathlib.Path(__file__).resolve().parents[1] / 'server'))
+-
+-class StaticFilesTests(unittest.TestCase):
+-    @classmethod
+-    def setUpClass(cls):
+-        cls.temp = tempfile.TemporaryDirectory()
+-        cls.base = pathlib.Path(cls.temp.name)
+-        cls.root = cls.base / 'public'; cls.root.mkdir()
+-        (cls.root/'index.html').write_bytes(b'hello world')
+-        (cls.root/'docs').mkdir(); (cls.root/'docs'/'index.html').write_bytes(b'<h1>docs</h1>')
+-        (cls.root/'emptydir').mkdir()
+-        (cls.root/'hello world.txt').write_bytes(b'space')
+-        (cls.root/'hello%20world.txt').write_bytes(b'literal percent')
+-        (cls.root/'a+b.txt').write_bytes(b'plus')
+-        cls.payload = bytes(range(256))*8192
+-        (cls.root/'binary.xyz').write_bytes(cls.payload)
+-        (cls.root/'empty').write_bytes(b'')
+-        (cls.base/'secret').write_bytes(b'OUTSIDE SECRET')
+-        (cls.root/'link').symlink_to(cls.base/'secret')
+-        (cls.root/'inside').symlink_to(cls.root/'index.html')
+-        (cls.root/'dirlink').symlink_to(cls.root/'docs', target_is_directory=True)
+-        (cls.root/'linkedindex').mkdir(); (cls.root/'linkedindex'/'index.html').symlink_to(cls.root/'index.html')
+-        (cls.root/'denied').write_bytes(b'private'); (cls.root/'denied').chmod(0)
+-        (cls.root/'blocked').mkdir(); (cls.root/'blocked').chmod(0)
+-        os.mkfifo(cls.root/'fifo')
+-        cls.sock=socket.socket(socket.AF_UNIX); cls.sock.bind(str(cls.root/'socket'))
+-        for ext in ('html','htm','CSS','js','txt','png','jpg','jpeg','gif','svg','ico'):
+-            (cls.root/('sample.'+ext)).write_bytes(b'abc\x00def')
+-        s=socket.socket(); s.bind(('127.0.0.1',0)); cls.port=s.getsockname()[1]; s.close()
+-        cls.proc=subprocess.Popen([SERVER,str(cls.port),str(cls.root),'4','64','100','1048576','30','10','1','http://localhost:8080','5','10','http://127.0.0.1:9'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+-        if cls.proc.stdout.readline()!=f'Listening on port {cls.port}\n'.encode():
+-            raise RuntimeError(cls.proc.stderr.read().decode())
+-    @classmethod
+-    def tearDownClass(cls):
+-        cls.proc.terminate(); cls.proc.communicate(timeout=4)
+-        cls.sock.close(); (cls.root/'denied').chmod(0o600); (cls.root/'blocked').chmod(0o700)
+-        cls.temp.cleanup()
+-    def request(self,path,method='GET'):
+-        with socket.create_connection(('127.0.0.1',self.port),timeout=3) as s:
+-            s.sendall(f'{method} {path} HTTP/1.1\r\nHost: localhost\r\n\r\n'.encode())
+-            data=b''
+-            while True:
+-                try: part=s.recv(65536)
+-                except ConnectionResetError: break
+-                if not part: break
+-                data+=part
+-        head,body=data.split(b'\r\n\r\n',1)
+-        lines=head.decode().split('\r\n')
+-        code=int(lines[0].split()[1]); headers=dict(line.split(': ',1) for line in lines[1:])
+-        if code == 204:
+-            self.assertNotIn('Content-Length', headers)
+-            self.assertEqual(body, b'')
+-        else:
+-            self.assertEqual(int(headers['Content-Length']),len(body))
+-        self.assertEqual(headers['Connection'],'close')
+-        return code,headers,body
+-    def test_index(self):
+-        self.assertEqual(self.request('/')[2],b'hello world')
+-        self.assertEqual(self.request('/docs/')[2],b'<h1>docs</h1>')
+-    def test_redirect_and_query(self):
+-        c,h,b=self.request('/docs?q=a%20b'); self.assertEqual(c,301)
+-        self.assertEqual(h['Location'],'/docs/?q=a%20b'); self.assertEqual(b,b'')
+-        self.assertEqual(self.request('//docs')[1]['Location'],'/docs/')
+-    def test_encoded_slash(self):
+-        self.assertEqual(self.request('/docs%2f')[2],b'<h1>docs</h1>')
+-    def test_binary_and_empty(self):
+-        c,h,b=self.request('/binary.xyz'); self.assertEqual(c,200)
+-        self.assertEqual(h['Content-Type'],'application/octet-stream'); self.assertEqual(b,self.payload)
+-        self.assertEqual(self.request('/empty')[2],b'')
+-    def test_mime(self):
+-        mapping={'html':'text/html; charset=utf-8','htm':'text/html; charset=utf-8','CSS':'text/css; charset=utf-8','js':'text/javascript; charset=utf-8','txt':'text/plain; charset=utf-8','png':'image/png','jpg':'image/jpeg','jpeg':'image/jpeg','gif':'image/gif','svg':'image/svg+xml','ico':'image/vnd.microsoft.icon'}
+-        for ext,mime in mapping.items():
+-            c,h,b=self.request('/sample.'+ext); self.assertEqual(c,200); self.assertEqual(h['Content-Type'],mime); self.assertEqual(b,b'abc\x00def')
+-    def test_decode_once_and_query(self):
+-        self.assertEqual(self.request('/hello%20world.txt?q=ignored')[2],b'space')
+-        self.assertEqual(self.request('/hello%2520world.txt')[2],b'literal percent')
+-        self.assertEqual(self.request('/a+b.txt')[2],b'plus')
+-    def test_not_found(self):
+-        for path in ('/missing','/emptydir/','/index.html/','/index.html/child','/absent/../index.html'):
+-            self.assertEqual(self.request(path)[0],404,path)
+-    def test_traversal(self):
+-        for path in ('/../secret','/%2e%2e/secret','/docs/../../secret','/%2e%2e%2fsecret'):
+-            self.assertEqual(self.request(path)[0],403,path)
+-        self.assertEqual(self.request('/docs/../index.html')[2],b'hello world')
+-    def test_symlinks(self):
+-        for path in ('/link','/inside','/dirlink/index.html','/dirlink/../index.html','/linkedindex/'):
+-            self.assertEqual(self.request(path)[0],403,path)
+-    def test_invalid_encoding(self):
+-        for path in ('/%','/%2','/%GG','/%00','/%0d%0a'):
+-            self.assertEqual(self.request(path)[0],400,path)
+-    def test_redirect_backslash(self):
+-        (self.root/'\\docs').mkdir(exist_ok=True)
+-        self.assertEqual(self.request('/\\docs')[0],400)
+-    def test_nonregular_and_permissions(self):
+-        for path in ('/fifo','/socket','/denied','/blocked/'):
+-            self.assertEqual(self.request(path)[0],403,path)
+-    def test_method_policy(self):
+-        self.assertEqual(self.request('/', 'POST')[0],204)
+-        self.assertEqual(self.request('/', 'PUT')[0],501)
+-    def test_cleanup_and_recovery(self):
+-        before=len(list(pathlib.Path(f'/proc/{self.proc.pid}/fd').iterdir()))
+-        for _ in range(50):
+-            self.assertEqual(self.request('/missing')[0],404)
+-            self.assertEqual(self.request('/docs/')[0],200)
+-        self.assertEqual(len(list(pathlib.Path(f'/proc/{self.proc.pid}/fd').iterdir())),before)
+-    def test_bad_startup(self):
+-        for root in (self.base/'absent',self.root/'index.html',self.root/'dirlink',self.root/'blocked'):
+-            result=subprocess.run([SERVER,'18090',str(root),'4','64','100','1048576','30','10','1','http://localhost:8080','5','10','http://127.0.0.1:9'],capture_output=True,timeout=3)
+-            self.assertNotEqual(result.returncode,0)
+-        self.assertFalse((self.base/'absent').exists())
+-
+-if __name__=='__main__': unittest.main(verbosity=2)
++"""Linux에서 임시 파일 루트와 서버를 만들어 검증한다."""
++import os, pathlib, socket, subprocess, tempfile, time, unittest
++SERVER = os.environ.get('TEST_SERVER', str(pathlib.Path(__file__).resolve().parents[1] / 'server'))
++
++class StaticFilesTests(unittest.TestCase):
++    @classmethod
++    def setUpClass(cls):
++        cls.temp = tempfile.TemporaryDirectory()
++        cls.base = pathlib.Path(cls.temp.name)
++        cls.root = cls.base / 'public'; cls.root.mkdir()
++        (cls.root/'index.html').write_bytes(b'hello world')
++        (cls.root/'docs').mkdir(); (cls.root/'docs'/'index.html').write_bytes(b'<h1>docs</h1>')
++        (cls.root/'emptydir').mkdir()
++        (cls.root/'hello world.txt').write_bytes(b'space')
++        (cls.root/'hello%20world.txt').write_bytes(b'literal percent')
++        (cls.root/'a+b.txt').write_bytes(b'plus')
++        cls.payload = bytes(range(256))*8192
++        (cls.root/'binary.xyz').write_bytes(cls.payload)
++        (cls.root/'empty').write_bytes(b'')
++        (cls.base/'secret').write_bytes(b'OUTSIDE SECRET')
++        (cls.root/'link').symlink_to(cls.base/'secret')
++        (cls.root/'inside').symlink_to(cls.root/'index.html')
++        (cls.root/'dirlink').symlink_to(cls.root/'docs', target_is_directory=True)
++        (cls.root/'linkedindex').mkdir(); (cls.root/'linkedindex'/'index.html').symlink_to(cls.root/'index.html')
++        (cls.root/'denied').write_bytes(b'private'); (cls.root/'denied').chmod(0)
++        (cls.root/'blocked').mkdir(); (cls.root/'blocked').chmod(0)
++        os.mkfifo(cls.root/'fifo')
++        cls.sock=socket.socket(socket.AF_UNIX); cls.sock.bind(str(cls.root/'socket'))
++        for ext in ('html','htm','CSS','js','txt','png','jpg','jpeg','gif','svg','ico'):
++            (cls.root/('sample.'+ext)).write_bytes(b'abc\x00def')
++        s=socket.socket(); s.bind(('127.0.0.1',0)); cls.port=s.getsockname()[1]; s.close()
++        cls.proc=subprocess.Popen([SERVER,str(cls.port),str(cls.root),'4','64','100','1048576','30','10','1','http://localhost:8080','5','10','http://127.0.0.1:9'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
++        if cls.proc.stdout.readline()!=f'Listening on port {cls.port}\n'.encode():
++            raise RuntimeError(cls.proc.stderr.read().decode())
++    @classmethod
++    def tearDownClass(cls):
++        cls.proc.terminate(); cls.proc.communicate(timeout=4)
++        cls.sock.close(); (cls.root/'denied').chmod(0o600); (cls.root/'blocked').chmod(0o700)
++        cls.temp.cleanup()
++    def request(self,path,method='GET'):
++        with socket.create_connection(('127.0.0.1',self.port),timeout=3) as s:
++            s.sendall(f'{method} {path} HTTP/1.1\r\nHost: localhost\r\n\r\n'.encode())
++            data=b''
++            while True:
++                try: part=s.recv(65536)
++                except ConnectionResetError: break
++                if not part: break
++                data+=part
++        head,body=data.split(b'\r\n\r\n',1)
++        lines=head.decode().split('\r\n')
++        code=int(lines[0].split()[1]); headers=dict(line.split(': ',1) for line in lines[1:])
++        if code == 204:
++            self.assertNotIn('Content-Length', headers)
++            self.assertEqual(body, b'')
++        else:
++            self.assertEqual(int(headers['Content-Length']),len(body))
++        self.assertEqual(headers['Connection'],'close')
++        return code,headers,body
++    def test_index(self):
++        self.assertEqual(self.request('/')[2],b'hello world')
++        self.assertEqual(self.request('/docs/')[2],b'<h1>docs</h1>')
++    def test_redirect_and_query(self):
++        c,h,b=self.request('/docs?q=a%20b'); self.assertEqual(c,301)
++        self.assertEqual(h['Location'],'/docs/?q=a%20b'); self.assertEqual(b,b'')
++        self.assertEqual(self.request('//docs')[1]['Location'],'/docs/')
++    def test_encoded_slash(self):
++        self.assertEqual(self.request('/docs%2f')[2],b'<h1>docs</h1>')
++    def test_binary_and_empty(self):
++        c,h,b=self.request('/binary.xyz'); self.assertEqual(c,200)
++        self.assertEqual(h['Content-Type'],'application/octet-stream'); self.assertEqual(b,self.payload)
++        self.assertEqual(self.request('/empty')[2],b'')
++    def test_mime(self):
++        mapping={'html':'text/html; charset=utf-8','htm':'text/html; charset=utf-8','CSS':'text/css; charset=utf-8','js':'text/javascript; charset=utf-8','txt':'text/plain; charset=utf-8','png':'image/png','jpg':'image/jpeg','jpeg':'image/jpeg','gif':'image/gif','svg':'image/svg+xml','ico':'image/vnd.microsoft.icon'}
++        for ext,mime in mapping.items():
++            c,h,b=self.request('/sample.'+ext); self.assertEqual(c,200); self.assertEqual(h['Content-Type'],mime); self.assertEqual(b,b'abc\x00def')
++    def test_decode_once_and_query(self):
++        self.assertEqual(self.request('/hello%20world.txt?q=ignored')[2],b'space')
++        self.assertEqual(self.request('/hello%2520world.txt')[2],b'literal percent')
++        self.assertEqual(self.request('/a+b.txt')[2],b'plus')
++    def test_not_found(self):
++        for path in ('/missing','/emptydir/','/index.html/','/index.html/child','/absent/../index.html'):
++            self.assertEqual(self.request(path)[0],404,path)
++    def test_traversal(self):
++        for path in ('/../secret','/%2e%2e/secret','/docs/../../secret','/%2e%2e%2fsecret'):
++            self.assertEqual(self.request(path)[0],403,path)
++        self.assertEqual(self.request('/docs/../index.html')[2],b'hello world')
++    def test_symlinks(self):
++        for path in ('/link','/inside','/dirlink/index.html','/dirlink/../index.html','/linkedindex/'):
++            self.assertEqual(self.request(path)[0],403,path)
++    def test_invalid_encoding(self):
++        for path in ('/%','/%2','/%GG','/%00','/%0d%0a'):
++            self.assertEqual(self.request(path)[0],400,path)
++    def test_redirect_backslash(self):
++        (self.root/'\\docs').mkdir(exist_ok=True)
++        self.assertEqual(self.request('/\\docs')[0],400)
++    def test_nonregular_and_permissions(self):
++        for path in ('/fifo','/socket','/denied','/blocked/'):
++            self.assertEqual(self.request(path)[0],403,path)
++    def test_method_policy(self):
++        self.assertEqual(self.request('/', 'POST')[0],204)
++        self.assertEqual(self.request('/', 'PUT')[0],501)
++    def test_cleanup_and_recovery(self):
++        before=len(list(pathlib.Path(f'/proc/{self.proc.pid}/fd').iterdir()))
++        for _ in range(50):
++            self.assertEqual(self.request('/missing')[0],404)
++            self.assertEqual(self.request('/docs/')[0],200)
++        self.assertEqual(len(list(pathlib.Path(f'/proc/{self.proc.pid}/fd').iterdir())),before)
++    def test_bad_startup(self):
++        for root in (self.base/'absent',self.root/'index.html',self.root/'dirlink',self.root/'blocked'):
++            result=subprocess.run([SERVER,'18090',str(root),'4','64','100','1048576','30','10','1','http://localhost:8080','5','10','http://127.0.0.1:9'],capture_output=True,timeout=3)
++            self.assertNotEqual(result.returncode,0)
++        self.assertFalse((self.base/'absent').exists())
++
++if __name__=='__main__': unittest.main(verbosity=2)

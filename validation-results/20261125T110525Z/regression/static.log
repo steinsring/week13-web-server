@@ -1,0 +1,20 @@
+test_bad_startup (__main__.StaticFilesTests.test_bad_startup) ... ok
+test_binary_and_empty (__main__.StaticFilesTests.test_binary_and_empty) ... ok
+test_cleanup_and_recovery (__main__.StaticFilesTests.test_cleanup_and_recovery) ... ok
+test_decode_once_and_query (__main__.StaticFilesTests.test_decode_once_and_query) ... ok
+test_encoded_slash (__main__.StaticFilesTests.test_encoded_slash) ... ok
+test_index (__main__.StaticFilesTests.test_index) ... ok
+test_invalid_encoding (__main__.StaticFilesTests.test_invalid_encoding) ... ok
+test_method_policy (__main__.StaticFilesTests.test_method_policy) ... ok
+test_mime (__main__.StaticFilesTests.test_mime) ... ok
+test_nonregular_and_permissions (__main__.StaticFilesTests.test_nonregular_and_permissions) ... ok
+test_not_found (__main__.StaticFilesTests.test_not_found) ... ok
+test_redirect_and_query (__main__.StaticFilesTests.test_redirect_and_query) ... ok
+test_redirect_backslash (__main__.StaticFilesTests.test_redirect_backslash) ... ok
+test_symlinks (__main__.StaticFilesTests.test_symlinks) ... ok
+test_traversal (__main__.StaticFilesTests.test_traversal) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.174s
+
+OK

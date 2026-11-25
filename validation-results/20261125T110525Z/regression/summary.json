@@ -1,0 +1,125 @@
+[
+  {
+    "name": "harness",
+    "command": [
+      "python3",
+      "validation/test_harness.py"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 0.24454736709594727
+  },
+  {
+    "name": "unit",
+    "command": [
+      "make",
+      "all",
+      "test"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 3.6812987327575684
+  },
+  {
+    "name": "proxy",
+    "command": [
+      "python3",
+      "tests/test_proxy.py"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 18.196134328842163
+  },
+  {
+    "name": "keep_alive",
+    "command": [
+      "python3",
+      "tests/test_keep_alive.py"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 6.725047588348389
+  },
+  {
+    "name": "post_body",
+    "command": [
+      "python3",
+      "tests/test_post_body.py"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 6.567978143692017
+  },
+  {
+    "name": "static",
+    "command": [
+      "python3",
+      "tests/test_static_files.py"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 0.3403329849243164
+  },
+  {
+    "name": "build-concurrency",
+    "command": [
+      "gcc",
+      "-std=c11",
+      "-O2",
+      "-pthread",
+      "-I.",
+      "proxy.c",
+      "proxy_config.c",
+      "http_body.c",
+      "concurrency.c",
+      "static_files.c",
+      "server.c",
+      "http_request.c",
+      "http_response.c",
+      "request_io.c",
+      "tests/slow_file.c",
+      "-Wl,--wrap=openat",
+      "-o",
+      "/tmp/validation-concurrency"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 2.2136495113372803
+  },
+  {
+    "name": "concurrency",
+    "command": [
+      "python3",
+      "tests/test_concurrency.py"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 50.76309037208557
+  },
+  {
+    "name": "build-alloc",
+    "command": [
+      "gcc",
+      "-std=c11",
+      "-O2",
+      "-pthread",
+      "-Drealloc=test_realloc",
+      "-I.",
+      "proxy.c",
+      "proxy_config.c",
+      "http_body.c",
+      "concurrency.c",
+      "static_files.c",
+      "server.c",
+      "http_request.c",
+      "http_response.c",
+      "request_io.c",
+      "tests/fail_alloc.c",
+      "-o",
+      "/tmp/validation-alloc-fail"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 1.7217183113098145
+  },
+  {
+    "name": "errors",
+    "command": [
+      "python3",
+      "tests/test_server.py"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 20.47387981414795
+  }
+]

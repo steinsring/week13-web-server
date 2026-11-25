@@ -1,0 +1,81 @@
+{
+  "version": {
+    "Client": {
+      "Version": "29.7.2",
+      "ApiVersion": "1.55",
+      "DefaultAPIVersion": "1.55",
+      "GitCommit": "a7dcaa6",
+      "GoVersion": "go1.26.5",
+      "Os": "windows",
+      "Arch": "amd64",
+      "BuildTime": "Wed Aug  5 18:31:33 2026",
+      "Context": "desktop-linux"
+    },
+    "Server": {
+      "Platform": {
+        "Name": "Docker Desktop 4.90.0 (238679)"
+      },
+      "Version": "29.7.2",
+      "ApiVersion": "1.55",
+      "MinAPIVersion": "1.40",
+      "Os": "linux",
+      "Arch": "amd64",
+      "Components": [
+        {
+          "Name": "Engine",
+          "Version": "29.7.2",
+          "Details": {
+            "ApiVersion": "1.55",
+            "Arch": "amd64",
+            "BuildTime": "Wed Aug  5 18:28:36 2026",
+            "Experimental": "false",
+            "GitCommit": "6a43e3d",
+            "GoVersion": "go1.26.5",
+            "KernelVersion": "6.18.33.2-microsoft-standard-WSL2",
+            "MinAPIVersion": "1.40",
+            "Module": "github.com/moby/moby/v2",
+            "ModuleVersion": "v2.0.0+unknown",
+            "Os": "linux"
+          }
+        },
+        {
+          "Name": "containerd",
+          "Version": "v2.3.3",
+          "Details": {
+            "GitCommit": "aad11006b869517fcd3009450b6f82da282e1a9b"
+          }
+        },
+        {
+          "Name": "runc",
+          "Version": "1.4.3",
+          "Details": {
+            "GitCommit": "v1.4.3-0-gbb14dabe"
+          }
+        },
+        {
+          "Name": "docker-init",
+          "Version": "0.19.0",
+          "Details": {
+            "GitCommit": "de40ad0"
+          }
+        }
+      ],
+      "GitCommit": "6a43e3d",
+      "GoVersion": "go1.26.5",
+      "KernelVersion": "6.18.33.2-microsoft-standard-WSL2",
+      "BuildTime": "2026-08-05T18:28:36.000000000+00:00"
+    }
+  },
+  "inspect_raw": "\"sha256:f07457b159ec2cbc1b02b195585f06befff639524da209341c017e884bdb6d37\" \"vsc-week13-web-server-7eae7db590c17f84e445bf1c4fcc724b032b4e17179d720896ce0fe80967f4d9\" 0 0 \"\"",
+  "inspect": {
+    "image_id": "sha256:f07457b159ec2cbc1b02b195585f06befff639524da209341c017e884bdb6d37",
+    "configured_image": "vsc-week13-web-server-7eae7db590c17f84e445bf1c4fcc724b032b4e17179d720896ce0fe80967f4d9",
+    "nano_cpus": 0,
+    "memory_bytes": 0,
+    "cpuset_cpus": ""
+  },
+  "commands": [
+    "docker version --format json",
+    "docker inspect 958a86054314 (Image,Config.Image,HostConfig.NanoCpus,HostConfig.Memory,HostConfig.CpusetCpus)"
+  ]
+}

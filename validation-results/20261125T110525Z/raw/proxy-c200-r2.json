@@ -1,0 +1,394 @@
+{
+  "id": "proxy-c200-r2",
+  "scenario": "proxy",
+  "concurrency": 200,
+  "duration_seconds": 30,
+  "warmup_seconds": 5,
+  "actual_total_with_drain": 37.820956201001536,
+  "cutoff_utc_ns": 1795605955450069950,
+  "histogram_format": "little/native-endian uint32 counts; zlib; 100us ceil buckets; last bin >=60s",
+  "direct_backend_connection_close": false,
+  "measurement": {
+    "issued": 50540,
+    "completed_with_drain": 50540,
+    "completed_within_window": 50340,
+    "incomplete_at_window_end": 200,
+    "success_with_drain": 50458,
+    "success_within_window": 50258,
+    "unfinished_after_drain": 0,
+    "completion_rps": 1678.0,
+    "validated_success_rps": 1675.2666666666667,
+    "errors": {
+      "deadline_connect": 11,
+      "deadline_headers": 71
+    },
+    "error_examples": [
+      {
+        "kind": "deadline_connect",
+        "latency_ms": 15000.977351002803,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_connect",
+        "latency_ms": 15001.025445999403,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_connect",
+        "latency_ms": 15001.044302000082,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_connect",
+        "latency_ms": 15001.059132999217,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15012.803204001102,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15012.891621998278,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15012.930690001667,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15012.959601997864,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15012.987884001632,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15013.016442997468,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15013.001637998968,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15013.264756998979,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15013.374481000938,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15013.395832000242,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15013.407295999059,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15013.411358999292,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15021.832672002347,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15021.959486999549,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15021.992683999997,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15022.010349999618,
+        "detail": "15s request deadline"
+      }
+    ],
+    "new_connections": 645,
+    "connection_attempts": 656,
+    "reused_requests": 49884,
+    "reuse_rate": 0.9870201820340324,
+    "successful_reused_requests": 49884,
+    "successful_reuse_rate": 0.9886242023068691,
+    "response_connection_close": 495,
+    "workload_counts": {
+      "POST /api/post": 25270,
+      "GET /api/get": 25270
+    },
+    "latency_population": "requests started inside formal window; completion includes bounded drain",
+    "latency_quantization_us": 100,
+    "latency_ms": {
+      "p50": {
+        "lower_ms": 52.6,
+        "upper_ms": 52.7
+      },
+      "p95": {
+        "lower_ms": 107.7,
+        "upper_ms": 107.8
+      },
+      "p99": {
+        "lower_ms": 194.2,
+        "upper_ms": 194.3
+      }
+    },
+    "success_latency_ms": {
+      "p50": {
+        "lower_ms": 52.6,
+        "upper_ms": 52.7
+      },
+      "p95": {
+        "lower_ms": 106.9,
+        "upper_ms": 107.0
+      },
+      "p99": {
+        "lower_ms": 180.4,
+        "upper_ms": 180.5
+      }
+    },
+    "latency_max_ms": 15041.097
+  },
+  "warmup": {
+    "issued": 7887,
+    "completed_with_drain": 7887,
+    "completed_within_window": 7887,
+    "incomplete_at_window_end": 0,
+    "success_with_drain": 7808,
+    "success_within_window": 7808,
+    "unfinished_after_drain": 0,
+    "completion_rps": 1577.4,
+    "validated_success_rps": 1561.6,
+    "errors": {
+      "deadline_headers": 79
+    },
+    "error_examples": [
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.06826499934,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.200420000096,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.251189998875,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.288716998097,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.322354001168,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.353885000135,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.38454200016,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.41329699938,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.44576999839,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.476638001186,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.506888999138,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.536138999945,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.564855000033,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.595124999149,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.621629999427,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.648847999895,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.671247002669,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.693138998526,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.702776997554,
+        "detail": "15s request deadline"
+      },
+      {
+        "kind": "deadline_headers",
+        "latency_ms": 15056.724862999545,
+        "detail": "15s request deadline"
+      }
+    ],
+    "new_connections": 200,
+    "connection_attempts": 200,
+    "reused_requests": 7687,
+    "reuse_rate": 0.9746418156459997,
+    "successful_reused_requests": 7687,
+    "successful_reuse_rate": 0.9845030737704918,
+    "response_connection_close": 0,
+    "workload_counts": {
+      "GET /api/get": 3944,
+      "POST /api/post": 3943
+    },
+    "latency_population": "requests started inside formal window; completion includes bounded drain",
+    "latency_quantization_us": 100,
+    "latency_ms": {
+      "p50": {
+        "lower_ms": 54.1,
+        "upper_ms": 54.2
+      },
+      "p95": {
+        "lower_ms": 95.9,
+        "upper_ms": 96.0
+      },
+      "p99": {
+        "lower_ms": 15056.0,
+        "upper_ms": 15056.1
+      }
+    },
+    "success_latency_ms": {
+      "p50": {
+        "lower_ms": 54.0,
+        "upper_ms": 54.1
+      },
+      "p95": {
+        "lower_ms": 90.5,
+        "upper_ms": 90.6
+      },
+      "p99": {
+        "lower_ms": 302.3,
+        "upper_ms": 302.4
+      }
+    },
+    "latency_max_ms": 15064.356
+  },
+  "before": {
+    "server": {
+      "pid": 59774,
+      "cpu_seconds": 300.53,
+      "rss_kib": 6864,
+      "threads": 5,
+      "fds": 12
+    },
+    "backend1": {
+      "pid": 59772,
+      "cpu_seconds": 75.61,
+      "rss_kib": 24656,
+      "threads": 1,
+      "fds": 8
+    },
+    "backend2": {
+      "pid": 59773,
+      "cpu_seconds": 74.83,
+      "rss_kib": 24340,
+      "threads": 1,
+      "fds": 8
+    },
+    "generator": {
+      "pid": 59179,
+      "cpu_seconds": 349.9,
+      "rss_kib": 50364,
+      "threads": 1,
+      "fds": 13
+    }
+  },
+  "after": {
+    "server": {
+      "pid": 59774,
+      "cpu_seconds": 311.03,
+      "rss_kib": 6864,
+      "threads": 5,
+      "fds": 7
+    },
+    "backend1": {
+      "pid": 59772,
+      "cpu_seconds": 86.35,
+      "rss_kib": 24656,
+      "threads": 1,
+      "fds": 8
+    },
+    "backend2": {
+      "pid": 59773,
+      "cpu_seconds": 85.35,
+      "rss_kib": 24340,
+      "threads": 1,
+      "fds": 8
+    },
+    "generator": {
+      "pid": 59179,
+      "cpu_seconds": 361.89,
+      "rss_kib": 50624,
+      "threads": 1,
+      "fds": 13
+    }
+  },
+  "sampling": {
+    "period_seconds": 1,
+    "samples": 35,
+    "spent_ms": 2750.589781,
+    "generator_cpu_includes_sampler": true
+  }
+}

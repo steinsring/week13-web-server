@@ -1,0 +1,9 @@
+test_body_validation_rejects_same_length_corruption (__main__.HarnessTests.test_body_validation_rejects_same_length_corruption) ... ok
+test_duplicate_framing_rejected (__main__.HarnessTests.test_duplicate_framing_rejected) ... ok
+test_histogram_rank_cutoff_and_reuse (__main__.HarnessTests.test_histogram_rank_cutoff_and_reuse) ... ok
+test_metrics_and_workload_mix (__main__.HarnessTests.test_metrics_and_workload_mix) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.067s
+
+OK

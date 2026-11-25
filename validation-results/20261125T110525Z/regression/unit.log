@@ -1,0 +1,14 @@
+cc -std=c11 -Wall -Wextra -Wpedantic -O2 -pthread -o server proxy.c proxy_config.c http_body.c concurrency.c static_files.c server.c http_request.c http_response.c request_io.c
+cc -std=c11 -Wall -Wextra -Wpedantic -O2 -pthread -I. -o tests/test_concurrency_state tests/test_concurrency_state.c proxy.c proxy_config.c http_body.c static_files.c http_request.c http_response.c
+./tests/test_proxy
+PASS: proxy every-split chunk/header validation, timer preservation, origins/IPv6 and Location boundaries
+./tests/test_http_body
+PASS: body validation, exact binary boundary at every split, bounded copy and allocation failure
+./tests/test_http_request
+PASS: 97 parser checks
+./tests/test_http_response
+PASS: response formats, partial send, EINTR, send failure, deadline, file read failure and early EOF
+./tests/test_static_files
+PASS: 2400 static response/cleanup checks and MIME mapping
+./tests/test_concurrency_state
+PASS: queue/retry/deadline/lifetime and partial 100/EINTR/EAGAIN before final error

@@ -1,0 +1,28 @@
+test_sequential_get_post_and_empty (__main__.KeepAliveTests.test_sequential_get_post_and_empty) ... ok
+test_repeated_request_resources (__main__.KeepAliveTests.test_repeated_request_resources) ... FAIL
+test_repeated_request_resources (__main__.KeepAliveTests.test_repeated_request_resources) ... FAIL
+
+======================================================================
+FAIL: test_repeated_request_resources (__main__.KeepAliveTests.test_repeated_request_resources)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspaces/week13-web-server/tests/test_keep_alive.py", line 205, in test_repeated_request_resources
+    proc, port = self.start(maximum=500)
+                 ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/week13-web-server/tests/test_keep_alive.py", line 75, in start
+    self.assertTrue(proc.stdout.readline().startswith(b'Listening'))
+AssertionError: False is not true
+
+======================================================================
+FAIL: test_repeated_request_resources (__main__.KeepAliveTests.test_repeated_request_resources)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspaces/week13-web-server/tests/test_keep_alive.py", line 62, in tearDown
+    self.assertEqual(proc.returncode, 0, err.decode())
+AssertionError: 66 != 0 : FATAL: ThreadSanitizer: unexpected memory mapping 0x706b60072000-0x706b60500000
+
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.089s
+
+FAILED (failures=2)

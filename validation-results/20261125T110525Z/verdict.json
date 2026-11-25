@@ -1,0 +1,21 @@
+{
+  "formal_conditions_complete": true,
+  "normal_failures": [
+    "static-c100-r1",
+    "static-c100-r2",
+    "static-c100-r3",
+    "mixed-c100-r1",
+    "mixed-c100-r2",
+    "mixed-c100-r3"
+  ],
+  "overload_failures": [
+    "proxy-c200-r1",
+    "proxy-c200-r2",
+    "proxy-c200-r3",
+    "mixed-c200-r3"
+  ],
+  "recovery_failures": [],
+  "safety_failures": [],
+  "tsan": "INCOMPLETE_ENVIRONMENT",
+  "overall": "FAIL"
+}

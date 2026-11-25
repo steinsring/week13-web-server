@@ -1,0 +1,54 @@
+{
+  "utc": "2026-11-25T11:05:25.828493+00:00",
+  "kernel": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.36",
+  "python": "3.11.2 (main, Apr 28 2025, 14:11:48) [GCC 12.2.0]",
+  "cpu_count": 2,
+  "tool_paths": {
+    "wrk": null,
+    "ab": null,
+    "hey": null,
+    "gcc": "/usr/local/bin/gcc",
+    "python3": "/usr/bin/python3"
+  },
+  "resource_files": {
+    "/sys/fs/cgroup/cpu.max": "max 100000\n",
+    "/sys/fs/cgroup/memory.max": "max\n",
+    "/sys/fs/cgroup/cpuset.cpus.effective": "0-1\n",
+    "/proc/meminfo": "MemTotal:        4011116 kB\nMemFree:          467564 kB\nMemAvailable:    2576948 kB\nBuffers:          248132 kB\nCached:          1970492 kB\nSwapCached:            0 kB\nActive:           644260 kB\nInactive:        2465516 kB\nActive(anon):       3064 kB\nInactive(anon):   914896 kB\nActive(file):     641196 kB\nInactive(file):  1550620 kB\nUnevictable:           0 kB\nMlocked:               0 kB\nSwapTotal:       2097152 kB\nSwapFree:        2097152 kB\nDirty:                 4 kB\nWriteback:             0 kB\nAnonPages:        891224 kB\nMapped:           377300 kB\nShmem:             26828 kB\nKReclaimable:      87704 kB\nSlab:             129752 kB\nSReclaimable:      87704 kB\nSUnreclaim:        42048 kB\nKernelStack:        6128 kB\nPageTables:        20908 kB\nSecPageTables:         0 kB\nNFS_Unstable:          0 kB\nBounce:                0 kB\nWritebackTmp:          0 kB\nCommitLimit:     4102708 kB\nCommitted_AS:    3032760 kB\nVmallocTotal:   34359738367 kB\nVmallocUsed:       34496 kB\nVmallocChunk:          0 kB\nPercpu:              736 kB\nHardwareCorrupted:     0 kB\nAnonHugePages:         0 kB\nShmemHugePages:        0 kB\nShmemPmdMapped:        0 kB\nFileHugePages:     26624 kB\nFilePmdMapped:         0 kB\nUnaccepted:            0 kB\nBalloon:               0 kB\nHugePages_Total:       0\nHugePages_Free:        0\nHugePages_Rsvd:        0\nHugePages_Surp:        0\nHugepagesize:       2048 kB\nHugetlb:               0 kB\nDirectMap4k:       48128 kB\nDirectMap2M:     4145152 kB\nDirectMap1G:     8388608 kB\n",
+    "/proc/cpuinfo": "processor\t: 0\nvendor_id\t: GenuineIntel\ncpu family\t: 6\nmodel\t\t: 126\nmodel name\t: Intel(R) Core(TM) i5-1035G4 CPU @ 1.10GHz\nstepping\t: 5\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 1497.603\ncache size\t: 6144 KB\nphysical id\t: 0\nsiblings\t: 2\ncore id\t\t: 0\ncpu cores\t: 1\napicid\t\t: 0\ninitial apicid\t: 0\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 27\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves vnmi avx512vbmi umip avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid fsrm md_clear flush_l1d arch_capabilities\nvmx flags\t: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest ept_mode_based_exec tsc_scaling\nbugs\t\t: spectre_v1 spectre_v2 spec_store_bypass swapgs itlb_multihit srbds mmio_stale_data retbleed eibrs_pbrsb gds bhi spectre_v2_user its its_native_only\nbogomips\t: 2995.20\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 39 bits physical, 48 bits virtual\npower management:\n\nprocessor\t: 1\nvendor_id\t: GenuineIntel\ncpu family\t: 6\nmodel\t\t: 126\nmodel name\t: Intel(R) Core(TM) i5-1035G4 CPU @ 1.10GHz\nstepping\t: 5\nmicrocode\t: 0xffffffff\ncpu MHz\t\t: 1497.603\ncache size\t: 6144 KB\nphysical id\t: 0\nsiblings\t: 2\ncore id\t\t: 0\ncpu cores\t: 1\napicid\t\t: 1\ninitial apicid\t: 1\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 27\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves vnmi avx512vbmi umip avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid fsrm md_clear flush_l1d arch_capabilities\nvmx flags\t: vnmi invvpid ept_x_only ept_ad ept_1gb tsc_offset vtpr ept vpid unrestricted_guest ept_mode_based_exec tsc_scaling\nbugs\t\t: spectre_v1 spectre_v2 spec_store_bypass swapgs itlb_multihit srbds mmio_stale_data retbleed eibrs_pbrsb gds bhi spectre_v2_user its its_native_only\nbogomips\t: 2995.20\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 39 bits physical, 48 bits virtual\npower management:\n\n",
+    "/proc/sys/net/core/somaxconn": "4096\n",
+    "/proc/sys/net/ipv4/tcp_tw_reuse": "2\n",
+    "/proc/sys/net/ipv4/ip_local_port_range": "32768\t60999\n"
+  },
+  "git_head": {
+    "command": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "returncode": 0,
+    "output": "12117bb92eb28506cd008a80d13e21567e2ccb42\n"
+  },
+  "git_status": {
+    "command": [
+      "git",
+      "status",
+      "--short"
+    ],
+    "returncode": 0,
+    "output": " M .dockerignore\n M .gitignore\n M Dockerfile\n M LICENSE\n M Makefile\n M README.md\n M concurrency.c\n M concurrency.h\n M docs/reverse-proxy-design.md\n M docs/reverse-proxy-requirements.md\n M http_response.c\n M http_response.h\n M static_files.c\n M static_files.h\n M tests/slow_file.c\n M tests/test_concurrency.py\n M tests/test_concurrency_state.c\n M tests/test_static_files.py\n?? tests/test_syn_drop.py\n?? validation-results/\n?? validation/\n"
+  },
+  "compiler": {
+    "command": [
+      "gcc",
+      "--version"
+    ],
+    "returncode": 0,
+    "output": "gcc (GCC) 14.3.0\nCopyright (C) 2024 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
+  },
+  "generator": "Python asyncio standard library; response bytes verified; same two-CPU Docker host",
+  "cache": "warm OS file cache after explicit 5-second warmup; not cold cache",
+  "latency": "monotonic request start incl connect to fully verified response; 15s request deadline",
+  "percentiles": "per-run rank from bounded 100us ceil histogram; intervals, never averaged p99",
+  "sampling": "1-second /proc sampler in generator; sampled CPU totals include sampler overhead"
+}

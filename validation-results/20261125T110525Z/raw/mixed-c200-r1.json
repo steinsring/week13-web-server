@@ -1,0 +1,398 @@
+{
+  "id": "mixed-c200-r1",
+  "scenario": "mixed",
+  "concurrency": 200,
+  "duration_seconds": 30,
+  "warmup_seconds": 5,
+  "actual_total_with_drain": 36.06712728999992,
+  "cutoff_utc_ns": 1795606472206722035,
+  "histogram_format": "little/native-endian uint32 counts; zlib; 100us ceil buckets; last bin >=60s",
+  "direct_backend_connection_close": false,
+  "measurement": {
+    "issued": 17868,
+    "completed_with_drain": 17868,
+    "completed_within_window": 17668,
+    "incomplete_at_window_end": 200,
+    "success_with_drain": 12617,
+    "success_within_window": 12429,
+    "unfinished_after_drain": 0,
+    "completion_rps": 588.9333333333333,
+    "validated_success_rps": 414.3,
+    "errors": {
+      "http_503": 5251
+    },
+    "error_examples": [
+      {
+        "kind": "http_503",
+        "latency_ms": 79.4929960029549,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 79.5727140030067,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 70.9084010013612,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 70.86843800061615,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 70.80672099982621,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 65.57562900343328,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 65.17626099957852,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 59.92791499738814,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 59.105678999912925,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 113.65675900015049,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 56.17314200208057,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 62.298929999087704,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 66.739346999384,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 66.77723399843671,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 102.2775899982662,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 68.79987299907953,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 102.48212499936926,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 80.93847100099083,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 78.6177950030833,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 78.3235880007851,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      }
+    ],
+    "new_connections": 5321,
+    "connection_attempts": 5321,
+    "reused_requests": 12547,
+    "reuse_rate": 0.7022050593239311,
+    "successful_reused_requests": 9461,
+    "successful_reuse_rate": 0.749861298248395,
+    "response_connection_close": 5251,
+    "workload_counts": {
+      "POST /api/post": 4467,
+      "GET /small.txt": 4467,
+      "GET /api/get": 4467,
+      "GET /large.bin": 4467
+    },
+    "latency_population": "requests started inside formal window; completion includes bounded drain",
+    "latency_quantization_us": 100,
+    "latency_ms": {
+      "p50": {
+        "lower_ms": 75.8,
+        "upper_ms": 75.9
+      },
+      "p95": {
+        "lower_ms": 1303.1,
+        "upper_ms": 1303.2
+      },
+      "p99": {
+        "lower_ms": 2372.0,
+        "upper_ms": 2372.1
+      }
+    },
+    "success_latency_ms": {
+      "p50": {
+        "lower_ms": 77.6,
+        "upper_ms": 77.7
+      },
+      "p95": {
+        "lower_ms": 1321.0,
+        "upper_ms": 1321.1
+      },
+      "p99": {
+        "lower_ms": 2300.6,
+        "upper_ms": 2300.7
+      }
+    },
+    "latency_max_ms": 14460.852
+  },
+  "warmup": {
+    "issued": 3091,
+    "completed_with_drain": 3091,
+    "completed_within_window": 3091,
+    "incomplete_at_window_end": 0,
+    "success_with_drain": 2179,
+    "success_within_window": 2179,
+    "unfinished_after_drain": 0,
+    "completion_rps": 618.2,
+    "validated_success_rps": 435.8,
+    "errors": {
+      "http_503": 864,
+      "deadline_headers": 48
+    },
+    "error_examples": [
+      {
+        "kind": "http_503",
+        "latency_ms": 17.192745999636827,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 232.0525989998714,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 20.743208999192575,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 23.75851800024975,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 23.78007899824297,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 23.677780998696107,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 38.05243699753191,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 298.72304699892993,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 42.28942300323979,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 42.330582000431605,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 317.9778499979875,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 317.9975130005914,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 47.966689002350904,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 48.19949599914253,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 327.63261099898955,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 327.60205600061454,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 47.73593800200615,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 47.70075399937923,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 47.66049699901487,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      },
+      {
+        "kind": "http_503",
+        "latency_ms": 47.63537299731979,
+        "detail": "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 19\r\nConnection: close\r\n\r\n"
+      }
+    ],
+    "new_connections": 1030,
+    "connection_attempts": 1030,
+    "reused_requests": 2061,
+    "reuse_rate": 0.6667745066321579,
+    "successful_reused_requests": 1601,
+    "successful_reuse_rate": 0.7347407067462138,
+    "response_connection_close": 864,
+    "workload_counts": {
+      "GET /small.txt": 773,
+      "GET /api/get": 773,
+      "GET /large.bin": 773,
+      "POST /api/post": 772
+    },
+    "latency_population": "requests started inside formal window; completion includes bounded drain",
+    "latency_quantization_us": 100,
+    "latency_ms": {
+      "p50": {
+        "lower_ms": 70.5,
+        "upper_ms": 70.6
+      },
+      "p95": {
+        "lower_ms": 1442.9,
+        "upper_ms": 1443.0
+      },
+      "p99": {
+        "lower_ms": 15024.5,
+        "upper_ms": 15024.6
+      }
+    },
+    "success_latency_ms": {
+      "p50": {
+        "lower_ms": 71.6,
+        "upper_ms": 71.7
+      },
+      "p95": {
+        "lower_ms": 1426.4,
+        "upper_ms": 1426.5
+      },
+      "p99": {
+        "lower_ms": 1559.0,
+        "upper_ms": 1559.1
+      }
+    },
+    "latency_max_ms": 15025.385
+  },
+  "before": {
+    "server": {
+      "pid": 59774,
+      "cpu_seconds": 500.37,
+      "rss_kib": 6864,
+      "threads": 5,
+      "fds": 7
+    },
+    "backend1": {
+      "pid": 59772,
+      "cpu_seconds": 116.27,
+      "rss_kib": 24656,
+      "threads": 1,
+      "fds": 8
+    },
+    "backend2": {
+      "pid": 59773,
+      "cpu_seconds": 115.45,
+      "rss_kib": 24340,
+      "threads": 1,
+      "fds": 8
+    },
+    "generator": {
+      "pid": 59179,
+      "cpu_seconds": 516.63,
+      "rss_kib": 52452,
+      "threads": 1,
+      "fds": 13
+    }
+  },
+  "after": {
+    "server": {
+      "pid": 59774,
+      "cpu_seconds": 519.09,
+      "rss_kib": 6864,
+      "threads": 5,
+      "fds": 7
+    },
+    "backend1": {
+      "pid": 59772,
+      "cpu_seconds": 120.14,
+      "rss_kib": 24656,
+      "threads": 1,
+      "fds": 8
+    },
+    "backend2": {
+      "pid": 59773,
+      "cpu_seconds": 119.24,
+      "rss_kib": 24340,
+      "threads": 1,
+      "fds": 8
+    },
+    "generator": {
+      "pid": 59179,
+      "cpu_seconds": 536.67,
+      "rss_kib": 52388,
+      "threads": 1,
+      "fds": 13
+    }
+  },
+  "sampling": {
+    "period_seconds": 1,
+    "samples": 32,
+    "spent_ms": 3526.09873,
+    "generator_cpu_includes_sampler": true
+  }
+}

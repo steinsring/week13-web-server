@@ -1,0 +1,187 @@
+{
+  "id": "static-c050-r1",
+  "scenario": "static",
+  "concurrency": 50,
+  "duration_seconds": 30,
+  "warmup_seconds": 5,
+  "actual_total_with_drain": 35.3515661019992,
+  "cutoff_utc_ns": 1795605152941665529,
+  "histogram_format": "little/native-endian uint32 counts; zlib; 100us ceil buckets; last bin >=60s",
+  "direct_backend_connection_close": false,
+  "measurement": {
+    "issued": 3925,
+    "completed_with_drain": 3925,
+    "completed_within_window": 3875,
+    "incomplete_at_window_end": 50,
+    "success_with_drain": 3925,
+    "success_within_window": 3875,
+    "unfinished_after_drain": 0,
+    "completion_rps": 129.16666666666666,
+    "validated_success_rps": 129.16666666666666,
+    "errors": {},
+    "error_examples": [],
+    "new_connections": 3,
+    "connection_attempts": 3,
+    "reused_requests": 3922,
+    "reuse_rate": 0.999235668789809,
+    "successful_reused_requests": 3922,
+    "successful_reuse_rate": 0.999235668789809,
+    "response_connection_close": 4,
+    "workload_counts": {
+      "GET /large.bin": 1963,
+      "GET /small.txt": 1962
+    },
+    "latency_population": "requests started inside formal window; completion includes bounded drain",
+    "latency_quantization_us": 100,
+    "latency_ms": {
+      "p50": {
+        "lower_ms": 309.0,
+        "upper_ms": 309.1
+      },
+      "p95": {
+        "lower_ms": 785.3,
+        "upper_ms": 785.4
+      },
+      "p99": {
+        "lower_ms": 961.2,
+        "upper_ms": 961.3
+      }
+    },
+    "success_latency_ms": {
+      "p50": {
+        "lower_ms": 309.0,
+        "upper_ms": 309.1
+      },
+      "p95": {
+        "lower_ms": 785.3,
+        "upper_ms": 785.4
+      },
+      "p99": {
+        "lower_ms": 961.2,
+        "upper_ms": 961.3
+      }
+    },
+    "latency_max_ms": 1061.759
+  },
+  "warmup": {
+    "issued": 467,
+    "completed_with_drain": 467,
+    "completed_within_window": 467,
+    "incomplete_at_window_end": 0,
+    "success_with_drain": 467,
+    "success_within_window": 467,
+    "unfinished_after_drain": 0,
+    "completion_rps": 93.4,
+    "validated_success_rps": 93.4,
+    "errors": {},
+    "error_examples": [],
+    "new_connections": 50,
+    "connection_attempts": 50,
+    "reused_requests": 417,
+    "reuse_rate": 0.892933618843683,
+    "successful_reused_requests": 417,
+    "successful_reuse_rate": 0.892933618843683,
+    "response_connection_close": 0,
+    "workload_counts": {
+      "GET /small.txt": 234,
+      "GET /large.bin": 233
+    },
+    "latency_population": "requests started inside formal window; completion includes bounded drain",
+    "latency_quantization_us": 100,
+    "latency_ms": {
+      "p50": {
+        "lower_ms": 99.4,
+        "upper_ms": 99.5
+      },
+      "p95": {
+        "lower_ms": 1243.7,
+        "upper_ms": 1243.8
+      },
+      "p99": {
+        "lower_ms": 1313.1,
+        "upper_ms": 1313.2
+      }
+    },
+    "success_latency_ms": {
+      "p50": {
+        "lower_ms": 99.4,
+        "upper_ms": 99.5
+      },
+      "p95": {
+        "lower_ms": 1243.7,
+        "upper_ms": 1243.8
+      },
+      "p99": {
+        "lower_ms": 1313.1,
+        "upper_ms": 1313.2
+      }
+    },
+    "latency_max_ms": 1374.225
+  },
+  "before": {
+    "server": {
+      "pid": 59774,
+      "cpu_seconds": 75.83,
+      "rss_kib": 2184,
+      "threads": 5,
+      "fds": 7
+    },
+    "backend1": {
+      "pid": 59772,
+      "cpu_seconds": 18.12,
+      "rss_kib": 24648,
+      "threads": 1,
+      "fds": 8
+    },
+    "backend2": {
+      "pid": 59773,
+      "cpu_seconds": 17.57,
+      "rss_kib": 24336,
+      "threads": 1,
+      "fds": 8
+    },
+    "generator": {
+      "pid": 59179,
+      "cpu_seconds": 92.86,
+      "rss_kib": 41840,
+      "threads": 1,
+      "fds": 13
+    }
+  },
+  "after": {
+    "server": {
+      "pid": 59774,
+      "cpu_seconds": 94.24,
+      "rss_kib": 3632,
+      "threads": 5,
+      "fds": 7
+    },
+    "backend1": {
+      "pid": 59772,
+      "cpu_seconds": 18.13,
+      "rss_kib": 24648,
+      "threads": 1,
+      "fds": 8
+    },
+    "backend2": {
+      "pid": 59773,
+      "cpu_seconds": 17.59,
+      "rss_kib": 24336,
+      "threads": 1,
+      "fds": 8
+    },
+    "generator": {
+      "pid": 59179,
+      "cpu_seconds": 106.44,
+      "rss_kib": 44460,
+      "threads": 1,
+      "fds": 13
+    }
+  },
+  "sampling": {
+    "period_seconds": 1,
+    "samples": 35,
+    "spent_ms": 471.859823,
+    "generator_cpu_includes_sampler": true
+  }
+}

@@ -1,0 +1,15 @@
+test_connection_limit_resume (__main__.ConcurrencyTests.test_connection_limit_resume) ... ok
+test_disconnect_and_fd_reuse (__main__.ConcurrencyTests.test_disconnect_and_fd_reuse) ... ok
+test_graceful_deadline_and_repeat_signal (__main__.ConcurrencyTests.test_graceful_deadline_and_repeat_signal) ... ok
+test_graceful_finish (__main__.ConcurrencyTests.test_graceful_finish) ... ok
+test_header_deadline_and_other_connection (__main__.ConcurrencyTests.test_header_deadline_and_other_connection) ... ok
+test_invalid_cli (__main__.ConcurrencyTests.test_invalid_cli) ... ok
+test_parallel_files_and_slow_receive (__main__.ConcurrencyTests.test_parallel_files_and_slow_receive) ... ok
+test_queue_deadline_excludes_running_time (__main__.ConcurrencyTests.test_queue_deadline_excludes_running_time) ... ok
+test_queue_full_503 (__main__.ConcurrencyTests.test_queue_full_503) ... ok
+test_slow_sender_timeout_does_not_block_others (__main__.ConcurrencyTests.test_slow_sender_timeout_does_not_block_others) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 50.580s
+
+OK

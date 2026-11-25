@@ -1,0 +1,50 @@
+{
+  "rule": [
+    "OUTPUT",
+    "-d",
+    "127.0.0.1",
+    "-p",
+    "tcp",
+    "--dport",
+    "40529",
+    "--syn",
+    "-j",
+    "DROP"
+  ],
+  "connect_timeout_seconds": 5,
+  "server_command": [
+    "/tmp/server-validation",
+    "34717",
+    "/tmp/tmpxu98aedq",
+    "2",
+    "64",
+    "100",
+    "1048576",
+    "30",
+    "10",
+    "100",
+    "http://localhost:34717",
+    "5",
+    "10",
+    "http://127.0.0.1:40529"
+  ],
+  "baseline": [
+    200,
+    "ok",
+    0.002065336000669049
+  ],
+  "drop_result": [
+    504,
+    "Gateway Timeout",
+    5.001038493999658
+  ],
+  "packet_counters": "Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)\n    pkts      bytes target     prot opt in     out     source               destination         \n       5      300 DROP       6    --  *      *       0.0.0.0/0            127.0.0.1            tcp dpt:40529 flags:0x17/0x02\n",
+  "recovery": [
+    200,
+    "ok",
+    0.002814587001921609
+  ],
+  "server_exit": 0,
+  "server_stderr": "",
+  "status": "PASS"
+}

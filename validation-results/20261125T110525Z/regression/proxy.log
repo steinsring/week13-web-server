@@ -1,0 +1,20 @@
+test_backend_error_status_is_not_gateway_error (__main__.ProxyTests.test_backend_error_status_is_not_gateway_error) ... ok
+test_backpressure_large_bounded_memory_and_other_connection (__main__.ProxyTests.test_backpressure_large_bounded_memory_and_other_connection) ... ok
+test_bad_response_headers (__main__.ProxyTests.test_bad_response_headers) ... ok
+test_chunked_eof_bodyless_and_keep_alive (__main__.ProxyTests.test_chunked_eof_bodyless_and_keep_alive) ... ok
+test_content_length_closes_upstream_without_eof (__main__.ProxyTests.test_content_length_closes_upstream_without_eof) ... ok
+test_disconnect_cleanup_and_shutdown_buffered_request (__main__.ProxyTests.test_disconnect_cleanup_and_shutdown_buffered_request) ... ok
+test_incomplete_and_bad_chunks_close_without_second_response (__main__.ProxyTests.test_incomplete_and_bad_chunks_close_without_second_response) ... ok
+test_interim_and_final_failure (__main__.ProxyTests.test_interim_and_final_failure) ... ok
+test_no_retry_and_round_robin_after_failure (__main__.ProxyTests.test_no_retry_and_round_robin_after_failure) ... ok
+test_redirect_rewriting (__main__.ProxyTests.test_redirect_rewriting) ... ok
+test_response_idle_and_progress (__main__.ProxyTests.test_response_idle_and_progress) ... ok
+test_round_robin_target_headers_and_new_connections (__main__.ProxyTests.test_round_robin_target_headers_and_new_connections) ... ok
+test_route_boundaries_and_binary_post (__main__.ProxyTests.test_route_boundaries_and_binary_post) ... ok
+test_startup_validation (__main__.ProxyTests.test_startup_validation) ... ok
+test_upstream_send_timeout_and_new_connection (__main__.ProxyTests.test_upstream_send_timeout_and_new_connection) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 18.050s
+
+OK

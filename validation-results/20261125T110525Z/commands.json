@@ -1,0 +1,48 @@
+{
+  "server": [
+    "/tmp/ljm-validation-20261125T110525Z",
+    "46639",
+    "/workspaces/week13-web-server/validation-results/20261125T110525Z/fixtures",
+    "4",
+    "64",
+    "100",
+    "1048576",
+    "30",
+    "10",
+    "100",
+    "http://localhost:46639",
+    "5",
+    "10",
+    "http://127.0.0.1:60725,http://127.0.0.1:45415"
+  ],
+  "roles": {
+    "server": 59774,
+    "backend1": 59772,
+    "backend2": 59773,
+    "generator": 59179
+  },
+  "fixtures": {
+    "small.txt": {
+      "length": 4096,
+      "sha256": "380f63b57c115bcbff67ddae263bf4ff087f207cd5fef3741d35cc88c661b824"
+    },
+    "large.bin": {
+      "length": 1048576,
+      "sha256": "fbbab289f7f94b25736c58be46a994c441fd02552cc6022352e3d86d2fab7c83"
+    },
+    "api-get.bin": {
+      "length": 1024,
+      "sha256": "f78b2ae15a7dbe054fb9639c8d6993c0c36753b921e0df8dfbda3de0a451fc9c"
+    },
+    "api-post.bin": {
+      "length": 1024,
+      "sha256": "3af6dbef8362452d2b45ad97deb9e43180fb90aac309860e26e123860cce62a7"
+    }
+  },
+  "runner": [
+    "/usr/bin/python3",
+    "validation/run.py",
+    "--full"
+  ],
+  "configuration_fixed_for_all_conditions": true
+}

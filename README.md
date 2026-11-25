@@ -180,3 +180,9 @@ python3 tests/test_proxy.py
 프록시 검증: 단위/sanitizer 및 실제 TCP 15개(일반·전체 서버 ASan/UBSan/누수)가 통과했다. 기존 오류 12개·정적 15개·동시 10개·keep-alive 13개·POST 13개도 통과했다. 접속 기한은 내부 시계 단위 검사이며 실제 패킷 드롭 실험·TSan·처리량 부하 측정은 미실행이다.
 
 최종 Docker 이미지를 다시 빌드하고 이미지의 start.sh 실행·정적 200·미기동 백엔드 502·SIGTERM 정상 종료를 확인했다. 이 Docker 스모크는 성공 중계 검사가 아니며, 성공 중계는 위 실제 TCP 백엔드 검사에서 확인했다.
+
+## 최종 품질 검증
+
+[하네스 재현 방법](validation/README.md) · [실측 보고서](validation-results/20261125T110525Z/REPORT.md) · [CSV](validation-results/20261125T110525Z/summary.csv)
+
+명세의45회30초 측정과10분 지속 부하를 모두 실행했다. 최종 판정은 FAIL이다. 정상 static/mixed 동시100의503, 일부 동시200의 발생기 deadline을 실패로 남겼다. 혼합 동시50·10분은132,314건·오류0, 기능·메모리 검사와 장애 후 회복은 통과했다. TSan은 일부 실행됐으나 환경 오류로 전체 경합 검증이 미완료다. 원본·설정·fixture/소스 해시와 측정 한계는 보고서에 함께 보관한다.
