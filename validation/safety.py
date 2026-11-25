@@ -4,6 +4,8 @@ import asyncio
 import json
 import os
 from pathlib import Path
+import platform
+import shutil
 import socket
 import subprocess
 import sys
@@ -47,7 +49,7 @@ async def main(output):
                 p=subprocess.Popen([sys.executable,'validation/backend.py',str(port),str(output/f'stress-backend{i+1}.jsonl')],cwd=ROOT,stdout=subprocess.PIPE,stderr=log)
                 processes.append(p);assert p.stdout.readline().startswith(b'Listening')
             port=free_port();error=(output/'stress-server.stderr.log').open('w');logs.append(error)
-            server=subprocess.Popen([asan,str(port),fixture,'4','64','100','1048576','30','10','100',f'http://localhost:{port}','5','10',','.join(f'http://127.0.0.1:{p}' for p in ports)],cwd=ROOT,stdout=subprocess.PIPE,stderr=error,env=env)
+            server=subprocess.Popen([asan,str(port),fixture,'4','128','100','1048576','30','10','100',f'http://localhost:{port}','5','10',','.join(f'http://127.0.0.1:{p}' for p in ports)],cwd=ROOT,stdout=subprocess.PIPE,stderr=error,env=env)
             processes.append(server);assert server.stdout.readline().startswith(b'Listening')
             roles={'server':server.pid,'backend1':processes[0].pid,'backend2':processes[1].pid,'generator':os.getpid()}
             for scenario in ['static','proxy','mixed']:
@@ -73,7 +75,11 @@ async def main(output):
                             'recovery_errors':recovery_metric['errors']})
     tsan='/tmp/validation-server-tsan'
     if not run('build-tsan',flags+['-fsanitize=thread',*SOURCES,'-o',tsan])['returncode']:
-        value=run('tsan-attempt',[sys.executable,'tests/test_keep_alive.py','KeepAliveTests.test_sequential_get_post_and_empty','KeepAliveTests.test_repeated_request_resources'],dict(os.environ,TEST_SERVER=tsan,TSAN_OPTIONS='halt_on_error=1'))
+        tsan_cmd=[sys.executable,'tests/test_keep_alive.py','KeepAliveTests.test_sequential_get_post_and_empty','KeepAliveTests.test_repeated_request_resources']
+        setarch=shutil.which('setarch')
+        if setarch and subprocess.run([setarch,platform.machine(),'-R','true'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0:
+            tsan_cmd=[setarch,platform.machine(),'-R',*tsan_cmd]
+        value=run('tsan-attempt',tsan_cmd,dict(os.environ,TEST_SERVER=tsan,TSAN_OPTIONS='halt_on_error=1'))
         evidence=(output/'tsan-attempt.log').read_text()
         value['classification']='INCOMPLETE_ENVIRONMENT' if 'unexpected memory mapping' in evidence else ('PASS' if value['returncode']==0 else 'FAIL')
     (output/'summary.json').write_text(json.dumps(results,indent=2))

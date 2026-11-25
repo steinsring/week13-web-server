@@ -113,7 +113,7 @@ async def main(smoke):
                 raise RuntimeError('Functional preflight failed; see regression/summary.json')
         backends = [start([sys.executable, 'validation/backend.py', str(port), str(result_dir/f'backend-{i+1}.jsonl')],
                           f'backend-{i+1}') for i, port in enumerate(backend_ports)]
-        argv = [str(binary), str(server_port), str(result_dir/'fixtures'), '4', '64', '100', '1048576', '30',
+        argv = [str(binary), str(server_port), str(result_dir/'fixtures'), '4', '128', '100', '1048576', '30',
                 '10', '100', f'http://localhost:{server_port}', '5', '10',
                 ','.join(f'http://127.0.0.1:{port}' for port in backend_ports)]
         server = start(argv, 'server')

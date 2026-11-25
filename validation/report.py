@@ -111,8 +111,13 @@ def main(directory):
             f'- 서버 RSS 첫30초 중앙값 {statistics.median(first) if first else None}KiB, 마지막30초 중앙값 {statistics.median(last) if last else None}KiB.',
             f'- 전/후 자원: `{soak["before"]["server"]}` → `{soak["after"]["server"]}`.',
             '- RSS는 캐시·할당기 보유를 포함한다. RSS 증감만으로 누수 유무를 확정하지 않고 별도 LSAN 결과와 구분한다.']
+    commands=json.loads((directory/'commands.json').read_text()) if (directory/'commands.json').exists() else {}
+    server_argv=commands.get('server',[])
+    workers_arg=server_argv[3] if len(server_argv)>5 else '4'
+    queue_arg=server_argv[4] if len(server_argv)>5 else '128'
+    conn_arg=server_argv[5] if len(server_argv)>5 else '100'
     lines += ['', '## 503 원인 판정의 근거', '',
-        '관측은 503 상태·발생 수·저장된 응답/지연 샘플이다. 큐64·워커4·연결100이 고정됐고 소스 스냅샷의 503 경로는 첫 작업 큐 포화 또는 작업 대기10초 초과다. 아래 오류 분포가10초보다 짧으면 큐 포화와 일치하지만, 별도 내부 카운터를 주입한 확정 경로 추적은 아니다.']
+        f'관측은 503 상태·발생 수·저장된 응답/지연 샘플이다. 큐{queue_arg}·워커{workers_arg}·연결{conn_arg}이 고정됐고 소스 스냅샷의 503 경로는 첫 작업 큐 포화 또는 작업 대기10초 초과다. 아래 오류 분포가10초보다 짧으면 큐 포화와 일치하지만, 별도 내부 카운터를 주입한 확정 경로 추적은 아니다.']
     for run in runs:
         if set(run['measurement']['errors'])=={'http_503'}:
             all_hist=array.array('I');all_hist.frombytes(zlib.decompress((directory/'raw'/(run['id']+'.all.hist.z')).read_bytes()))

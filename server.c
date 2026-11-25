@@ -58,8 +58,8 @@ static int create_listener(int port)
         close(server);
         return -1;
     }
-    /* 16은 기존 연결 대기열 크기다. 동시 처리 수가 아니다. */
-    if (listen(server, 16) < 0) {
+    /* 동시 접속 폭주 시 커널 대기열에서 SYN/연결이 밀리지 않게 SOMAXCONN을 사용한다. */
+    if (listen(server, SOMAXCONN) < 0) {
         perror("listen");
         close(server);
         return -1;
