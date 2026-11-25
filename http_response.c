@@ -37,7 +37,9 @@ int http_send_status(int client, int status)
     case 413: reason = "Content Too Large"; break;
     case 417: reason = "Expectation Failed"; break;
     case 501: reason = "Not Implemented"; break;
+    case 502: reason = "Bad Gateway"; break;
     case 503: reason = "Service Unavailable"; break;
+    case 504: reason = "Gateway Timeout"; break;
     case 505: reason = "HTTP Version Not Supported"; break;
     default: errno = EINVAL; return -1;
     }
@@ -139,7 +141,9 @@ const char *http_status_reason(int status)
     case 431: return "Request Header Fields Too Large";
     case 500: return "Internal Server Error";
     case 501: return "Not Implemented";
+    case 502: return "Bad Gateway";
     case 503: return "Service Unavailable";
+    case 504: return "Gateway Timeout";
     case 505: return "HTTP Version Not Supported";
     default: return NULL;
     }

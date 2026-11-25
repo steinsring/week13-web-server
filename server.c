@@ -17,7 +17,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-/* 아홉 인자를 모두 요구한다. 예시 수치는 기본값이 아니다. */
+/* 열세 인자를 모두 요구한다. 예시 수치는 기본값이 아니다. */
 static int read_number(const char* text, size_t maximum, size_t* out)
 {
     if (!*text)
@@ -77,12 +77,14 @@ typedef struct {
     size_t body_timeout;
     size_t idle_timeout;
     size_t max_requests;
+    size_t proxy_connect, proxy_idle;
+    const char *public_url, *backends;
 } ServerConfig;
 
 static int read_config(int argc, char** argv, ServerConfig* config)
 {
     /* 초를 밀리초로 바꾼 뒤 현재 시각에 더할 여유까지 남겨 둔다. */
-    if (argc != 10
+    if (argc != 14
         || read_number(argv[1], 65535, &config->port)
         || read_number(argv[3], SIZE_MAX / sizeof(pthread_t), &config->workers)
         || read_number(argv[4], SIZE_MAX, &config->queue_limit)
@@ -90,18 +92,25 @@ static int read_config(int argc, char** argv, ServerConfig* config)
         || read_number(argv[6], SIZE_MAX, &config->body_limit)
         || read_number(argv[7], INT64_MAX / 2000, &config->body_timeout)
         || read_number(argv[8], INT64_MAX / 2000, &config->idle_timeout)
-        || read_number(argv[9], UINT64_MAX, &config->max_requests)) {
-        fprintf(stderr, "Usage: %s port root workers queue_limit connection_limit body_limit body_timeout_seconds idle_timeout_seconds max_requests\n", argv[0]);
+        || read_number(argv[9], UINT64_MAX, &config->max_requests)
+        || read_number(argv[11], INT64_MAX / 2000, &config->proxy_connect)
+        || read_number(argv[12], INT64_MAX / 2000, &config->proxy_idle)) {
+        fprintf(stderr, "Usage: %s port root workers queue_limit connection_limit body_limit body_timeout_seconds idle_timeout_seconds max_requests public_url proxy_connect_seconds proxy_idle_seconds backends\n", argv[0]);
         return -1;
     }
     config->root = argv[2];
+    config->public_url = argv[10];
+    config->backends = argv[13];
     return 0;
 }
 
 static int check_fd_limit(const ServerConfig* config)
 {
     struct rlimit fds;
-    if (getrlimit(RLIMIT_NOFILE, &fds) < 0 || config->workers > (SIZE_MAX - config->connection_limit - 16) / 4 || config->connection_limit + config->workers * 4 + 16 > fds.rlim_cur) {
+    if (config->connection_limit > (SIZE_MAX - 16) / 2
+        || getrlimit(RLIMIT_NOFILE, &fds) < 0
+        || config->workers > (SIZE_MAX - config->connection_limit * 2 - 16) / 4
+        || config->connection_limit * 2 + config->workers * 4 + 16 > fds.rlim_cur) {
         fprintf(stderr, "Insufficient file descriptor limit\n");
         return -1;
     }
@@ -129,20 +138,28 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     if (signal(SIGPIPE, SIG_IGN) == SIG_ERR)
         return EXIT_FAILURE;
+    ProxyConfig proxy_config;
+    if (proxy_config_init(&proxy_config, config.public_url, config.backends, config.proxy_connect, config.proxy_idle)) {
+        fprintf(stderr, "Invalid proxy configuration or DNS resolution failed\n");
+        return EXIT_FAILURE;
+    }
     int root = static_root_open(config.root);
     if (root < 0) {
         perror("root");
+        proxy_config_destroy(&proxy_config);
         return EXIT_FAILURE;
     }
     int listener = create_nonblocking_listener((int)config.port);
     if (listener < 0) {
         close(root);
+        proxy_config_destroy(&proxy_config);
         return EXIT_FAILURE;
     }
     int result = concurrent_server_run(listener, root, config.workers,
         config.queue_limit, config.connection_limit, config.body_limit, config.body_timeout,
-        config.idle_timeout, config.max_requests);
+        config.idle_timeout, config.max_requests, &proxy_config);
     close(listener);
     close(root);
+    proxy_config_destroy(&proxy_config);
     return result < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
 }

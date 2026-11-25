@@ -10,3 +10,5 @@ __pycache__/
 /tests/test_concurrency_state_asan
 tests/test_http_body
 tests/test_http_body_asan
+/tests/test_proxy
+/tests/test_proxy_asan

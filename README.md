@@ -1,4 +1,4 @@
-# C 웹 서버 · 동시 정적 파일 서빙
+# C 웹 서버 · 리버스 프록시
 
 C와 POSIX 소켓으로 HTTP 요청을 받고, 지정한 파일 루트의 정적 파일을 응답한다.
 여러 연결을 동시에 처리하며 HTTP/1.1 연결을 재사용해 요청을 순서대로 처리한다.
@@ -9,6 +9,8 @@ C와 POSIX 소켓으로 HTTP 요청을 받고, 지정한 파일 루트의 정적
 | --- | --- |
 | `server.c` | `main()` → 필수 인자·자원 검사 → 리스닝 소켓 준비 → 이벤트 루프 |
 | `concurrency.c/.h` | epoll 연결 관리·시간 제한·송신, pthread 파일 작업 큐와 종료 |
+| `proxy.c` | upstream non-blocking 송수신, 응답 헤더 검증·프레이밍·유한 스트리밍 |
+| `proxy_config.c` | 시작 DNS 해석·origin 검증·내부 Location 변환 |
 | `http_body.c/.h` | CL·TE·Expect 검증, 본문 메모리 확보·길이 기반 복사·해제 |
 | `http_request.h` | 요청 구조체와 파서의 공개 함수 선언 |
 | `http_request.c` | 조각 누적 → 요청 줄 → 헤더 → Host 검사, 요청 메모리 정리 |
@@ -46,22 +48,22 @@ docker run --rm --name week13-web-server --mount "type=bind,source=$PWD/public,t
 호스트 커널·CPU 아키텍처와 실행 중 변경하는 파일까지 동일해지는 것은 아니다.
 
 VS Code에서는 Dev Containers 확장을 설치하고 `Dev Containers: Reopen in Container`를 선택한다.
-컨테이너 터미널에서 `./server 8080 ./public 4 64 100 1048576 30 10 100`으로 실행한다. 서버는 자동 실행하지 않는다.
+컨테이너 터미널에서 `./server 8080 ./public 4 64 100 1048576 30 10 100 http://localhost:8080 5 10 http://127.0.0.1:8001,http://127.0.0.1:8002`으로 실행한다. 서버는 자동 실행하지 않는다.
 
 ## Linux에서 직접 실행
 
 ```sh
 make
-./server 8080 ./public 4 64 100 1048576 30 10 100
+./server 8080 ./public 4 64 100 1048576 30 10 100 http://localhost:8080 5 10 http://127.0.0.1:8001,http://127.0.0.1:8002
 ```
 
-포트·정적 파일 루트·작업 스레드 수·대기 작업 수 상한·유지 연결 수 상한·본문 최대 바이트·본문 총수신 초·keep-alive idle 초·최대 요청 수는 모두 필수 인자다. 위 숫자는 실행 예시이며 서버 기본값이 아니다. Linux epoll을 사용하므로 macOS에서는 Docker Linux로 실행한다. public 폴더와 index.html은 실행 전에 직접 준비한다. 직접 실행 시 Ctrl+C로 종료한다.
+포트·정적 파일 루트·작업 스레드 수·대기 작업 수 상한·유지 연결 수 상한·본문 최대 바이트·본문 총수신 초·keep-alive idle 초·최대 요청 수·PUBLIC_URL·백엔드 접속 초·응답 무진행 초·백엔드 목록은 모두 필수 인자다. 위 숫자는 실행 예시이며 서버 기본값이 아니다. Linux epoll을 사용하므로 macOS에서는 Docker Linux로 실행한다. public 폴더와 index.html은 실행 전에 직접 준비한다. 직접 실행 시 Ctrl+C로 종료한다.
 
 ## 이번 단계의 범위
 
 - HTTP/1.1 요청 줄과 모든 헤더를 줄 단위로 파싱한다.
 - 경로와 쿼리는 첫 `?`로 분리하고 인코딩은 원문 그대로 저장한다.
-- GET은 정적 파일, POST는 본문 수신 완료 후 204로 응답한다. 그 밖의 메서드는 501이다.
+- `/api`와 `/api/*`는 GET·POST를 백엔드로 전달한다. 나머지 경로의 GET은 정적 파일, POST는 본문 완료 후 204로 응답한다. 그 밖의 메서드는 501이다.
 - 헤더의 순서·이름 대소문자를 보존한다. 이름 조회는 대소문자를 무시한다.
 - `Host`가 정확히 한 줄인지와 값 형식을 검사한다.
 - GET 성공은 정적 파일의 HTTP 200, 파일 접근 오류와 기존 오류는 400·403·404·431·500·408·501·503·505로 응답한다. 완전 수신한 403·404는 재사용하고 나머지 오류는 닫는다. 본문에는 상태명만 보낸다.
@@ -104,7 +106,7 @@ TSan은 런타임의 `unexpected memory mapping` 오류로 시작하지 못해 �
 동시 TCP 검사는 테스트 전용 파일 열기 지연 래퍼로 실행한다.
 
 ```sh
-cc -std=c11 -Wall -Wextra -Wpedantic -O1 -g -pthread -I. http_body.c concurrency.c static_files.c server.c http_request.c http_response.c request_io.c tests/slow_file.c -Wl,--wrap=openat -o /tmp/server-concurrency-test
+cc -std=c11 -Wall -Wextra -Wpedantic -O1 -g -pthread -I. proxy.c proxy_config.c http_body.c concurrency.c static_files.c server.c http_request.c http_response.c request_io.c tests/slow_file.c -Wl,--wrap=openat -o /tmp/server-concurrency-test
 TEST_SERVER=/tmp/server-concurrency-test python3 tests/test_concurrency.py
 ```
 실제 TCP 테스트의 기본 포트는 8080이다. 500 할당 실패 검사는 SERVER_ALLOC_FAIL_PORT 환경 변수로 테스트용 서버 포트를 지정해야 실행되며, 지정하지 않으면 해당 검사만 건너뛴다.
@@ -127,7 +129,7 @@ TEST_SERVER=/tmp/server-concurrency-test python3 tests/test_concurrency.py
 
 ## POST 본문 수신
 
-`sh ./start.sh`로도 실행할 수 있다. 스크립트의 PORT·ROOT·WORKERS·QUEUE_LIMIT·CONNECTION_LIMIT·BODY_LIMIT·BODY_TIMEOUT·KEEP_ALIVE_TIMEOUT·KEEP_ALIVE_MAX_REQUESTS를 수정하면 아홉 인자로 전달한다. 공백이 있는 ROOT도 한 인자로 전달한다. Docker 이미지에서는 실행 권한을 설정하므로 `./start.sh`도 사용할 수 있다.
+`sh ./start.sh`로도 실행할 수 있다. 스크립트의 PORT·ROOT·WORKERS·QUEUE_LIMIT·CONNECTION_LIMIT·BODY_LIMIT·BODY_TIMEOUT·KEEP_ALIVE_TIMEOUT·KEEP_ALIVE_MAX_REQUESTS·PUBLIC_URL·PROXY_CONNECT_TIMEOUT·PROXY_RESPONSE_TIMEOUT·BACKENDS를 수정하면 열세 인자로 전달한다. 공백이 있는 ROOT도 한 인자로 전달한다. Docker 이미지에서는 실행 권한을 설정하므로 `./start.sh`도 사용할 수 있다.
 
 모든 POST 경로는 본문 완료 후 `204 No Content`로 응답한다. 응답 본문·Content-Length·Transfer-Encoding은 없다. 본문 선언 길이 뒤의 데이터는 다음 요청으로 보관하며 현재 응답 뒤에 처리한다.
 본문 총기한은 헤더 완료부터 시작하고 수신 조각이나 100 Continue로 늘어나지 않는다. 크기 초과는 413, 미달 EOF는 400, 기한 초과는 408, 본문 할당 실패는 500이다.
@@ -155,3 +157,26 @@ python3 tests/test_keep_alive.py
 [Keep-alive 요구사항](docs/keep-alive-requirements.md) · [설계](docs/keep-alive-design.md)
 
 이번 keep-alive 단계 검증: 단위 및 sanitizer 검사, 새 TCP 13개와 기존 오류 12개·정적 15개·동시 10개가 통과했다. 전체 서버 ASan·UBSan·누수 검사에서는 keep-alive 13개와 POST 13개가 통과했다. Docker 이미지의 start.sh와 curl 연결 재사용도 확인했다.
+
+## 리버스 프록시
+
+원문 `/api`와 `/api/` 경계만 전달하며 접두사·쿼리를 유지한다. 백엔드 목록은 쉼표로 구분한 HTTP origin 한 인자이며 요청마다 Round-Robin으로 하나를 선택한다. 새 upstream 연결을 사용하고 실패한 요청은 재시도하지 않는다. POST는 기존 제한 아래 본문을 모두 받은 후 보낸다.
+
+호스트 이름은 시작 시 DNS로 고정한다. 하나라도 잘못되면 시작하지 않으며 실제 백엔드가 꺼진 경우에는 요청 시 502다. Host는 선택한 백엔드로 바꾸고 연결별 헤더와 클라이언트 Forwarded 계열은 제거한다. Via를 생성한다. IPv6는 `http://[::1]:8001`처럼 적는다.
+
+접속·응답 무진행 초기 설정은 각각 5초·10초다. 응답 전체 총기한이 아니다. 느린 프런트에 출력이 밀리면 upstream 감시를 제거하고, 버퍼가 비면 남은 수신 시간을 보존해 재개한다. 프런트 송신 무진행 제한은 계속 적용한다.
+
+백엔드 CL·chunked·EOF 응답은 유한 버퍼로 중계한다. chunked·EOF는 프런트 chunked로 경계를 제공하고 trailer는 검사 후 전달하지 않는다. 101과 지원하지 않는 전송 코딩은 502다. 정상 백엔드 오류는 상태를 그대로 중계한다. 접속/검증 실패는 502, 기한 초과는 504며 최종 응답이 시작됐다면 새 오류를 붙이지 않고 닫는다.
+
+PUBLIC_URL은 경로가 없는 공개 origin이다. 등록된 HTTP 백엔드의 host·port와 정확히 일치하는 절대/네트워크 경로 Location만 공개 origin으로 바꾼다. 외부·상대 Location, HTML·쿠키는 일괄 치환하지 않는다. `/api` 밖으로 이동하면 기존 정적 경로로 처리된다.
+Docker의 `127.0.0.1`은 같은 컨테이너이므로 다른 컨테이너 백엔드는 접근 가능한 이름/주소를 BACKENDS에 설정한다. DNS 변경은 재시작이 필요하다.
+
+```sh
+python3 tests/test_proxy.py
+```
+
+[프록시 요구사항](docs/reverse-proxy-requirements.md) · [프록시 설계](docs/reverse-proxy-design.md)
+
+프록시 검증: 단위/sanitizer 및 실제 TCP 15개(일반·전체 서버 ASan/UBSan/누수)가 통과했다. 기존 오류 12개·정적 15개·동시 10개·keep-alive 13개·POST 13개도 통과했다. 접속 기한은 내부 시계 단위 검사이며 실제 패킷 드롭 실험·TSan·처리량 부하 측정은 미실행이다.
+
+최종 Docker 이미지를 다시 빌드하고 이미지의 start.sh 실행·정적 200·미기동 백엔드 502·SIGTERM 정상 종료를 확인했다. 이 Docker 스모크는 성공 중계 검사가 아니며, 성공 중계는 위 실제 TCP 백엔드 검사에서 확인했다.

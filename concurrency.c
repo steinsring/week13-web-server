@@ -24,11 +24,13 @@
 #define CHUNK_SIZE 8192
 #define LISTENER_KEY UINT64_MAX
 #define WAKE_KEY (UINT64_MAX - 1)
+#define UPSTREAM_KEY (UINT64_C(1) << 63)
 typedef struct Connection Connection;
 typedef struct Job Job;
 typedef enum { RECEIVING,
     KEEP_ALIVE_IDLE,
     BODY_RECEIVING,
+    PROXYING,
     WAITING,
     RETRYING,
     SENDING } Phase;
@@ -63,6 +65,8 @@ struct Connection {
     uint64_t completed_requests;
     char pending[4096]; /* 한 recv의 잔여 데이터만 유지한다. 응답 중에는 읽지 않는다. */
     size_t pending_length;
+    Proxy* proxy;
+    uint32_t upstream_generation;
     Job job; /* 연결당 하나: 완료 결과 슬롯도 미리 확보된다. */
     char header[HTTP_HEADER_LIMIT + 1024];
     size_t header_length, header_sent, chunk_sent;
@@ -83,6 +87,8 @@ typedef struct {
     size_t limit, objects;
     size_t body_limit, body_timeout;
     size_t idle_timeout, max_requests;
+    ProxyConfig* proxy_config;
+    uint32_t upstream_generation;
     Connection** slots;
     uint32_t* generations;
     Pool pool;
@@ -90,6 +96,8 @@ typedef struct {
 static volatile sig_atomic_t stop_requested;
 static volatile sig_atomic_t signal_wake = -1;
 static int mark_shutdown_response(Connection* connection);
+static void start_proxy(Loop* loop, Connection* connection);
+static void drive_proxy(Loop* loop, Connection* connection, uint32_t events);
 
 static int64_t now_ms(void)
 {
@@ -287,6 +295,7 @@ static int interest(Loop* loop, Connection* connection, uint32_t events)
 }
 static void release_connection(Loop* loop, Connection* connection)
 {
+    proxy_destroy(connection->proxy);
     if (connection->job.fd >= 0)
         close(connection->job.fd);
     http_request_destroy(&connection->request);
@@ -300,6 +309,8 @@ static void close_connection(Loop* loop, Connection* connection)
     if (connection->closed)
         return;
     connection->closed = 1;
+    proxy_destroy(connection->proxy);
+    connection->proxy = NULL;
     epoll_ctl(loop->epoll, EPOLL_CTL_DEL, connection->socket, NULL);
     close(connection->socket);
     JobState state = job_state(&loop->pool, &connection->job);
@@ -488,6 +499,10 @@ static int parse_status(HttpParseResult result)
 static void complete_post(Loop* loop, Connection* connection)
 {
     connection->request_complete = 1;
+    if (proxy_route(connection->request.path)) {
+        start_proxy(loop, connection);
+        return;
+    }
     int n = http_format_no_content_policy(connection->header, sizeof(connection->header), response_must_close(loop, connection));
     if (n < 0) {
         error_response(loop, connection, 500);
@@ -538,6 +553,10 @@ static void finish_request_headers(Loop* loop, Connection* connection, const cha
     if (!strcmp(connection->request.method, "GET")) {
         connection->request_complete = 1;
         save_pending(connection, data, length);
+        if (proxy_route(connection->request.path)) {
+            start_proxy(loop, connection);
+            return;
+        }
         retry_waiters(loop);
         schedule_read(loop, connection, 1);
         return;
@@ -680,6 +699,8 @@ static void send_body_continue(Loop* loop, Connection* connection)
 /* 요청 소유 자원만 정리한다. 소켓·세대·횟수·잔여 데이터는 연결이 소유한다. */
 static void reset_request(Connection* connection)
 {
+    proxy_destroy(connection->proxy);
+    connection->proxy = NULL;
     if (connection->job.fd >= 0)
         close(connection->job.fd);
     http_request_destroy(&connection->request);
@@ -714,6 +735,117 @@ static void finish_response(Loop* loop, Connection* connection)
     }
     if (buffered)
         receive_connection(loop, connection);
+}
+
+static void proxy_failure(Loop* loop, Connection* connection, int status)
+{
+    proxy_destroy(connection->proxy);
+    connection->proxy = NULL;
+    connection->close_after_response = 1;
+    error_response(loop, connection, status);
+}
+
+/* upstream별 새 세대를 써서 이전 요청의 늦은 epoll 이벤트를 무시한다. */
+static int watch_upstream(Loop* loop, Connection* connection)
+{
+    int fd = proxy_socket(connection->proxy);
+    if (fd < 0)
+        return 0;
+    uint32_t events = proxy_interest(connection->proxy);
+    /* 감시 0도 HUP/ERR를 반복 통지할 수 있다. 백프레셔 동안에는 등록 자체를 뺀다. */
+    if (!events) {
+        if (epoll_ctl(loop->epoll, EPOLL_CTL_DEL, fd, NULL) == 0 || errno == ENOENT)
+            return 0;
+        return -1;
+    }
+    struct epoll_event event = {
+        .events = events,
+        .data.u64 = UPSTREAM_KEY | ((uint64_t)connection->upstream_generation << 32) | connection->slot
+    };
+    if (epoll_ctl(loop->epoll, EPOLL_CTL_MOD, fd, &event) == 0)
+        return 0;
+    if (errno != ENOENT)
+        return -1;
+    return epoll_ctl(loop->epoll, EPOLL_CTL_ADD, fd, &event);
+}
+
+static void synchronize_proxy(Loop* loop, Connection* connection)
+{
+    Proxy* proxy = connection->proxy;
+    connection->close_after_response |= proxy_frontend_close(proxy);
+    if (proxy_finished(proxy)) {
+        finish_response(loop, connection);
+        return;
+    }
+    size_t length;
+    int final;
+    proxy_output(proxy, &length, &final);
+    if (length && !connection->deadline)
+        connection->deadline = now_ms() + 10000;
+    if (!length)
+        connection->deadline = 0;
+    if (watch_upstream(loop, connection) < 0
+        || interest(loop, connection, length || connection->interim_pending ? EPOLLOUT : 0) < 0)
+        close_connection(loop, connection);
+}
+
+static void drive_proxy(Loop* loop, Connection* connection, uint32_t events)
+{
+    int status = proxy_step(connection->proxy, events, now_ms());
+    if (status) {
+        proxy_failure(loop, connection, status);
+        return;
+    }
+    synchronize_proxy(loop, connection);
+}
+
+static void start_proxy(Loop* loop, Connection* connection)
+{
+    int status;
+    connection->proxy = proxy_start(loop->proxy_config, &connection->request, &connection->body,
+        response_must_close(loop, connection), now_ms(), &status);
+    if (!connection->proxy) {
+        connection->close_after_response = 1;
+        error_response(loop, connection, status);
+        return;
+    }
+    connection->upstream_generation = (++loop->upstream_generation) & UINT32_C(0x7fffffff);
+    connection->phase = PROXYING;
+    connection->deadline = 0;
+    drive_proxy(loop, connection, 0);
+}
+
+/* 로컬 100·백엔드 임시 응답·최종 응답의 바이트 진행량을 분리한다. */
+static void send_proxy(Loop* loop, Connection* connection)
+{
+    if (stop_requested && proxy_mark_close(connection->proxy) < 0) {
+        close_connection(loop, connection);
+        return;
+    }
+    if (connection->interim_pending) {
+        if (send_continue(loop, connection) != 1)
+            return;
+        connection->deadline = now_ms() + 10000;
+    }
+    size_t length;
+    int final;
+    const char* data = proxy_output(connection->proxy, &length, &final);
+    if (!length) {
+        drive_proxy(loop, connection, 0);
+        return;
+    }
+    ssize_t n = send(connection->socket, data, length, 0);
+    if (n < 0 && (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK))
+        return;
+    if (n <= 0) {
+        close_connection(loop, connection);
+        return;
+    }
+    if (final)
+        connection->bytes_sent += (size_t)n;
+    connection->deadline = now_ms() + 10000;
+    proxy_consume_output(connection->proxy, (size_t)n, now_ms());
+    drive_proxy(loop, connection, 0);
 }
 
 static void send_connection(Loop* loop, Connection* connection)
@@ -778,7 +910,7 @@ static Connection* create_connection(Loop* loop, int socket)
         return NULL;
     connection->socket = socket;
     connection->slot = (uint32_t)slot;
-    connection->generation = ++loop->generations[slot];
+    connection->generation = (++loop->generations[slot]) & UINT32_C(0x7fffffff);
     connection->job.fd = -1;
     connection->job.connection = connection;
     connection->phase = RECEIVING;
@@ -835,6 +967,16 @@ static int next_timeout(Loop* loop)
             continue;
         if (connection->phase == WAITING && job_state(&loop->pool, &connection->job) != QUEUED)
             continue;
+        if (connection->phase == PROXYING) {
+            int64_t upstream = proxy_deadline(connection->proxy);
+            if (upstream < nearest)
+                nearest = upstream;
+            if (connection->deadline && !connection->interim_pending && connection->deadline < nearest)
+                nearest = connection->deadline;
+            if (connection->interim_pending && connection->interim_deadline < nearest)
+                nearest = connection->interim_deadline;
+            continue;
+        }
         int64_t deadline = connection->phase == BODY_RECEIVING ? connection->body_deadline : connection->deadline;
         if (connection->phase == SENDING && connection->interim_pending)
             deadline = connection->interim_deadline;
@@ -859,6 +1001,13 @@ static void expire_connections(Loop* loop)
         if (connection->phase == BODY_RECEIVING) {
             if (now >= connection->body_deadline)
                 error_response(loop, connection, 408);
+            continue;
+        }
+        if (connection->phase == PROXYING) {
+            if (connection->deadline && !connection->interim_pending && now >= connection->deadline)
+                close_connection(loop, connection);
+            else if (now >= proxy_deadline(connection->proxy))
+                drive_proxy(loop, connection, 0);
             continue;
         }
         if (connection->phase == SENDING && connection->interim_pending)
@@ -891,11 +1040,18 @@ static void dispatch_event(Loop* loop, const struct epoll_event* event)
             accept_connections(loop);
         return;
     }
-    uint32_t slot = (uint32_t)id, gen = (uint32_t)(id >> 32);
+    uint32_t slot = (uint32_t)id, gen = (uint32_t)(id >> 32) & UINT32_C(0x7fffffff);
     if (slot >= loop->limit)
         return;
     Connection* connection = loop->slots[slot];
-    if (!connection || connection->generation != gen || connection->closed)
+    if (!connection || connection->closed)
+        return;
+    if (id & UPSTREAM_KEY) {
+        if (connection->proxy && connection->upstream_generation == gen)
+            drive_proxy(loop, connection, event->events);
+        return;
+    }
+    if (connection->generation != gen)
         return;
     uint32_t e = event->events;
     if (stop_requested && connection->phase == KEEP_ALIVE_IDLE) {
@@ -912,6 +1068,8 @@ static void dispatch_event(Loop* loop, const struct epoll_event* event)
         send_body_continue(loop, connection);
     else if (connection->phase == SENDING && (e & EPOLLOUT))
         send_connection(loop, connection);
+    else if (connection->phase == PROXYING && (e & EPOLLOUT))
+        send_proxy(loop, connection);
     /* 대기 중 RDHUP는 상대의 write-half close일 수 있어 송신 가능성을 유지한다. */
 }
 
@@ -919,8 +1077,10 @@ static void force_shutdown(Loop* loop)
 {
     /* 실행 중인 파일 I/O를 강제로 취소하지 않고 프로세스 전체를 종료한다. */
     for (size_t i = 0; i < loop->limit; ++i)
-        if (loop->slots[i] && !loop->slots[i]->closed)
+        if (loop->slots[i] && !loop->slots[i]->closed) {
+            proxy_destroy(loop->slots[i]->proxy);
             close(loop->slots[i]->socket);
+        }
     _exit(EXIT_SUCCESS);
 }
 
@@ -928,6 +1088,8 @@ static void force_shutdown(Loop* loop)
 static int mark_shutdown_response(Connection* connection)
 {
     connection->close_after_response = 1;
+    if (connection->proxy)
+        return proxy_mark_close(connection->proxy);
     if (connection->header_sent || !connection->header_length
         || strstr(connection->header, "Connection: close\r\n"))
         return 0;
@@ -994,9 +1156,13 @@ static void run_event_loop(Loop* loop)
 
 static int allocate_loop_resources(Loop* loop, size_t limit)
 {
-    loop->limit = limit;
     loop->epoll = -1;
     loop->wake = -1;
+    /* 요청별 upstream 버퍼까지 포함한 크기 계산이 넘치지 않아야 한다. */
+    if (proxy_connection_size() > SIZE_MAX - sizeof(Connection)
+        || limit > SIZE_MAX / (sizeof(Connection) + proxy_connection_size()))
+        return -1;
+    loop->limit = limit;
     loop->slots = calloc(limit, sizeof(*loop->slots));
     loop->generations = calloc(limit, sizeof(*loop->generations));
     if (!loop->slots || !loop->generations)
@@ -1030,9 +1196,9 @@ static void stop_pool(Pool* pool)
 }
 
 int concurrent_server_run(int listener, int root, size_t workers, size_t queue_limit, size_t limit,
-    size_t body_limit, size_t body_timeout, size_t idle_timeout, size_t max_requests)
+    size_t body_limit, size_t body_timeout, size_t idle_timeout, size_t max_requests, ProxyConfig* proxy_config)
 {
-    Loop loop = { .listener = listener, .body_limit = body_limit, .body_timeout = body_timeout, .idle_timeout = idle_timeout, .max_requests = max_requests };
+    Loop loop = { .listener = listener, .body_limit = body_limit, .body_timeout = body_timeout, .idle_timeout = idle_timeout, .max_requests = max_requests, .proxy_config = proxy_config };
     int run_result = -1;
     sigset_t termination, previous_mask;
     sigemptyset(&termination);

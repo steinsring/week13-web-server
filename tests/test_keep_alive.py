@@ -69,7 +69,7 @@ class KeepAliveTests(unittest.TestCase):
             probe.bind(('127.0.0.1', 0))
             port = probe.getsockname()[1]
         proc = subprocess.Popen([BINARY, str(port), str(self.root), '2', '16', str(limit),
-                                 '1048576', '2', str(idle), str(maximum)],
+                                 '1048576', '2', str(idle), str(maximum), 'http://localhost:8080', '5', '10', 'http://127.0.0.1:9'],
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.servers.append(proc)
         self.assertTrue(proc.stdout.readline().startswith(b'Listening'))
@@ -236,7 +236,7 @@ class KeepAliveTests(unittest.TestCase):
     def test_invalid_keep_alive_cli(self):
         base = [BINARY, '8080', str(self.root), '1', '1', '1', '100', '2']
         for suffix in ([], ['1'], ['0', '1'], ['1', '0'], ['-1', '2'], ['1', 'x'], ['999999999999999999999', '1']):
-            self.assertNotEqual(subprocess.run(base + suffix, capture_output=True, timeout=3).returncode, 0)
+            self.assertNotEqual(subprocess.run(base + suffix + ['http://localhost:8080', '5', '10', 'http://127.0.0.1:9'], capture_output=True, timeout=3).returncode, 0)
 
 
 if __name__ == '__main__':
