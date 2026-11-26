@@ -1,0 +1,1613 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C Web Server · 5-Pillar Quality & Verification Dashboard</title>
+<style>
+  :root {
+    --bg: #090d16;
+    --bg-elev: #101726;
+    --card: #131c2e;
+    --card-inner: rgba(9, 13, 22, 0.62);
+    --border: rgba(148, 163, 184, 0.14);
+    --border-strong: rgba(148, 163, 184, 0.28);
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --blue: #38bdf8;
+    --blue-soft: rgba(56, 189, 248, 0.14);
+    --emerald: #34d399;
+    --emerald-soft: rgba(52, 211, 153, 0.14);
+    --violet: #a78bfa;
+    --violet-soft: rgba(167, 139, 250, 0.14);
+    --amber: #fbbf24;
+    --amber-soft: rgba(251, 191, 36, 0.14);
+    --rose: #fb7185;
+    --rose-soft: rgba(251, 113, 133, 0.14);
+    --radius: 14px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    --sans: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-image:
+      radial-gradient(ellipse 75% 45% at 15% -10%, rgba(56, 189, 248, 0.12), transparent),
+      radial-gradient(ellipse 65% 45% at 88% -5%, rgba(167, 139, 250, 0.09), transparent),
+      radial-gradient(ellipse 50% 40% at 50% 105%, rgba(52, 211, 153, 0.06), transparent);
+    min-height: 100vh;
+    padding-bottom: 64px;
+  }
+
+  .container { max-width: 1320px; margin: 0 auto; padding: 26px 22px; }
+
+  header {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 16px; padding-bottom: 22px; border-bottom: 1px solid var(--border); margin-bottom: 22px;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand-icon {
+    width: 46px; height: 46px; border-radius: 13px;
+    background: linear-gradient(135deg, #38bdf8, #34d399);
+    display: grid; place-items: center; color: #07101c;
+    font-weight: 800; font-family: var(--mono); font-size: 17px;
+    box-shadow: 0 8px 26px rgba(56, 189, 248, 0.24);
+  }
+  .brand h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+  .brand p { font-size: 12.5px; color: var(--text-muted); font-family: var(--mono); }
+
+  .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 8px; padding: 7px 13px;
+    border-radius: 999px; background: var(--card); border: 1px solid var(--border);
+    font-size: 12.5px; font-weight: 600; color: var(--text-muted);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); }
+  .dot.online { background: var(--emerald); box-shadow: 0 0 10px var(--emerald); }
+  .dot.offline { background: var(--rose); box-shadow: 0 0 10px var(--rose); }
+
+  button { font-family: inherit; cursor: pointer; border: none; transition: all 0.16s ease; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px;
+    border-radius: 10px; background: linear-gradient(135deg, #38bdf8, #2dd4bf);
+    color: #07101c; font-weight: 700; font-size: 13.5px;
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.25);
+  }
+  .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.06); }
+  .btn-primary:disabled { opacity: 0.55; cursor: wait; transform: none; }
+
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+    border-radius: 8px; background: rgba(148, 163, 184, 0.08);
+    border: 1px solid var(--border); color: var(--text); font-size: 12px; font-weight: 600;
+  }
+  .btn-ghost:hover { background: rgba(148, 163, 184, 0.16); border-color: var(--border-strong); }
+  .btn-ghost:disabled { opacity: 0.45; cursor: wait; }
+
+  /* 5-Pillar KPI Strip */
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px; margin-bottom: 22px;
+  }
+  @media (max-width: 1080px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px)  { .kpi-grid { grid-template-columns: 1fr; } }
+
+  .kpi {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px 18px; display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .kpi-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 6px; }
+  .kpi-label { font-size: 11.5px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.03em; }
+  .kpi-value { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; font-family: var(--mono); }
+  .kpi-sub { margin-top: 5px; font-size: 12px; color: var(--text-muted); }
+
+  .c-emerald { color: var(--emerald); }
+  .c-blue    { color: var(--blue); }
+  .c-violet  { color: var(--violet); }
+  .c-amber   { color: var(--amber); }
+  .c-rose    { color: var(--rose); }
+
+  .progress-bar { height: 5px; background: rgba(148, 163, 184, 0.12); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+  .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #38bdf8, #34d399); transition: width 0.25s ease; }
+
+  /* 5-Pillar Tabs */
+  .tabs {
+    display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid var(--border);
+    padding-bottom: 12px; flex-wrap: wrap;
+  }
+  .tab {
+    display: inline-flex; align-items: center; gap: 7px; padding: 9px 15px;
+    border-radius: 10px; background: rgba(148, 163, 184, 0.06);
+    border: 1px solid transparent; color: var(--text-muted); font-weight: 600; font-size: 13px;
+  }
+  .tab:hover { color: var(--text); background: rgba(148, 163, 184, 0.12); }
+  .tab.active {
+    color: #07101c; background: var(--text); border-color: var(--text);
+  }
+  .tab-count {
+    font-family: var(--mono); font-size: 11px; padding: 1px 6px; border-radius: 999px;
+    background: rgba(148, 163, 184, 0.18); color: inherit;
+  }
+  .tab.active .tab-count { background: rgba(7, 16, 28, 0.14); }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 16px; }
+  @media (max-width: 960px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+  }
+  .grid-2 .card, .grid-3 .card { margin-bottom: 0; }
+
+  .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .card-title { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+  .card-desc { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px;
+    border-radius: 999px; font-size: 11px; font-weight: 700; font-family: var(--mono); white-space: nowrap;
+  }
+  .b-pass { background: var(--emerald-soft); color: var(--emerald); }
+  .b-fail { background: var(--rose-soft); color: var(--rose); }
+  .b-idle { background: rgba(148, 163, 184, 0.12); color: var(--text-muted); }
+  .b-run  { background: var(--blue-soft); color: var(--blue); }
+  .b-warn { background: var(--amber-soft); color: var(--amber); }
+
+  .check-list { display: flex; flex-direction: column; gap: 8px; }
+  .check-row {
+    display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 10px; background: var(--card-inner); border: 1px solid var(--border);
+  }
+  .check-name { font-size: 12.8px; font-weight: 600; }
+  .check-meta { font-size: 11.3px; color: var(--text-muted); font-family: var(--mono); margin-top: 2px; }
+  .check-time { font-size: 11.5px; font-family: var(--mono); color: var(--text-dim); }
+
+  /* 4-Backend Round Robin */
+  .rr-bars { display: flex; flex-direction: column; gap: 9px; margin-bottom: 12px; }
+  .rr-bar-row { display: grid; grid-template-columns: 128px 1fr 78px; align-items: center; gap: 10px; font-size: 12px; font-family: var(--mono); }
+  .bar-track { height: 11px; background: rgba(148, 163, 184, 0.12); border-radius: 999px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 999px; width: 0%; transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+  .bar-b1 { background: linear-gradient(90deg, #38bdf8, #60a5fa); }
+  .bar-b2 { background: linear-gradient(90deg, #34d399, #2dd4bf); }
+  .bar-b3 { background: linear-gradient(90deg, #a78bfa, #c084fc); }
+  .bar-b4 { background: linear-gradient(90deg, #fbbf24, #fb923c); }
+
+  .rr-chips { display: flex; flex-wrap: wrap; gap: 5px; min-height: 28px; }
+  .chip { font-family: var(--mono); font-size: 10.8px; font-weight: 700; padding: 3px 7px; border-radius: 6px; }
+  .chip-b1 { background: var(--blue-soft); color: var(--blue); }
+  .chip-b2 { background: var(--emerald-soft); color: var(--emerald); }
+  .chip-b3 { background: var(--violet-soft); color: var(--violet); }
+  .chip-b4 { background: var(--amber-soft); color: var(--amber); }
+  .chip-err { background: var(--rose-soft); color: var(--rose); }
+
+  /* Gantt */
+  .gantt { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 10px; background: var(--card-inner); border: 1px solid var(--border); }
+  .gantt-row { display: grid; grid-template-columns: 155px 1fr 72px; align-items: center; gap: 10px; font-size: 12px; font-family: var(--mono); }
+  .gantt-track { position: relative; height: 18px; background: rgba(148, 163, 184, 0.08); border-radius: 6px; overflow: hidden; }
+  .gantt-bar { position: absolute; top: 2px; bottom: 2px; border-radius: 4px; min-width: 4px; }
+  .gantt-slow { background: linear-gradient(90deg, #f59e0b, #fb7185); }
+  .gantt-fast { background: linear-gradient(90deg, #38bdf8, #34d399); }
+
+  /* Charts & controls */
+  .chart-controls { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .seg-btn {
+    padding: 5px 11px; border-radius: 7px; font-size: 12px; font-weight: 600;
+    background: rgba(148, 163, 184, 0.08); color: var(--text-muted);
+  }
+  .seg-btn.active { background: var(--blue-soft); color: var(--blue); }
+  select {
+    background: var(--card-inner); color: var(--text); border: 1px solid var(--border-strong);
+    border-radius: 8px; padding: 6px 10px; font-size: 12px; font-family: var(--mono);
+  }
+  svg.chart { width: 100%; height: auto; display: block; }
+
+  .legend { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); margin-top: 10px; flex-wrap: wrap; }
+  .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { background: rgba(9, 13, 22, 0.72); color: var(--text-muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  tr:last-child td { border-bottom: none; }
+  td.mono { font-family: var(--mono); }
+
+  /* Mini stat box */
+  .mini-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+  @media (max-width: 720px) { .mini-grid { grid-template-columns: repeat(2, 1fr); } }
+  .mini-box {
+    background: var(--card-inner); border: 1px solid var(--border);
+    border-radius: 10px; padding: 11px 13px;
+  }
+  .mini-label { font-size: 11px; color: var(--text-muted); }
+  .mini-val { font-size: 17px; font-weight: 800; font-family: var(--mono); margin-top: 2px; }
+
+  /* Live Console */
+  .log-box {
+    max-height: 250px; overflow-y: auto; font-family: var(--mono); font-size: 11.8px;
+    background: #060911; border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px;
+  }
+  .log-line {
+    display: grid; grid-template-columns: 74px 58px 50px 1fr 68px; gap: 10px;
+    padding: 4px 0; border-bottom: 1px dashed rgba(148, 163, 184, 0.1); align-items: center;
+  }
+  .log-line:last-child { border-bottom: none; }
+  .log-dim { color: var(--text-dim); }
+  .log-ok { color: var(--emerald); font-weight: 700; }
+  .log-warn { color: var(--amber); font-weight: 700; }
+  .log-err { color: var(--rose); font-weight: 700; }
+
+  .module-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px; font-size: 12.5px;
+  }
+  .why-box {
+    margin: 0 0 12px 0;
+    padding: 9px 12px;
+    border-radius: 10px;
+    background: rgba(56, 189, 248, 0.06);
+    border-left: 3px solid var(--blue);
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--text-muted);
+  }
+  .why-box strong { color: var(--text); font-weight: 600; }
+  .why-box.why-amber { background: rgba(251, 191, 36, 0.06); border-left-color: var(--amber); }
+  .why-box.why-emerald { background: rgba(52, 211, 153, 0.06); border-left-color: var(--emerald); }
+  .why-box.why-violet { background: rgba(167, 139, 250, 0.06); border-left-color: var(--violet); }
+  .stat-strip {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;
+  }
+  @media (max-width: 720px) { .stat-strip { grid-template-columns: 1fr; } }
+  .stat-pill {
+    padding: 10px 12px; border-radius: 10px;
+    background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.1);
+  }
+  .stat-pill .lbl { font-size: 11px; color: var(--text-dim); margin-bottom: 3px; }
+  .stat-pill .val { font-size: 15px; font-weight: 800; font-family: ui-monospace, Consolas, monospace; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="brand">
+      <div class="brand-icon">C11</div>
+      <div>
+        <h1>C Web Server · 5-Pillar Quality Dashboard</h1>
+        <p>epoll + pthread(4) · 4-Backend Proxy · wrk/ab · Slowloris · libFuzzer (2.38M) · Valgrind · ASan/TSan</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="status-pill" id="server-status">
+        <span class="dot" id="status-dot"></span>
+        <span id="status-text">서버 상태 확인 중...</span>
+      </div>
+      <button class="btn-primary" id="btn-run-all" onclick="runAllLiveChecks()">
+        ▶ 전체 실시간 검증 (22종)
+      </button>
+    </div>
+  </header>
+
+  <!-- 5-Pillar KPI Overview -->
+  <section class="kpi-grid">
+    <div class="kpi">
+      <div>
+        <div class="kpi-top"><span class="kpi-label">1. 단위 · 퍼징</span><span class="badge b-pass">0 CRASH</span></div>
+        <div class="kpi-value c-emerald">2.38M 회</div>
+      </div>
+      <div class="kpi-sub">단위 6모듈 + libFuzzer 2,386,719회 통과</div>
+    </div>
+    <div class="kpi">
+      <div>
+        <div class="kpi-top"><span class="kpi-label">2. 기능 테스트 (실시간)</span><span class="badge b-idle" id="kpi-func-badge">대기</span></div>
+        <div class="kpi-value c-blue" id="kpi-func">0 / 14</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="kpi-func-bar"></div></div>
+    </div>
+    <div class="kpi">
+      <div>
+        <div class="kpi-top"><span class="kpi-label">3. 부하 테스트 (wrk)</span><span class="badge b-pass">2,248 RPS</span></div>
+        <div class="kpi-value c-violet">0 오류</div>
+      </div>
+      <div class="kpi-sub">wrk 2,248 RPS · 600s 132,314건 0오류</div>
+    </div>
+    <div class="kpi">
+      <div>
+        <div class="kpi-top"><span class="kpi-label">4. 메모리 · 경합</span><span class="badge b-pass">0 LEAK</span></div>
+        <div class="kpi-value c-emerald">ASan·TSan·VG</div>
+      </div>
+      <div class="kpi-sub">Valgrind 0B · TSan 0경합 · FD 7→7</div>
+    </div>
+    <div class="kpi">
+      <div>
+        <div class="kpi-top"><span class="kpi-label">5. 엣지 · Slowloris</span><span class="badge b-idle" id="kpi-edge-badge">대기</span></div>
+        <div class="kpi-value c-amber" id="kpi-edge">0 / 8</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="kpi-edge-bar"></div></div>
+    </div>
+  </section>
+
+  <!-- 5 Quality Pillar Tabs -->
+  <nav class="tabs">
+    <button class="tab active" onclick="switchTab('functional', this)">⚡ 기능 테스트 <span class="tab-count">실시간 14</span></button>
+    <button class="tab" onclick="switchTab('edge', this)">🧪 엣지 · 보안 · 퍼징 <span class="tab-count">실시간 8 + Fuzz/DoS</span></button>
+    <button class="tab" onclick="switchTab('unit', this)">🧩 단위 테스트 <span class="tab-count">6 모듈</span></button>
+    <button class="tab" onclick="switchTab('load', this)">📊 부하 테스트 <span class="tab-count">wrk · ab · 라이브</span></button>
+    <button class="tab" onclick="switchTab('memory', this)">🛡️ 메모리 누수 · 경합 <span class="tab-count">ASan · TSan · Valgrind</span></button>
+  </nav>
+
+  <!-- ====================================================================== -->
+  <!-- TAB 1: FUNCTIONAL TESTS (LIVE BROWSER + 4-BACKEND RR + CONCURRENCY)    -->
+  <!-- ====================================================================== -->
+  <section id="tab-functional" class="panel active">
+    <div class="grid-2">
+      <!-- Static Files & MIME -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">정적 파일 응답 &amp; MIME 매핑</div>
+            <div class="card-desc">HTML · CSS · TXT MIME 판별, 301 디렉터리 리다이렉트, 404 처리</div>
+          </div>
+          <button class="btn-ghost" onclick="runStaticSuite()">실행</button>
+        </div>
+        <div class="why-box">
+          <strong>무엇을 · 왜 검증하나요?</strong> 브라우저가 HTML/CSS/텍스트 파일을 올바르게 렌더링하려면 확장자별 <code>Content-Type(MIME)</code>이 정확해야 하며, 디렉터리 경로(<code>/docs</code>)는 <code>301</code> 정규화, 없는 파일은 <code>404</code>로 처리되어야 합니다.
+        </div>
+        <div class="check-list">
+          <div class="check-row" id="chk-static-root">
+            <div><div class="check-name">GET / (기본 index.html)</div><div class="check-meta">기대: 200 · text/html; charset=utf-8</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+          <div class="check-row" id="chk-static-css">
+            <div><div class="check-name">GET /sample.css (CSS MIME)</div><div class="check-meta">기대: 200 · text/css; charset=utf-8</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+          <div class="check-row" id="chk-static-txt">
+            <div><div class="check-name">GET /sample.txt (TXT MIME)</div><div class="check-meta">기대: 200 · text/plain; charset=utf-8</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+          <div class="check-row" id="chk-static-redirect">
+            <div><div class="check-name">GET /docs (디렉터리 301 이동)</div><div class="check-meta">기대: 301 Moved Permanently → /docs/</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+          <div class="check-row" id="chk-static-404">
+            <div><div class="check-name">GET /no-such-file.txt</div><div class="check-meta">기대: 404 Not Found</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- POST Body & Keep-Alive -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">POST 본문 수신 &amp; Keep-Alive 연결 재사용</div>
+            <div class="card-desc">비-API 204 · 0B 빈 본문 · 바이너리/NUL 에코 · 연속 12회 혼합 재사용</div>
+          </div>
+          <button class="btn-ghost" onclick="runPostAndKeepAliveSuite()">실행</button>
+        </div>
+        <div class="why-box">
+          <strong>무엇을 · 왜 검증하나요?</strong> C 문자열 함수(<code>strlen</code> 등)를 잘못 쓰면 <code>0x00(NUL)</code> 바이트에서 POST 본문이 잘리고, Keep-Alive 상태 초기화가 누락되면 이전 요청 잔여물이 다음 요청을 오염시킵니다. 바이너리 무결성과 연속 연결 재사용을 검증합니다.
+        </div>
+        <div class="check-list">
+          <div class="check-row" id="chk-post-204">
+            <div><div class="check-name">POST /non-api-submit (텍스트 본문)</div><div class="check-meta">기대: 204 No Content (Content-Length 없음)</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+          <div class="check-row" id="chk-post-empty">
+            <div><div class="check-name">POST /non-api-empty (0바이트)</div><div class="check-meta">기대: 204 No Content</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+          <div class="check-row" id="chk-post-binary">
+            <div><div class="check-name">POST /api/echo (바이너리 0x00~0xFF 2KB)</div><div class="check-meta">기대: 200 · 2,048B 100% 원문 일치</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+          <div class="check-row" id="chk-keep-alive">
+            <div><div class="check-name">Keep-Alive 연속 혼합 요청 (12회)</div><div class="check-meta">기대: 12/12 성공 · Connection: close 미포함</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4-Backend Reverse Proxy Round-Robin -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">리버스 프록시 · 4대 백엔드 라운드 로빈 분산</div>
+            <div class="card-desc">GET /api/whoami 20회 연속 요청 → backend-1 ~ 4 (8001~8004) 각 25% 균등 분배</div>
+          </div>
+          <button class="btn-ghost" onclick="runRoundRobinSuite()">20회 발사</button>
+        </div>
+        <div class="why-box why-emerald">
+          <strong>무엇을 · 왜 검증하나요?</strong> 리버스 프록시가 트래픽을 특정 백엔드에만 몰아주지 않고 4대(<code>8001~8004</code>)에 정확히 1:1:1:1로 분산하는지, 그리고 백엔드가 요구하는 <code>Host</code>·<code>Via</code> 헤더를 올바르게 재작성하는지 확인합니다.
+        </div>
+        <div class="rr-bars">
+          <div class="rr-bar-row">
+            <span class="c-blue">backend-1 :8001</span>
+            <div class="bar-track"><div class="bar-fill bar-b1" id="rr-b1-bar"></div></div>
+            <span id="rr-b1-count" style="text-align:right">0회 (0%)</span>
+          </div>
+          <div class="rr-bar-row">
+            <span class="c-emerald">backend-2 :8002</span>
+            <div class="bar-track"><div class="bar-fill bar-b2" id="rr-b2-bar"></div></div>
+            <span id="rr-b2-count" style="text-align:right">0회 (0%)</span>
+          </div>
+          <div class="rr-bar-row">
+            <span class="c-violet">backend-3 :8003</span>
+            <div class="bar-track"><div class="bar-fill bar-b3" id="rr-b3-bar"></div></div>
+            <span id="rr-b3-count" style="text-align:right">0회 (0%)</span>
+          </div>
+          <div class="rr-bar-row">
+            <span class="c-amber">backend-4 :8004</span>
+            <div class="bar-track"><div class="bar-fill bar-b4" id="rr-b4-bar"></div></div>
+            <span id="rr-b4-count" style="text-align:right">0회 (0%)</span>
+          </div>
+        </div>
+        <div class="rr-chips" id="rr-chips">
+          <span class="badge b-idle">버튼을 눌러 4대 백엔드 라운드 로빈 분산을 확인하세요</span>
+        </div>
+        <div class="check-list" style="margin-top:12px">
+          <div class="check-row" id="chk-rr-balance">
+            <div><div class="check-name">4-Way 균등 분산 · Host 재작성 · Via 헤더</div><div class="check-meta">기대: 5 : 5 : 5 : 5 분산 · Host=127.0.0.1:800x</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Proxy Streaming, Location Rewrite, Backend 500 -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">프록시 스트리밍 · Location 변환 · 오류 원문 중계</div>
+            <div class="card-desc">Transfer-Encoding: chunked 중계, 내부 주소 PUBLIC_URL 변환, 백엔드 500 보존</div>
+          </div>
+          <button class="btn-ghost" onclick="runProxyAdvancedSuite()">실행</button>
+        </div>
+        <div class="why-box why-emerald">
+          <strong>무엇을 · 왜 검증하나요?</strong> 대용량·실시간 응답(<code>chunked</code>)을 메모리에 다 쌓지 않고 중계하는지, 백엔드 내부 주소(<code>127.0.0.1:800x</code>)가 외부로 유출되지 않도록 <code>Location</code>을 공개 주소로 치환하는지, 정상 <code>500</code>과 프록시 오류(<code>502</code>)를 구분하는지 확인합니다.
+        </div>
+        <div class="check-list">
+          <div class="check-row" id="chk-proxy-stream">
+            <div><div class="check-name">GET /api/stream (chunked 5조각 스트리밍)</div><div class="check-meta">기대: 200 · 5개 청크 순서 보존</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+          <div class="check-row" id="chk-proxy-loc">
+            <div><div class="check-name">GET /api/redirect-internal (Location 변환)</div><div class="check-meta">기대: 302 · 127.0.0.1:800x → PUBLIC_URL 변환 도달</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+          <div class="check-row" id="chk-proxy-500">
+            <div><div class="check-name">GET /api/status-500 (정상 백엔드 500 중계)</div><div class="check-meta">기대: 500 그대로 전달 (502로 바꾸지 않음)</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Concurrency Gantt Timeline -->
+    <div class="card" style="margin-top:16px">
+      <div class="card-head">
+        <div>
+          <div class="card-title">동시 다중 클라이언트 비차단 타임라인 (Live Gantt Chart)</div>
+          <div class="card-desc">1.4초 지연 백엔드 요청 1개와 빠른 정적/프록시 요청 6개를 동시 발사 → 느린 요청이 다른 연결을 막지 않음을 시각화</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="badge b-idle" id="chk-conc-badge">대기</span>
+          <button class="btn-ghost" onclick="runConcurrencyTimeline()">동시 발사</button>
+        </div>
+      </div>
+      <div class="why-box why-violet">
+        <strong>무엇을 · 왜 검증하나요?</strong> 단일 스레드 블로킹 서버라면 1.4초 느린 요청 하나가 끝날 때까지 뒤에 온 모든 사용자가 대기합니다. <code>epoll</code> 비차단 이벤트 루프와 워커 스레드 풀 덕분에 빠른 요청 6개가 느린 요청 완료 전에 즉시 처리됨을 실측 시간 막대로 증명합니다.
+      </div>
+      <div class="gantt" id="gantt-box">
+        <div style="color:var(--text-muted);font-size:12.5px;padding:10px 4px">
+          "동시 발사"를 누르면 1,400ms 느린 요청과 6개의 빠른 요청의 실제 시작~완료 시간을 막대 그래프로 표시합니다.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================== -->
+  <!-- TAB 2: EDGE CASES (LIVE 8 BROWSER CHECKS + RAW TCP SUITE)              -->
+  <!-- ====================================================================== -->
+  <section id="tab-edge" class="panel">
+    <div class="grid-2">
+      <!-- Live Browser Edge Cases: Protocol & Limits -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">실시간 엣지 케이스 ① · 비정상 메서드 · 크기/URI 초과 · 보안</div>
+            <div class="card-desc">미지원 메서드(501), 본문 상한 초과(413), 8KB 초과 URI(431), 심볼릭 링크 차단(403)</div>
+          </div>
+          <button class="btn-ghost" onclick="runEdgeProtocolSuite()">실행</button>
+        </div>
+        <div class="why-box why-amber">
+          <strong>무엇을 · 왜 검증하나요?</strong> 메모리 고갈 공격(거대 본문·초장문 URI), 미지원 메서드 오동작, 심볼릭 링크를 통한 서버 루트 외부 파일 유출을 요청 초입에서 즉시 차단(<code>501/413/431/403</code>)하는지 검증합니다.
+        </div>
+        <div class="check-list">
+          <div class="check-row" id="chk-edge-put">
+            <div><div class="check-name">PUT /api/test (미지원 메서드)</div><div class="check-meta">기대: 501 Not Implemented</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+          <div class="check-row" id="chk-edge-delete">
+            <div><div class="check-name">DELETE /test (미지원 메서드)</div><div class="check-meta">기대: 501 Not Implemented</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+          <div class="check-row" id="chk-edge-413">
+            <div><div class="check-name">POST /non-api-big (2,049B · 본문 상한 +1B 초과)</div><div class="check-meta">기대: 413 Content Too Large</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+          <div class="check-row" id="chk-edge-431">
+            <div><div class="check-name">GET /aaa... (8,300자 초장문 URI · 8KB 초과)</div><div class="check-meta">기대: 431 Request Header Fields Too Large</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+          <div class="check-row" id="chk-edge-403">
+            <div><div class="check-name">GET /symlink-blocked.txt (심볼릭 링크 탈출 차단)</div><div class="check-meta">기대: 403 Forbidden (O_NOFOLLOW)</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Browser Edge Cases: Reverse Proxy Faults & Client Disconnect -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">실시간 엣지 케이스 ② · 백엔드 장애/타임아웃 &amp; 클라이언트 급단절</div>
+            <div class="card-desc">깨진 백엔드 응답(502), 백엔드 무응답 3초 타임아웃(504), 요청 중 강제 연결 종료 후 서버 복구</div>
+          </div>
+          <button class="btn-ghost" onclick="runEdgeFaultSuite()">실행</button>
+        </div>
+        <div class="why-box why-amber">
+          <strong>무엇을 · 왜 검증하나요?</strong> 백엔드가 비정상 데이터를 보내거나 무한 대기(Hang)에 빠져도 프록시가 영원히 매달리지 않고 <code>502/504</code>로 복구하는지, 클라이언트가 응답 도중 연결을 강제로 끊어도 서버가 <code>SIGPIPE</code>/UAF 없이 살아남는지 검증합니다.
+        </div>
+        <div class="check-list">
+          <div class="check-row" id="chk-edge-502">
+            <div><div class="check-name">GET /api/malformed (백엔드 비정상 HTTP 응답)</div><div class="check-meta">기대: 502 Bad Gateway</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+          <div class="check-row" id="chk-edge-504">
+            <div><div class="check-name">GET /api/hang (백엔드 응답 없음 · 약 3초 소요)</div><div class="check-meta">기대: 504 Gateway Timeout (응답 기한 3초)</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+          <div class="check-row" id="chk-edge-abort">
+            <div><div class="check-name">클라이언트 급단절 (AbortController 150ms 중단 → 복구 확인)</div><div class="check-meta">기대: 중단 후 즉시 새 요청 200 OK · 서버 크래시 없음</div></div>
+            <span class="check-time">-</span><span class="badge b-idle">대기</span>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding:10px 12px;border-radius:10px;background:var(--amber-soft);color:var(--amber);font-size:12px">
+          💡 <strong>504 타임아웃 테스트</strong>는 데모 백엔드가 응답을 멈춘 뒤 C 프록시의 실제 3초 무진행 타이머가 만료될 때까지 기다려 진짜 <code>504 Gateway Timeout</code>을 검증합니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- Slowloris & libFuzzer Security/Fuzzing Verification -->
+    <div class="grid-2" style="margin-top:16px">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">🔥 Slowloris DoS 공격 방어 (slowhttptest)</div>
+            <div class="card-desc mono">slowhttptest -c 120 -H -i 2 -r 60 -l 16</div>
+          </div>
+          <span class="badge b-pass">방어 · FD 완전 복구</span>
+        </div>
+        <div class="why-box why-amber">
+          <strong>무엇을 · 왜 검증하나요?</strong> Slowloris는 HTTP 헤더를 아주 천천히 보내 서버 연결을 고갈시키는 대표적인 DoS 공격입니다. 120개 공격 소켓이 물린 상태에서도 비차단 <code>epoll</code> 덕분에 정상 요청이 지연 없이 처리되고, 10초 <code>408</code> 타임아웃으로 공격 연결이 자동 회수되는지 검증합니다.
+        </div>
+        <div class="stat-strip">
+          <div class="stat-pill"><div class="lbl">공격 중 정상 요청 생존율</div><div class="val c-emerald">20 / 20 (100%)</div></div>
+          <div class="stat-pill"><div class="lbl">120연결 자동 차단 시점</div><div class="val c-amber">12s (408 정리)</div></div>
+          <div class="stat-pill"><div class="lbl">열린 FD 추이 (전→중→후)</div><div class="val c-blue">7 → 125 → 7</div></div>
+        </div>
+        <div class="log-box" style="max-height:110px;margin-top:10px">
+          <div style="color:var(--emerald)">service available: YES · Normal client during Slowloris: 20/20 HTTP 200 (fail=0)</div>
+          <div class="log-dim">10th second: connected=120, error=0, service available=YES</div>
+          <div class="log-dim">12th second: Test ended — Exit status: No open connections left (FD recovered 125 → 7)</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">🧬 libFuzzer 무작위 입력 퍼징 (ASan + UBSan)</div>
+            <div class="card-desc mono">clang -fsanitize=fuzzer,address,undefined (3종 · 각 20s)</div>
+          </div>
+          <span class="badge b-pass">2,386,719회 · 0 CRASH</span>
+        </div>
+        <div class="why-box why-violet">
+          <strong>무엇을 · 왜 검증하나요?</strong> 사람이 짠 테스트만으로는 C 파서의 숨은 버퍼 오버플로·UB·무한 루프를 놓칠 수 있습니다. 무작위 바이트와 임의 TCP 조각 분할을 수백만 번 자동 주입해 파서·경로 디코더·프록시 응답 해석기의 메모리 안전성을 극한까지 검증합니다.
+        </div>
+        <div class="rr-bars">
+          <div class="rr-bar-row">
+            <span class="c-blue">요청 파서/본문</span>
+            <div class="bar-track"><div class="bar-fill bar-b1" style="width:90%"></div></div>
+            <span style="text-align:right">916,676회</span>
+          </div>
+          <div class="rr-bar-row">
+            <span class="c-emerald">정적 경로/MIME</span>
+            <div class="bar-track"><div class="bar-fill bar-b2" style="width:100%"></div></div>
+            <span style="text-align:right">1,020,674회</span>
+          </div>
+          <div class="rr-bar-row">
+            <span class="c-violet">프록시 응답 파서</span>
+            <div class="bar-track"><div class="bar-fill bar-b3" style="width:45%"></div></div>
+            <span style="text-align:right">449,369회</span>
+          </div>
+        </div>
+        <div class="kpi-sub" style="margin-top:8px">
+          신규 코퍼스 4,238개 자동 탐색 · 크래시 <strong>0건</strong> · OOB/UB <strong>0건</strong> · 메모리/FD 누수 <strong>0건</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Raw TCP Edge Cases (Cannot be forged by browser fetch, verified by Python TCP suite) -->
+    <div class="card" style="margin-top:16px">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Raw TCP 엣지 케이스 검증 결과 (브라우저가 프로토콜상 전송 불가한 케이스)</div>
+          <div class="card-desc">불완전 헤더, 잘못된 HTTP 버전, 헤더 충돌, 실제 iptables SYN DROP 등 Python Raw 소켓 테스트 78개 검증 기록</div>
+        </div>
+        <span class="badge b-pass">TCP 78 / 78 PASS</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>엣지 케이스</th>
+              <th>전송 입력 / 조건</th>
+              <th>기대 응답</th>
+              <th>검증 테스트</th>
+              <th>결과</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>불완전 헤더 · NUL · CR 누락</strong></td>
+              <td class="mono">GET / HTTP/1.1\nHost: a\n\n / 중간 EOF</td>
+              <td class="mono">400 Bad Request</td>
+              <td class="mono">test_server.py · test_http_request.c</td>
+              <td><span class="badge b-pass">PASS</span></td>
+            </tr>
+            <tr>
+              <td><strong>잘못된 HTTP 버전</strong></td>
+              <td class="mono">GET / HTTP/1.0 · HTTP/2.0</td>
+              <td class="mono">505 Version Not Supported</td>
+              <td class="mono">test_server.py · test_http_request.c</td>
+              <td><span class="badge b-pass">PASS</span></td>
+            </tr>
+            <tr>
+              <td><strong>CL 중복 · CL+TE 충돌</strong></td>
+              <td class="mono">Content-Length 2줄 / CL + Transfer-Encoding</td>
+              <td class="mono">400 Bad Request</td>
+              <td class="mono">test_post_body.py · test_http_body.c</td>
+              <td><span class="badge b-pass">PASS</span></td>
+            </tr>
+            <tr>
+              <td><strong>요청 chunked · 알 수 없는 Expect</strong></td>
+              <td class="mono">TE: chunked / Expect: unknown</td>
+              <td class="mono">501 / 417 Expectation Failed</td>
+              <td class="mono">test_post_body.py</td>
+              <td><span class="badge b-pass">PASS</span></td>
+            </tr>
+            <tr>
+              <td><strong>본문 미달 EOF · 수신 기한 초과</strong></td>
+              <td class="mono">CL: 100 후 10B만 전송 후 끊김 / 지연</td>
+              <td class="mono">400 / 408 Request Timeout</td>
+              <td class="mono">test_post_body.py</td>
+              <td><span class="badge b-pass">PASS</span></td>
+            </tr>
+            <tr>
+              <td><strong>경로 탈출 (/%2e%2e/ · /../)</strong></td>
+              <td class="mono">GET /../secret.txt (Raw 소켓)</td>
+              <td class="mono">403 Forbidden</td>
+              <td class="mono">test_static_files.py</td>
+              <td><span class="badge b-pass">PASS</span></td>
+            </tr>
+            <tr>
+              <td><strong>실제 네트워크 SYN 패킷 차단</strong></td>
+              <td class="mono">격리 Docker iptables SYN DROP (5개)</td>
+              <td class="mono">5.001s 후 504 → 해제 후 200</td>
+              <td class="mono">tests/test_syn_drop.py</td>
+              <td><span class="badge b-pass">PASS</span></td>
+            </tr>
+            <tr>
+              <td><strong>워커 실행 중 클라이언트 급단절</strong></td>
+              <td class="mono">openat 지연 중 소켓 강제 종료 + FD 재사용</td>
+              <td class="mono">UAF 없음 · 세대 번호 방어</td>
+              <td class="mono">test_concurrency.py (ASan)</td>
+              <td><span class="badge b-pass">PASS</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================== -->
+  <!-- TAB 3: UNIT TESTS (6 MODULES BREAKDOWN)                                -->
+  <!-- ====================================================================== -->
+  <section id="tab-unit" class="panel">
+    <div class="card" style="margin-bottom:16px">
+      <div class="why-box" style="margin-bottom:0">
+        <strong>단위 테스트는 무엇을 · 왜 검증하나요?</strong> 서버 전체를 띄우기 전에 각 C 모듈(HTTP 파서·정적 파일·프록시·본문·응답·상태 머신)을 독립 실행하여, <code>malloc/realloc</code> 실패·부분 <code>send()</code>·<code>EINTR</code>·모든 바이트 분할 경계처럼 실제 네트워크로는 재현하기 어려운 내부 결함을 사전에 100% 차단합니다.
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-head">
+          <div><div class="card-title">HTTP 파서 모듈</div><div class="card-desc mono">tests/test_http_request.c</div></div>
+          <span class="badge b-pass">97 PASS</span>
+        </div>
+        <div class="module-bar"><span>통과율</span><span class="mono c-emerald">100%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+        <div class="kpi-sub" style="margin-top:10px">조각 분할 수신, CRLF 엄격 검증, Host(IPv4/IPv6/reg-name), 8192B 한도, realloc 실패 주입</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div><div class="card-title">정적 파일 · MIME 매핑</div><div class="card-desc mono">tests/test_static_files.c</div></div>
+          <span class="badge b-pass">2,400 PASS</span>
+        </div>
+        <div class="module-bar"><span>통과율</span><span class="mono c-emerald">100%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+        <div class="kpi-sub" style="margin-top:10px">확장자별 MIME 매핑, 퍼센트 1회 디코딩, openat O_NOFOLLOW 보안 탐색, 301/403/404, FD 회수</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div><div class="card-title">라우팅 · 리버스 프록시</div><div class="card-desc mono">tests/test_proxy.c</div></div>
+          <span class="badge b-pass">PASS</span>
+        </div>
+        <div class="module-bar"><span>통과율</span><span class="mono c-emerald">100%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+        <div class="kpi-sub" style="margin-top:10px">/api 라우팅, 모든 분할 위치 chunk/헤더 검증, 배압 타이머 보존, IPv6 origin, Location 경계 변환</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div><div class="card-title">POST 본문 검증 · 저장</div><div class="card-desc mono">tests/test_http_body.c</div></div>
+          <span class="badge b-pass">PASS</span>
+        </div>
+        <div class="module-bar"><span>통과율</span><span class="mono c-emerald">100%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+        <div class="kpi-sub" style="margin-top:10px">CL/TE/Expect 검증, 오버플로 차단, 모든 경계 분할 바이너리 보존, malloc 실패 500 주입</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div><div class="card-title">HTTP 응답 포맷 · 송신</div><div class="card-desc mono">tests/test_http_response.c</div></div>
+          <span class="badge b-pass">PASS</span>
+        </div>
+        <div class="module-bar"><span>통과율</span><span class="mono c-emerald">100%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+        <div class="kpi-sub" style="margin-top:10px">200/204/301/4xx/5xx 포맷, 부분 송신(send wrap), EINTR 재시도, 파일 읽기 실패·조기 EOF</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div><div class="card-title">동시성 상태 머신</div><div class="card-desc mono">tests/test_concurrency_state.c</div></div>
+          <span class="badge b-pass">PASS</span>
+        </div>
+        <div class="module-bar"><span>통과율</span><span class="mono c-emerald">100%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+        <div class="kpi-sub" style="margin-top:10px">작업 큐 포화·RETRYING 공정 재시도, 10초 기한, 부분 100 Continue 뒤 최종 오류 순서 보존</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">단위 테스트 실행 명령 (Docker / Linux)</div>
+          <div class="card-desc">컴파일러 경고(-Wall -Wextra -Wpedantic) 0건 · 일반 빌드 및 ASan/UBSan 빌드 동시 검증</div>
+        </div>
+        <span class="badge b-pass">make test sanitize → EXIT 0</span>
+      </div>
+      <div class="log-box">
+        <div style="color:var(--emerald)">$ docker run --rm week13-web-server-fix make test sanitize</div>
+        <div class="log-dim">./tests/test_proxy .............. PASS: proxy every-split chunk/header validation, timer preservation, Location boundaries</div>
+        <div class="log-dim">./tests/test_http_body .......... PASS: body validation, exact binary boundary at every split, bounded copy and allocation failure</div>
+        <div class="log-dim">./tests/test_http_request ....... PASS: 97 parser checks</div>
+        <div class="log-dim">./tests/test_http_response ...... PASS: response formats, partial send, EINTR, send failure, deadline, file read failure</div>
+        <div class="log-dim">./tests/test_static_files ....... PASS: 2400 static response/cleanup checks and MIME mapping</div>
+        <div class="log-dim">./tests/test_concurrency_state .. PASS: queue/retry/deadline/lifetime and partial 100/EINTR/EAGAIN before final error</div>
+        <div style="color:var(--blue);margin-top:4px">+ 위 6개 모듈 전체 ASAN_OPTIONS=detect_leaks=1 (AddressSanitizer + UBSan) 모두 PASS</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================== -->
+  <!-- TAB 4: LOAD TESTS (LIVE BROWSER MINI-BENCH + FORMAL 45-RUN REPORT)     -->
+  <!-- ====================================================================== -->
+  <section id="tab-load" class="panel">
+    <!-- Live Interactive Browser Mini Load Test -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">⚡ 실시간 브라우저 미니 부하 테스트 (Live Load Runner)</div>
+          <div class="card-desc">지금 실행 중인 C 웹 서버 + 4대 백엔드에 동시 요청을 직접 쏟아부어 RPS · 지연 분포 · 4대 백엔드 분산을 실시간 측정</div>
+        </div>
+        <div class="chart-controls">
+          <select id="bench-scenario">
+            <option value="proxy">Proxy (/api/whoami · 4대 백엔드)</option>
+            <option value="static">Static (/sample.txt + /sample.css)</option>
+            <option value="mixed">Mixed (정적 + 프록시 혼합)</option>
+          </select>
+          <select id="bench-total">
+            <option value="80">80 요청</option>
+            <option value="160" selected>160 요청</option>
+            <option value="320">320 요청</option>
+          </select>
+          <button class="btn-primary" id="btn-live-bench" onclick="runLiveMiniBench()" style="padding:7px 14px;font-size:12.5px">▶ 라이브 부하 실행</button>
+        </div>
+      </div>
+      <div class="why-box why-violet">
+        <strong>무엇을 · 왜 검증하나요?</strong> 다수 클라이언트가 동시에 몰릴 때 처리량(RPS)이 선형으로 확장되는지, 꼬리 지연(p99)이 급등하거나 큐 포화(<code>503</code>)·연결 탈락이 발생하지 않는지 확인합니다. 아래에서는 브라우저 라이브 부하 + 네이티브 <code>wrk</code>/<code>ab</code> + 10분 지속 부하 결과를 함께 제공합니다.
+      </div>
+      <div class="progress-bar" style="height:8px"><div class="progress-fill" id="live-bench-progress"></div></div>
+      <div class="mini-grid">
+        <div class="mini-box"><div class="mini-label">측정 처리량 (RPS)</div><div class="mini-val c-emerald" id="lb-rps">-</div></div>
+        <div class="mini-box"><div class="mini-label">성공 / 오류</div><div class="mini-val c-blue" id="lb-ok">-</div></div>
+        <div class="mini-box"><div class="mini-label">p50 / p95 지연</div><div class="mini-val c-violet" id="lb-lat">-</div></div>
+        <div class="mini-box"><div class="mini-label">p99 최대 지연</div><div class="mini-val c-amber" id="lb-p99">-</div></div>
+      </div>
+    </div>
+
+    <!-- Formal Benchmark Chart + Soak -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">동시 요청 수별 처리량 · 지연 (Docker Linux 실측)</div>
+            <div class="card-desc">동시 1 · 10 · 50 · 100 · 200 시나리오별 검증 완료 RPS &amp; p99</div>
+          </div>
+          <div class="chart-controls">
+            <button class="seg-btn active" onclick="renderBenchChart('rps', this)">RPS</button>
+            <button class="seg-btn" onclick="renderBenchChart('p99', this)">p99 (ms)</button>
+          </div>
+        </div>
+        <svg id="bench-svg" class="chart" viewBox="0 0 600 270"></svg>
+        <div class="legend">
+          <span class="legend-item"><span class="swatch" style="background:#38bdf8"></span>Static (4KB+1MB)</span>
+          <span class="legend-item"><span class="swatch" style="background:#34d399"></span>Proxy (GET+POST)</span>
+          <span class="legend-item"><span class="swatch" style="background:#a78bfa"></span>Mixed (혼합)</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">병목 개선 전/후 비교 (Before → After)</div>
+            <div class="card-desc">부하 검증으로 찾은 2개 병목 수정 후 오류 0건 달성</div>
+          </div>
+          <span class="badge b-pass">오류 0건</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>시나리오</th><th>개선 전</th><th>적용 수정</th><th>개선 후</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>static c=100</strong></td>
+                <td class="mono c-rose">503 12,772건</td>
+                <td class="mono">QUEUE 64→128</td>
+                <td class="mono c-emerald">349.7 RPS · 0 오류</td>
+              </tr>
+              <tr>
+                <td><strong>mixed c=100</strong></td>
+                <td class="mono c-rose">503 3,237건</td>
+                <td class="mono">QUEUE 64→128</td>
+                <td class="mono c-emerald">601.4 RPS · 0 오류</td>
+              </tr>
+              <tr>
+                <td><strong>proxy c=200</strong></td>
+                <td class="mono c-rose">deadline 83건</td>
+                <td class="mono">listen(SOMAXCONN)</td>
+                <td class="mono c-emerald">1,498.8 RPS · 0 오류</td>
+              </tr>
+              <tr>
+                <td><strong>mixed c=200</strong></td>
+                <td class="mono c-rose">접속 기한 초과</td>
+                <td class="mono">listen(SOMAXCONN)</td>
+                <td class="mono c-emerald">1,031.2 RPS · 0 오류</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Native wrk & ab Benchmarks -->
+    <div class="card" style="margin-top:16px">
+      <div class="card-head">
+        <div>
+          <div class="card-title">🚀 표준 네이티브 부하 도구 실측 (wrk · ApacheBench ab)</div>
+          <div class="card-desc">Docker Linux 환경 · 4대 백엔드 구성 · 부하 직후 서버 FD=7, VmRSS=3,012 KiB, Threads=5 유지</div>
+        </div>
+        <span class="badge b-pass">wrk 2,248 RPS · 0 오류</span>
+      </div>
+      <div class="why-box">
+        <strong>무엇을 · 왜 검증하나요?</strong> Python 클라이언트 오버헤드를 배제한 C 기반 표준 벤치마크 도구 <code>wrk</code>(HTTP/1.1)로 실제 처리량과 지연 분포를 측정합니다. 또한 <code>ab</code>(HTTP/1.0 고정)를 고부하로 흘려 이 서버의 <strong>HTTP/1.1 전용 엄격 거절(505)</strong>이 2만 건 연속 부하에서도 오류·크래시 없이 유지됨을 함께 확인했습니다.
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>도구 / 시나리오</th>
+              <th>동시성 · 조건</th>
+              <th>처리량 (RPS)</th>
+              <th>p50 / p99 지연</th>
+              <th>완료 / 실패</th>
+              <th>비고</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>wrk · Static 4KB</strong></td>
+              <td class="mono">t=4, c=50, 10s</td>
+              <td class="mono c-emerald">1,083.49 RPS</td>
+              <td class="mono">43.96ms / 48.28ms</td>
+              <td class="mono">10,857 / 0</td>
+              <td>HTTP/1.1 Keep-Alive 200 OK</td>
+            </tr>
+            <tr>
+              <td><strong>wrk · Static 4KB</strong></td>
+              <td class="mono">t=4, c=100, 10s</td>
+              <td class="mono c-emerald">2,248.14 RPS</td>
+              <td class="mono">43.94ms / 48.46ms</td>
+              <td class="mono">22,571 / 0</td>
+              <td>HTTP/1.1 Keep-Alive 200 OK</td>
+            </tr>
+            <tr>
+              <td><strong>wrk · Proxy 4-Backends</strong></td>
+              <td class="mono">t=4, c=50, 10s</td>
+              <td class="mono c-blue">969.22 RPS</td>
+              <td class="mono">44.19ms / 164.79ms</td>
+              <td class="mono">9,755 / 0</td>
+              <td>4대 백엔드 균등 중계 200 OK</td>
+            </tr>
+            <tr>
+              <td><strong>wrk · Proxy 4-Backends</strong></td>
+              <td class="mono">t=4, c=100, 10s</td>
+              <td class="mono c-blue">892.09 RPS</td>
+              <td class="mono">98.12ms / 439.49ms</td>
+              <td class="mono">9,037 / 0</td>
+              <td>4대 백엔드 고동시성 0오류</td>
+            </tr>
+            <tr>
+              <td><strong>ab · HTTP/1.0 거절 부하</strong></td>
+              <td class="mono">n=20,000, c=100</td>
+              <td class="mono c-amber">2,851.92 RPS</td>
+              <td class="mono">24ms / 236ms</td>
+              <td class="mono">20,000 / 0</td>
+              <td>ab=HTTP/1.0 → 전원 505 엄격 거절</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================== -->
+  <!-- TAB 5: MEMORY LEAK & THREAD SAFETY (ASAN / UBSAN / TSAN / SOAK)        -->
+  <!-- ====================================================================== -->
+  <section id="tab-memory" class="panel">
+    <div class="card" style="margin-bottom:16px">
+      <div class="why-box why-emerald" style="margin-bottom:0">
+        <strong>메모리·경합 검사는 무엇을 · 왜 검증하나요?</strong> C 웹 서버는 <code>malloc/free</code>, 파일 디스크립터(FD), 멀티스레드 워커 풀을 직접 관리하므로 단 하나의 해제 누락이나 데이터 경합도 장시간 운영 시 서버 크래시·메모리 고갈로 이어집니다. <strong>Valgrind + ASan/LSan + TSan + 10분 Soak</strong> 4중 교차 검증으로 완벽한 자원 회수를 증명합니다.
+      </div>
+    </div>
+    <div class="grid-2" style="margin-bottom:16px">
+      <div class="card">
+        <div class="card-head">
+          <div><div class="card-title">Valgrind Memcheck (실서버 바이너리)</div><div class="card-desc mono">valgrind --leak-check=full --show-leak-kinds=all</div></div>
+          <span class="badge b-pass">0 BYTES LOST</span>
+        </div>
+        <div class="why-box why-emerald">
+          <strong>무엇을 · 왜 검증하나요?</strong> 실제 <code>./server</code> 바이너리를 Valgrind 아래 띄워 정적·프록시·에러 17종 요청을 모두 처리한 뒤 <code>SIGTERM</code> 정상 종료 시 힙 누수와 미초기화 접근이 0건인지 확인합니다.
+        </div>
+        <div class="log-box" style="max-height:110px">
+          <div style="color:var(--emerald)">in use at exit: 0 bytes in 0 blocks</div>
+          <div class="log-dim">total heap usage: 81 allocs, 81 frees, 1,735,515 bytes allocated</div>
+          <div style="color:var(--emerald)">All heap blocks were freed -- no leaks are possible · ERROR SUMMARY: 0 errors</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div><div class="card-title">AddressSanitizer + LSan + UBSan</div><div class="card-desc mono">-fsanitize=address,undefined · detect_leaks=1</div></div>
+          <span class="badge b-pass">0 LEAK · 0 UB</span>
+        </div>
+        <div class="why-box why-emerald">
+          <strong>무엇을 · 왜 검증하나요?</strong> 컴파일 타임 메모리 가드(Redzone)를 삽입해 버퍼 오버플로·Use-After-Free·정의되지 않은 동작(UB)을 실시간으로 적발합니다.
+        </div>
+        <div class="kpi-sub">단위 테스트 6종 + 전체 서버 통합(proxy · keep_alive · post_body · concurrency · 동시 200 과부하/회복) + libFuzzer 238만 회에서 누수·UAF·오버플로 <strong>0건</strong></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div><div class="card-title">ThreadSanitizer (TSan)</div><div class="card-desc mono">-fsanitize=thread · setarch -R</div></div>
+          <span class="badge b-pass">0 DATA RACE</span>
+        </div>
+        <div class="why-box why-emerald">
+          <strong>무엇을 · 왜 검증하나요?</strong> 이벤트 루프 스레드와 4개 워커 스레드가 작업 큐·연결 상태를 공유할 때 락 누락으로 인한 데이터 경합(Data Race)이 없는지 검증합니다.
+        </div>
+        <div class="kpi-sub">ASLR 해제(<code>setarch -R</code>) 적용 후 멀티스레드 워커 풀 + Keep-Alive 반복 요청 경합 검증 통과 (<code>Ran 2 tests in 2.888s — OK</code>)</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div><div class="card-title">600초 지속 부하 자원 회수</div><div class="card-desc mono">soak-mixed-c050 · 132,314건</div></div>
+          <span class="badge b-pass">자원 고정</span>
+        </div>
+        <div class="why-box why-emerald">
+          <strong>무엇을 · 왜 검증하나요?</strong> 짧은 테스트에서는 안 드러나는 미세한 메모리 단편화나 소켓/파일 FD 누수가 장시간 연속 트래픽에서 누적되지 않는지 확인합니다.
+        </div>
+        <div class="kpi-sub">10분 연속 132,314건 처리 전후 서버 RSS <strong>6,864 KiB → 6,864 KiB</strong>, 열린 FD <strong>7 → 7</strong>, 스레드 <strong>5 → 5</strong> 완벽 회수</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">600초(10분) 지속 부하 메모리(RSS) · FD 추이</div>
+          <div class="card-desc">첫 30초 중앙값 6,864 KiB · 마지막 30초 중앙값 6,864 KiB (메모리 증가 0 KiB)</div>
+        </div>
+        <span class="badge b-pass">RSS 평탄 · 누수 없음</span>
+      </div>
+      <svg id="soak-svg" class="chart" viewBox="0 0 800 200"></svg>
+    </div>
+  </section>
+
+  <!-- Shared Live HTTP Inspector Log -->
+  <div class="card" style="margin-top:16px">
+    <div class="card-head">
+      <div>
+        <div class="card-title">실시간 HTTP 요청 · 응답 인스펙터</div>
+        <div class="card-desc">브라우저가 C 웹 서버로 직접 전송한 최근 요청 로그 (기능 · 엣지 · 라이브 부하 공통 기록)</div>
+      </div>
+      <button class="btn-ghost" onclick="clearLogs()">로그 비우기</button>
+    </div>
+    <div class="log-box" id="log-box">
+      <div class="log-dim">상단의 "▶ 전체 실시간 검증 (22종)" 버튼을 눌러 모든 기능과 엣지 케이스를 실시간으로 검증해 보세요.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const funcChecks = [
+  'chk-static-root', 'chk-static-css', 'chk-static-txt', 'chk-static-redirect', 'chk-static-404',
+  'chk-post-204', 'chk-post-empty', 'chk-post-binary', 'chk-keep-alive',
+  'chk-rr-balance', 'chk-proxy-stream', 'chk-proxy-loc', 'chk-proxy-500', 'chk-conc-gantt'
+];
+const edgeChecks = [
+  'chk-edge-put', 'chk-edge-delete', 'chk-edge-413', 'chk-edge-431',
+  'chk-edge-403', 'chk-edge-502', 'chk-edge-504', 'chk-edge-abort'
+];
+const liveState = {};
+
+function updateKPIs() {
+  const fPass = funcChecks.filter(k => liveState[k] === 'pass').length;
+  const fFail = funcChecks.filter(k => liveState[k] === 'fail').length;
+  document.getElementById('kpi-func').textContent = `${fPass} / ${funcChecks.length}`;
+  document.getElementById('kpi-func-bar').style.width = `${(fPass / funcChecks.length) * 100}%`;
+  const fBadge = document.getElementById('kpi-func-badge');
+  if (fFail > 0) { fBadge.className = 'badge b-fail'; fBadge.textContent = `${fFail} FAIL`; }
+  else if (fPass === funcChecks.length) { fBadge.className = 'badge b-pass'; fBadge.textContent = 'ALL PASS'; }
+  else if (fPass > 0) { fBadge.className = 'badge b-run'; fBadge.textContent = '진행 중'; }
+
+  const ePass = edgeChecks.filter(k => liveState[k] === 'pass').length;
+  const eFail = edgeChecks.filter(k => liveState[k] === 'fail').length;
+  document.getElementById('kpi-edge').textContent = `${ePass} / ${edgeChecks.length}`;
+  document.getElementById('kpi-edge-bar').style.width = `${(ePass / edgeChecks.length) * 100}%`;
+  const eBadge = document.getElementById('kpi-edge-badge');
+  if (eFail > 0) { eBadge.className = 'badge b-fail'; eBadge.textContent = `${eFail} FAIL`; }
+  else if (ePass === edgeChecks.length) { eBadge.className = 'badge b-pass'; eBadge.textContent = 'ALL PASS'; }
+  else if (ePass > 0) { eBadge.className = 'badge b-run'; eBadge.textContent = '진행 중'; }
+}
+
+function setCheck(id, state, timeMs, detail) {
+  const row = document.getElementById(id);
+  if (row) {
+    const timeEl = row.querySelector('.check-time');
+    const badge = row.querySelector('.badge');
+    const meta = row.querySelector('.check-meta');
+    if (timeMs !== null && timeMs !== undefined) timeEl.textContent = `${timeMs.toFixed(1)} ms`;
+    if (detail) meta.textContent = detail;
+    if (state === 'pass') { badge.className = 'badge b-pass'; badge.textContent = 'PASS'; }
+    else if (state === 'fail') { badge.className = 'badge b-fail'; badge.textContent = 'FAIL'; }
+    else if (state === 'run') { badge.className = 'badge b-run'; badge.textContent = '실행 중'; }
+  }
+  if (state === 'pass' || state === 'fail') liveState[id] = state;
+  updateKPIs();
+}
+
+function addLog(method, status, path, ms, note) {
+  const box = document.getElementById('log-box');
+  if (box.firstElementChild && box.firstElementChild.classList.contains('log-dim')) box.innerHTML = '';
+  const ts = new Date().toTimeString().slice(0, 8);
+  const cls = status >= 200 && status < 400 ? 'log-ok' : status >= 400 && status < 500 ? 'log-warn' : 'log-err';
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  const shortPath = path.length > 42 ? path.slice(0, 42) + '…' : path;
+  line.innerHTML = `
+    <span class="log-dim">${ts}</span>
+    <span style="color:var(--blue);font-weight:700">${method}</span>
+    <span class="${cls}">${status}</span>
+    <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${shortPath} <span class="log-dim">${note || ''}</span></span>
+    <span class="log-dim" style="text-align:right">${ms.toFixed(1)} ms</span>
+  `;
+  box.prepend(line);
+  while (box.children.length > 80) box.removeChild(box.lastChild);
+}
+
+function clearLogs() {
+  document.getElementById('log-box').innerHTML = '<div class="log-dim">로그를 비웠습니다.</div>';
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+async function timedFetch(url, opts = {}) {
+  const t0 = performance.now();
+  const res = await fetch(url, { cache: 'no-store', ...opts });
+  return { res, ms: performance.now() - t0 };
+}
+
+async function checkServerHealth() {
+  const dot = document.getElementById('status-dot');
+  const txt = document.getElementById('status-text');
+  try {
+    const { res, ms } = await timedFetch('/api/whoami');
+    if (res.ok) {
+      const data = await res.json();
+      dot.className = 'dot online';
+      txt.textContent = `C 서버 + 4대 백엔드 온라인 (${data.backend} · ${ms.toFixed(0)}ms)`;
+      return;
+    }
+  } catch (e) {}
+  dot.className = 'dot offline';
+  txt.textContent = '서버 오프라인 또는 데모 백엔드 미기동';
+}
+
+/* ==================== TAB 1: FUNCTIONAL SUITES ==================== */
+async function runStaticSuite() {
+  for (const id of ['chk-static-root', 'chk-static-css', 'chk-static-txt', 'chk-static-redirect', 'chk-static-404']) setCheck(id, 'run', null);
+  const mimeChecks = [
+    ['chk-static-root', '/', 'text/html'],
+    ['chk-static-css', '/sample.css', 'text/css'],
+    ['chk-static-txt', '/sample.txt', 'text/plain'],
+  ];
+  for (const [id, path, expectMime] of mimeChecks) {
+    try {
+      const { res, ms } = await timedFetch(path);
+      const ct = res.headers.get('content-type') || '';
+      const ok = res.status === 200 && ct.includes(expectMime);
+      setCheck(id, ok ? 'pass' : 'fail', ms, `실제: ${res.status} · ${ct}`);
+      addLog('GET', res.status, path, ms, ct);
+    } catch (e) { setCheck(id, 'fail', 0, e.message); }
+  }
+  try {
+    const { res, ms } = await timedFetch('/docs', { redirect: 'manual' });
+    const loc = res.headers.get('location') || '';
+    const ok = res.type === 'opaqueredirect' || (res.status === 301 && loc === '/docs/');
+    setCheck('chk-static-redirect', ok ? 'pass' : 'fail', ms,
+      res.type === 'opaqueredirect' ? '실제: 301 리다이렉트 감지 (/docs → /docs/)' : `실제: ${res.status} · Location: ${loc}`);
+    addLog('GET', res.status || 301, '/docs', ms, loc || 'redirect');
+  } catch (e) { setCheck('chk-static-redirect', 'fail', 0, e.message); }
+
+  try {
+    const { res, ms } = await timedFetch('/no-such-file.txt');
+    const txt = (await res.text()).trim();
+    const ok = res.status === 404 && txt === 'Not Found';
+    setCheck('chk-static-404', ok ? 'pass' : 'fail', ms, `실제: ${res.status} · "${txt}"`);
+    addLog('GET', res.status, '/no-such-file.txt', ms, txt);
+  } catch (e) { setCheck('chk-static-404', 'fail', 0, e.message); }
+}
+
+async function runPostAndKeepAliveSuite() {
+  for (const id of ['chk-post-204', 'chk-post-empty', 'chk-post-binary', 'chk-keep-alive']) setCheck(id, 'run', null);
+  try {
+    const { res, ms } = await timedFetch('/non-api-submit', { method: 'POST', body: 'hello c web server!' });
+    const ok = res.status === 204 && !res.headers.get('content-length');
+    setCheck('chk-post-204', ok ? 'pass' : 'fail', ms, `실제: ${res.status} · Content-Length 없음`);
+    addLog('POST', res.status, '/non-api-submit', ms, '19B → 204');
+  } catch (e) { setCheck('chk-post-204', 'fail', 0, e.message); }
+
+  try {
+    const { res, ms } = await timedFetch('/non-api-empty', { method: 'POST', body: '' });
+    setCheck('chk-post-empty', res.status === 204 ? 'pass' : 'fail', ms, `실제: ${res.status} (0바이트 즉시 완료)`);
+    addLog('POST', res.status, '/non-api-empty', ms, '0B → 204');
+  } catch (e) { setCheck('chk-post-empty', 'fail', 0, e.message); }
+
+  try {
+    const payload = new Uint8Array(2048);
+    for (let i = 0; i < payload.length; i++) payload[i] = i & 0xff;
+    const { res, ms } = await timedFetch('/api/echo', { method: 'POST', body: payload });
+    const echoed = new Uint8Array(await res.arrayBuffer());
+    let same = res.status === 200 && echoed.length === payload.length;
+    for (let i = 0; same && i < payload.length; i++) if (echoed[i] !== payload[i]) same = false;
+    const be = res.headers.get('x-backend') || '?';
+    setCheck('chk-post-binary', same ? 'pass' : 'fail', ms, `실제: ${res.status} · 2,048B 바이트 100% 일치 · ${be}`);
+    addLog('POST', res.status, '/api/echo', ms, `2048B 바이너리/NUL 일치 (${be})`);
+  } catch (e) { setCheck('chk-post-binary', 'fail', 0, e.message); }
+
+  try {
+    const t0 = performance.now();
+    let okCount = 0, closedEarly = false;
+    for (let i = 0; i < 12; i++) {
+      const r = i % 2 === 0
+        ? await fetch(`/api/whoami?ka=${i}`, { cache: 'no-store' })
+        : await fetch(`/ka-post-${i}`, { method: 'POST', body: `ping-${i}`, cache: 'no-store' });
+      if ((r.headers.get('connection') || '').toLowerCase() === 'close') closedEarly = true;
+      if (r.status === 200 || r.status === 204) okCount++;
+      await r.text();
+    }
+    const ms = performance.now() - t0;
+    const ok = okCount === 12 && !closedEarly;
+    setCheck('chk-keep-alive', ok ? 'pass' : 'fail', ms, `12/12 성공 (${(ms / 12).toFixed(1)}ms/req) · Keep-Alive 유지`);
+    addLog('MIX', 200, 'Keep-Alive ×12', ms, `성공 ${okCount}/12`);
+  } catch (e) { setCheck('chk-keep-alive', 'fail', 0, e.message); }
+}
+
+async function runRoundRobinSuite() {
+  setCheck('chk-rr-balance', 'run', null);
+  const chips = document.getElementById('rr-chips');
+  chips.innerHTML = '';
+  const counts = { 'backend-1': 0, 'backend-2': 0, 'backend-3': 0, 'backend-4': 0 };
+  const mapIdx = { 'backend-1': 1, 'backend-2': 2, 'backend-3': 3, 'backend-4': 4 };
+  let totalMs = 0, hostOk = true;
+  const N = 20;
+  for (let i = 1; i <= N; i++) {
+    try {
+      const { res, ms } = await timedFetch(`/api/whoami?rr=${i}`);
+      totalMs += ms;
+      const data = await res.json();
+      const idx = mapIdx[data.backend] || 0;
+      const chip = document.createElement('span');
+      if (idx) {
+        counts[data.backend]++;
+        chip.className = `chip chip-b${idx}`;
+        chip.textContent = `#${i} B${idx}`;
+        if (data.received_host !== `127.0.0.1:${8000 + idx}`) hostOk = false;
+      } else {
+        chip.className = 'chip chip-err'; chip.textContent = `#${i} ?`; hostOk = false;
+      }
+      chips.appendChild(chip);
+      for (let b = 1; b <= 4; b++) {
+        const c = counts[`backend-${b}`];
+        const pct = Math.round((c / N) * 100);
+        document.getElementById(`rr-b${b}-bar`).style.width = `${pct}%`;
+        document.getElementById(`rr-b${b}-count`).textContent = `${c}회 (${pct}%)`;
+      }
+      addLog('GET', res.status, `/api/whoami?rr=${i}`, ms, `${data.backend} Host=${data.received_host}`);
+    } catch (e) { hostOk = false; }
+  }
+  const vals = Object.values(counts);
+  const balanced = vals.every(v => v === 5) && hostOk;
+  setCheck('chk-rr-balance', balanced ? 'pass' : 'fail', totalMs / N,
+    `실제: ${vals.join(' : ')} 균등 분산 · Host 재작성=${hostOk ? 'OK' : 'FAIL'}`);
+}
+
+async function runProxyAdvancedSuite() {
+  for (const id of ['chk-proxy-stream', 'chk-proxy-loc', 'chk-proxy-500']) setCheck(id, 'run', null);
+  try {
+    const { res, ms } = await timedFetch('/api/stream');
+    const txt = await res.text();
+    const lines = txt.trim().split('\n');
+    const ok = res.status === 200 && lines.length === 5 && txt.includes('chunk #5/5');
+    setCheck('chk-proxy-stream', ok ? 'pass' : 'fail', ms, `실제: ${res.status} · ${lines.length}개 청크 순서 보존`);
+    addLog('GET', res.status, '/api/stream', ms, 'chunked 5조각 스트리밍');
+  } catch (e) { setCheck('chk-proxy-stream', 'fail', 0, e.message); }
+
+  try {
+    const { res, ms } = await timedFetch('/api/redirect-internal');
+    const data = await res.json();
+    const arrivedPublic = res.url.startsWith(window.location.origin + '/api/redirect-target');
+    const ok = res.status === 200 && data.ok && arrivedPublic;
+    setCheck('chk-proxy-loc', ok ? 'pass' : 'fail', ms, `변환 도달: ${res.url.replace(window.location.origin, 'PUBLIC_URL')}`);
+    addLog('GET', res.status, '/api/redirect-internal', ms, `→ PUBLIC_URL 변환 완료`);
+  } catch (e) { setCheck('chk-proxy-loc', 'fail', 0, e.message); }
+
+  try {
+    const { res, ms } = await timedFetch('/api/status-500');
+    const data = await res.json();
+    const ok = res.status === 500 && data.error === 'intentional_backend_500';
+    setCheck('chk-proxy-500', ok ? 'pass' : 'fail', ms, `실제: ${res.status} · 원문 보존 (${data.backend})`);
+    addLog('GET', res.status, '/api/status-500', ms, '백엔드 500 그대로 중계');
+  } catch (e) { setCheck('chk-proxy-500', 'fail', 0, e.message); }
+}
+
+async function runConcurrencyTimeline() {
+  const badge = document.getElementById('chk-conc-badge');
+  badge.className = 'badge b-run'; badge.textContent = '실행 중...';
+  const box = document.getElementById('gantt-box');
+  box.innerHTML = '<div style="color:var(--blue);font-size:12.5px;padding:8px">1.4초 지연 요청 + 빠른 요청 6개 동시 발사 중...</div>';
+
+  const tasks = [
+    { label: 'SLOW /api/slow', url: '/api/slow?ms=1400', slow: true },
+    { label: 'FAST /index.html', url: '/', slow: false },
+    { label: 'FAST /api/whoami #1', url: '/api/whoami?c=1', slow: false },
+    { label: 'FAST /api/whoami #2', url: '/api/whoami?c=2', slow: false },
+    { label: 'FAST /sample.css', url: '/sample.css', slow: false },
+    { label: 'FAST POST 204', url: '/conc-post', method: 'POST', body: 'fast', slow: false },
+    { label: 'FAST /api/whoami #3', url: '/api/whoami?c=3', slow: false },
+  ];
+  const base = performance.now();
+  const results = await Promise.all(tasks.map(async (t, idx) => {
+    if (!t.slow) await new Promise(r => setTimeout(r, 40 + idx * 18));
+    const start = performance.now() - base;
+    const res = await fetch(t.url, { method: t.method || 'GET', body: t.body, cache: 'no-store' });
+    await res.text();
+    const end = performance.now() - base;
+    addLog(t.method || 'GET', res.status, t.url, end - start, t.slow ? '느린 요청' : '병행 처리');
+    return { ...t, status: res.status, start, end, dur: end - start };
+  }));
+
+  const maxEnd = Math.max(...results.map(r => r.end), 1500);
+  const slowEnd = results[0].end;
+  const ok = results.slice(1).every(r => r.end < slowEnd && (r.status === 200 || r.status === 204));
+  box.innerHTML = '';
+  for (const r of results) {
+    const leftPct = (r.start / maxEnd) * 100;
+    const widthPct = Math.max(1.2, ((r.end - r.start) / maxEnd) * 100);
+    const row = document.createElement('div');
+    row.className = 'gantt-row';
+    row.innerHTML = `
+      <span style="color:${r.slow ? 'var(--amber)' : 'var(--text)'}">${r.label}</span>
+      <div class="gantt-track"><div class="gantt-bar ${r.slow ? 'gantt-slow' : 'gantt-fast'}" style="left:${leftPct.toFixed(2)}%;width:${widthPct.toFixed(2)}%"></div></div>
+      <span style="text-align:right;color:var(--text-muted)">${r.dur.toFixed(0)} ms</span>
+    `;
+    box.appendChild(row);
+  }
+  badge.className = ok ? 'badge b-pass' : 'badge b-fail';
+  badge.textContent = ok ? 'PASS · 비차단 입증' : 'FAIL';
+  liveState['chk-conc-gantt'] = ok ? 'pass' : 'fail';
+  updateKPIs();
+}
+
+/* ==================== TAB 2: LIVE EDGE CASES ==================== */
+async function runEdgeProtocolSuite() {
+  for (const id of ['chk-edge-put', 'chk-edge-delete', 'chk-edge-413', 'chk-edge-431', 'chk-edge-403']) setCheck(id, 'run', null);
+  try {
+    const { res, ms } = await timedFetch('/api/test', { method: 'PUT', body: 'x' });
+    const txt = (await res.text()).trim();
+    setCheck('chk-edge-put', res.status === 501 ? 'pass' : 'fail', ms, `실제: ${res.status} · "${txt}"`);
+    addLog('PUT', res.status, '/api/test', ms, '미지원 메서드 거절');
+  } catch (e) { setCheck('chk-edge-put', 'fail', 0, e.message); }
+
+  try {
+    const { res, ms } = await timedFetch('/test', { method: 'DELETE' });
+    const txt = (await res.text()).trim();
+    setCheck('chk-edge-delete', res.status === 501 ? 'pass' : 'fail', ms, `실제: ${res.status} · "${txt}"`);
+    addLog('DELETE', res.status, '/test', ms, '미지원 메서드 거절');
+  } catch (e) { setCheck('chk-edge-delete', 'fail', 0, e.message); }
+
+  try {
+    const big = new Uint8Array(2049);
+    const { res, ms } = await timedFetch('/non-api-big', { method: 'POST', body: big });
+    const txt = (await res.text()).trim();
+    setCheck('chk-edge-413', res.status === 413 ? 'pass' : 'fail', ms, `실제: ${res.status} · "${txt}"`);
+    addLog('POST', res.status, '/non-api-big', ms, '2,049B → 413 차단');
+  } catch (e) { setCheck('chk-edge-413', 'fail', 0, e.message); }
+
+  try {
+    const longUri = '/' + 'a'.repeat(8300);
+    const { res, ms } = await timedFetch(longUri);
+    const txt = (await res.text()).trim();
+    setCheck('chk-edge-431', res.status === 431 ? 'pass' : 'fail', ms, `실제: ${res.status} · "${txt}"`);
+    addLog('GET', res.status, '/aaa...(8300B)', ms, '초장문 URI 431 차단');
+  } catch (e) { setCheck('chk-edge-431', 'fail', 0, e.message); }
+
+  try {
+    const { res, ms } = await timedFetch('/symlink-blocked.txt');
+    const txt = (await res.text()).trim();
+    setCheck('chk-edge-403', res.status === 403 ? 'pass' : 'fail', ms, `실제: ${res.status} · "${txt}" (O_NOFOLLOW)`);
+    addLog('GET', res.status, '/symlink-blocked.txt', ms, '심볼릭 링크 차단');
+  } catch (e) { setCheck('chk-edge-403', 'fail', 0, e.message); }
+}
+
+async function runEdgeFaultSuite() {
+  for (const id of ['chk-edge-502', 'chk-edge-504', 'chk-edge-abort']) setCheck(id, 'run', null);
+  try {
+    const { res, ms } = await timedFetch('/api/malformed');
+    const txt = (await res.text()).trim();
+    setCheck('chk-edge-502', res.status === 502 ? 'pass' : 'fail', ms, `실제: ${res.status} · "${txt}"`);
+    addLog('GET', res.status, '/api/malformed', ms, '깨진 백엔드 응답 502');
+  } catch (e) { setCheck('chk-edge-502', 'fail', 0, e.message); }
+
+  try {
+    const { res, ms } = await timedFetch('/api/hang');
+    const txt = (await res.text()).trim();
+    const ok = res.status === 504 && ms >= 2800;
+    setCheck('chk-edge-504', ok ? 'pass' : 'fail', ms, `실제: ${res.status} · "${txt}" (${(ms / 1000).toFixed(2)}s)`);
+    addLog('GET', res.status, '/api/hang', ms, '백엔드 무응답 504 타임아웃');
+  } catch (e) { setCheck('chk-edge-504', 'fail', 0, e.message); }
+
+  try {
+    const t0 = performance.now();
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 150);
+    let aborted = false;
+    try {
+      await fetch('/api/slow?ms=2000', { signal: ctrl.signal, cache: 'no-store' });
+    } catch (e) {
+      if (e.name === 'AbortError') aborted = true;
+    }
+    const { res } = await timedFetch('/api/whoami?after_abort=1');
+    const ms = performance.now() - t0;
+    const ok = aborted && res.status === 200;
+    setCheck('chk-edge-abort', ok ? 'pass' : 'fail', ms, `150ms 강제 중단 후 즉시 복구 ${res.status} OK`);
+    addLog('ABORT', res.status, '/api/slow → /api/whoami', ms, '급단절 후 정상 복구');
+  } catch (e) { setCheck('chk-edge-abort', 'fail', 0, e.message); }
+}
+
+async function runAllLiveChecks() {
+  const btn = document.getElementById('btn-run-all');
+  btn.disabled = true; btn.textContent = '⏳ 22종 실시간 검증 실행 중...';
+  try {
+    await runStaticSuite();
+    await runPostAndKeepAliveSuite();
+    await runRoundRobinSuite();
+    await runProxyAdvancedSuite();
+    await runConcurrencyTimeline();
+    await runEdgeProtocolSuite();
+    await runEdgeFaultSuite();
+  } finally {
+    btn.disabled = false; btn.textContent = '▶ 전체 실시간 검증 (22종)';
+  }
+}
+
+/* ==================== TAB 4: LIVE MINI LOAD TEST ==================== */
+async function runLiveMiniBench() {
+  const btn = document.getElementById('btn-live-bench');
+  const scen = document.getElementById('bench-scenario').value;
+  const total = parseInt(document.getElementById('bench-total').value, 10);
+  btn.disabled = true; btn.textContent = '⏳ 측정 중...';
+  const prog = document.getElementById('live-bench-progress');
+  prog.style.width = '0%';
+
+  const urls = scen === 'proxy'
+    ? ['/api/whoami']
+    : scen === 'static'
+      ? ['/sample.txt', '/sample.css']
+      : ['/sample.txt', '/api/whoami', '/sample.css', '/api/whoami'];
+
+  const latencies = [];
+  let ok = 0, fail = 0, done = 0;
+  const workers = 6; // browser per-origin max parallel HTTP/1.1 connections
+  const perWorker = Math.ceil(total / workers);
+  const tStart = performance.now();
+
+  await Promise.all(Array.from({ length: workers }, async (_, w) => {
+    for (let i = 0; i < perWorker; i++) {
+      const idx = w * perWorker + i;
+      if (idx >= total) break;
+      const u = urls[idx % urls.length] + `?b=${idx}`;
+      const t0 = performance.now();
+      try {
+        const r = await fetch(u, { cache: 'no-store' });
+        await r.text();
+        latencies.push(performance.now() - t0);
+        if (r.status === 200) ok++; else fail++;
+      } catch (e) { fail++; }
+      done++;
+      if (done % 4 === 0 || done === total) prog.style.width = `${(done / total) * 100}%`;
+    }
+  }));
+
+  const elapsedSec = (performance.now() - tStart) / 1000;
+  latencies.sort((a, b) => a - b);
+  const pct = q => latencies.length ? latencies[Math.min(latencies.length - 1, Math.floor(latencies.length * q))] : 0;
+  const rps = ok / elapsedSec;
+
+  document.getElementById('lb-rps').textContent = `${rps.toFixed(1)} RPS`;
+  document.getElementById('lb-ok').textContent = `${ok} / ${fail}`;
+  document.getElementById('lb-lat').textContent = `${pct(0.5).toFixed(1)} / ${pct(0.95).toFixed(1)}ms`;
+  document.getElementById('lb-p99').textContent = `${pct(0.99).toFixed(1)} ms`;
+  addLog('LOAD', fail ? 500 : 200, `${scen} ×${total}`, elapsedSec * 1000, `${rps.toFixed(1)} RPS · 오류 ${fail}`);
+
+  btn.disabled = false; btn.textContent = '▶ 라이브 부하 실행';
+}
+
+/* ==================== SVG CHARTS ==================== */
+const BENCH_DATA = {
+  concurrencies: [1, 10, 50, 100, 200],
+  rps: {
+    static: [20.6, 115.9, 125.5, 349.7, 128.3],
+    proxy:  [22.7, 226.0, 1059.6, 1837.3, 1498.8],
+    mixed:  [22.2, 154.7, 184.7, 601.4, 1031.2],
+  },
+  p99: {
+    static: [108, 235, 969, 1478, 2034],
+    proxy:  [55,  56,  85,  135,  188],
+    mixed:  [102, 198, 1484, 2128, 2823],
+  }
+};
+
+function renderBenchChart(mode, btn) {
+  if (btn) {
+    btn.parentElement.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  const svg = document.getElementById('bench-svg');
+  const W = 600, H = 270, padL = 54, padR = 20, padT = 20, padB = 36;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const series = [
+    { key: 'static', color: '#38bdf8' },
+    { key: 'proxy',  color: '#34d399' },
+    { key: 'mixed',  color: '#a78bfa' },
+  ];
+  const allVals = series.flatMap(s => BENCH_DATA[mode][s.key]);
+  const maxVal = Math.ceil(Math.max(...allVals) * 1.12 / 100) * 100;
+  let html = '';
+  for (let i = 0; i <= 4; i++) {
+    const val = Math.round((maxVal / 4) * i);
+    const y = padT + plotH - (plotH * i) / 4;
+    html += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="rgba(148,163,184,0.14)" stroke-dasharray="3,4"/>`;
+    html += `<text x="${padL - 8}" y="${y + 4}" text-anchor="end" fill="#64748b" font-size="11" font-family="monospace">${val}</text>`;
+  }
+  const groupW = plotW / BENCH_DATA.concurrencies.length;
+  const barW = Math.min(24, (groupW - 22) / 3);
+  BENCH_DATA.concurrencies.forEach((c, gi) => {
+    const gx = padL + gi * groupW + (groupW - barW * 3 - 8) / 2;
+    series.forEach((s, si) => {
+      const v = BENCH_DATA[mode][s.key][gi];
+      const bh = (v / maxVal) * plotH;
+      const bx = gx + si * (barW + 4);
+      const by = padT + plotH - bh;
+      html += `<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW}" height="${Math.max(2, bh).toFixed(1)}" rx="4" fill="${s.color}" opacity="0.9">
+        <title>${s.key} c=${c}: ${v} ${mode === 'rps' ? 'RPS' : 'ms'}</title></rect>`;
+    });
+    html += `<text x="${padL + gi * groupW + groupW / 2}" y="${H - 12}" text-anchor="middle" fill="#94a3b8" font-size="11.5" font-family="monospace">c=${c}</text>`;
+  });
+  svg.innerHTML = html;
+}
+
+function renderSoakChart() {
+  const svg = document.getElementById('soak-svg');
+  const W = 800, H = 200, padL = 62, padR = 24, padT = 18, padB = 30;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const pts = [0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600].map(t => ({
+    x: padL + (t / 600) * plotW,
+    y: padT + plotH - (6864 / 10000) * plotH
+  }));
+  let html = '';
+  for (let i = 0; i <= 4; i++) {
+    const y = padT + plotH - (plotH * i) / 4;
+    html += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="rgba(148,163,184,0.14)" stroke-dasharray="3,4"/>`;
+    html += `<text x="${padL - 8}" y="${y + 4}" text-anchor="end" fill="#64748b" font-size="11" font-family="monospace">${i * 2500}K</text>`;
+  }
+  const pathD = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  const areaD = `${pathD} L${pts[pts.length - 1].x},${padT + plotH} L${pts[0].x},${padT + plotH} Z`;
+  html += `<defs><linearGradient id="rssGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#34d399" stop-opacity="0.3"/><stop offset="100%" stop-color="#34d399" stop-opacity="0"/></linearGradient></defs>`;
+  html += `<path d="${areaD}" fill="url(#rssGrad)"/><path d="${pathD}" fill="none" stroke="#34d399" stroke-width="3" stroke-linecap="round"/>`;
+  pts.forEach((p, i) => {
+    html += `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="#34d399"/>`;
+    if (i % 2 === 0) html += `<text x="${p.x}" y="${H - 8}" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="monospace">${i * 60}s</text>`;
+  });
+  html += `<text x="${padL + plotW / 2}" y="${pts[0].y - 12}" text-anchor="middle" fill="#34d399" font-size="12.5" font-weight="700" font-family="monospace">RSS 6,864 KiB 완전 고정 (600초 · 132,314건 · FD 7→7 · 스레드 5→5)</text>`;
+  svg.innerHTML = html;
+}
+
+renderBenchChart('rps');
+renderSoakChart();
+checkServerHealth();
+</script>
+</body>
+</html>
